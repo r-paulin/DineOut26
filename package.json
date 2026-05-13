@@ -31,14 +31,10 @@
     "@bolteu/design-tokens": "file:./vendor-tarballs/bolteu-design-tokens-2.1.1.tgz",
     "@bolteu/kalep-icons-svg": "file:./vendor-tarballs/bolteu-kalep-icons-svg-2.6.1.tgz",
     "@bolteu/kalep-tailwind": "file:./vendor-tarballs/bolteu-kalep-tailwind-3.2.0.tgz",
-    "@bolteu/kalep-react": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    },
-    "@bolteu/kalep-react-icons": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    }
+    "@bolteu/kalep-react": "file:./vendor-tarballs/bolteu-kalep-react-3.5.1-react19.tgz",
+    "@bolteu/kalep-react-icons": "file:./vendor-tarballs/bolteu-kalep-react-icons-2.6.2-react19.tgz",
+    "react": "$react",
+    "react-dom": "$react-dom"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
