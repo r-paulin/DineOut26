@@ -1,8 +1,4 @@
-import type {
-  OfferTimePreset,
-  OfferValue,
-  PriceValue,
-} from "@/features/search/filters.types"
+import type { OfferValue, PriceValue } from "@/features/search/filters.types"
 
 export interface LabeledOption<T extends string = string> {
   id: T
@@ -14,20 +10,6 @@ export const OFFER_OPTIONS: LabeledOption<OfferValue>[] = [
   { id: "live", label: "Live now" },
   { id: "prebook", label: "Pre-book" },
 ]
-
-export const OFFER_TIME_PRESET_OPTIONS: LabeledOption<OfferTimePreset>[] = [
-  { id: "any", label: "Any time" },
-  { id: "morning", label: "Morning" },
-  { id: "lunch", label: "Lunch" },
-  { id: "evening", label: "Evening" },
-]
-
-export const OFFER_TIME_CHIP_LABEL: Record<OfferTimePreset, string> = {
-  any: "Offer time",
-  morning: "Morning",
-  lunch: "Lunch",
-  evening: "Evening",
-}
 
 export const PRICE_OPTIONS: LabeledOption<PriceValue>[] = [
   { id: "u10", label: "Under €10" },

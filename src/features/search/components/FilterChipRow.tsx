@@ -4,10 +4,7 @@ import { FilterChip } from "./FilterChip"
 
 export interface FilterChipRowProps {
   surface: "floating" | "flat"
-  filterState: Pick<
-    FilterState,
-    "date" | "openNow" | "openAt" | "offerTimePreset"
-  >
+  filterState: Pick<FilterState, "date" | "openNow" | "openAt">
   getChipLabel: (key: FilterKey) => string
   isChipActive: (key: FilterKey) => boolean
   isChipLocked: (key: FilterKey) => boolean
@@ -22,7 +19,6 @@ const ROW_ORDER: FilterKey[] = [
   "date",
   "offer",
   "openNow",
-  "offerTime",
   "price",
   "cuisine",
   "amenity",

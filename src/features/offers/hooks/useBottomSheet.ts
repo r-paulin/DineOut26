@@ -34,7 +34,7 @@ export function useBottomSheet({
   const [dragHeight, setDragHeight] = useState<number | null>(null)
   /** When set, short tap (small vertical delta) runs this first; return true to skip default snap toggle. */
   const shortTapOverrideRef = useRef<(() => boolean) | null>(null)
-  /** Snap at pointerdown — used so minimized drag-resize is ignored (tap-to-advance only). */
+  /** Snap at pointerdown — minimized skips live resize; tap / swipe release opens peek or dismisses from peek. */
   const dragStartSnapRef = useRef<SheetSnap>(snap)
 
   const settledHeight = useMemo(() => heightForSnap(snap, winH), [snap, winH])
@@ -89,7 +89,11 @@ export function useBottomSheet({
       const bounds = dragViewportRef.current
       const { appH, maxH } = bounds
       const dy = e.clientY - dragStartClientY.current
-      if (Math.abs(dy) < 8) {
+      const startSnap = dragStartSnapRef.current
+      /** Touch slop: minimized + peek need a wider band so small moves aren’t misread. */
+      const tapSlopPx =
+        startSnap === "minimized" || startSnap === "peek" ? 22 : 8
+      if (Math.abs(dy) < tapSlopPx) {
         const override = shortTapOverrideRef.current
         shortTapOverrideRef.current = null
         if (override?.()) {
@@ -97,16 +101,33 @@ export function useBottomSheet({
           setDragHeight(null)
           return
         }
-        const startSnap = dragStartSnapRef.current
         if (startSnap === "minimized") onSnapChange("peek")
-        else if (startSnap === "peek") onSnapChange("full")
-        else onSnapChange("peek")
+        else if (startSnap === "peek") {
+          /** Down / neutral → dismiss to minimized; clear upward nudge → full. */
+          if (dy < 0) onSnapChange("full")
+          else onSnapChange("minimized")
+        } else onSnapChange("peek")
       } else {
         shortTapOverrideRef.current = null
-        if (dragStartSnapRef.current !== "minimized") {
+        if (startSnap === "minimized") {
+          if (dy < 0) onSnapChange("peek")
+        } else {
           const raw = dragStartHeight.current - dy
           const clamped = Math.min(maxH, Math.max(minH, Math.round(raw)))
-          onSnapChange(snapFromHeight(clamped, appH))
+          if (startSnap === "peek") {
+            const peekY = heightForSnap("peek", appH)
+            const band = peekY - minH
+            /** Below ~40% of the peek→min band: treat as dismiss (nearest-neighbour alone needs a past-midpoint drag). */
+            const dismissThreshold =
+              band > 0 ? minH + band * 0.4 : peekY
+            if (dy > 12 && clamped <= dismissThreshold) {
+              onSnapChange("minimized")
+            } else {
+              onSnapChange(snapFromHeight(clamped, appH))
+            }
+          } else {
+            onSnapChange(snapFromHeight(clamped, appH))
+          }
         }
       }
       setDragging(false)

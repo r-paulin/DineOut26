@@ -102,20 +102,34 @@ export function RestaurantDetailStatsBar({
         }}
         aria-label={`Open in Google Maps: ${areaLabel}, ${address}`}
       >
-        <Typography
-          variant="body-s-accent"
-          color="primary"
-          as="span"
-          inlineStyle={SUMMARY_VALUE_LINE}
-        >
-          {areaLabel}
-        </Typography>
-        <span
-          className={SUMMARY_SUBLINE}
-          style={{ fontFamily: "var(--font-family)" }}
-        >
-          {address}
-        </span>
+        <div className="w-full min-w-0">
+          <Typography
+            variant="body-s-accent"
+            color="primary"
+            as="div"
+            align="center"
+            lines={1}
+            inlineStyle={SUMMARY_VALUE_LINE}
+          >
+            {areaLabel}
+          </Typography>
+        </div>
+        <div className="w-full min-w-0">
+          <Typography
+            variant="body-s-regular"
+            color="secondary"
+            as="div"
+            align="center"
+            lines={1}
+            inlineStyle={{
+              fontFamily: "var(--font-family)",
+              fontSize: "14px",
+              lineHeight: "1.125rem",
+            }}
+          >
+            {address}
+          </Typography>
+        </div>
       </a>
     </div>
   )

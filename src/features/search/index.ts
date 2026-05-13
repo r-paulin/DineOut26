@@ -27,7 +27,6 @@ export type {
   DateValue,
   FilterKey,
   FilterState,
-  OfferTimePreset,
   OfferValue,
   PriceValue,
 } from "./filters.types"

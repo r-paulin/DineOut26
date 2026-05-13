@@ -2,10 +2,7 @@ import type { FilterKey, FilterState } from "@/features/search/filters.types"
 
 export interface FilterChipBarProps {
   surface: "floating" | "flat"
-  filterState: Pick<
-    FilterState,
-    "date" | "openNow" | "openAt" | "offerTimePreset"
-  >
+  filterState: Pick<FilterState, "date" | "openNow" | "openAt">
   getChipLabel: (key: FilterKey) => string
   isChipActive: (key: FilterKey) => boolean
   isChipLocked: (key: FilterKey) => boolean

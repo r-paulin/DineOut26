@@ -4,14 +4,12 @@ import {
   AMENITY_OPTIONS,
   CUISINE_OPTIONS,
   OFFER_OPTIONS,
-  OFFER_TIME_CHIP_LABEL,
   PRICE_CHIP_LABEL,
 } from "@/features/search/data/filterOptions"
 import {
   getDefaultFilterState,
   type FilterKey,
   type FilterState,
-  type OfferTimePreset,
   type OfferValue,
   type PriceValue,
 } from "@/features/search/filters.types"
@@ -138,9 +136,6 @@ export function useFilters(): UseFiltersReturn {
           if (key === "offer") {
             return { ...prev, offer: value as OfferValue }
           }
-          if (key === "offerTime") {
-            return { ...prev, offerTimePreset: value as OfferTimePreset }
-          }
           if (key === "price") {
             return {
               ...prev,
@@ -190,8 +185,6 @@ export function useFilters(): UseFiltersReturn {
             : formatDateChipLabel(state.date)
         case "offer":
           return findOfferLabel(getEffectiveOffer(state))
-        case "offerTime":
-          return OFFER_TIME_CHIP_LABEL[state.offerTimePreset]
         case "openNow": {
           if (state.date === "today") {
             return "Open now"
@@ -222,8 +215,6 @@ export function useFilters(): UseFiltersReturn {
           return state.date !== defaults.date
         case "offer":
           return getEffectiveOffer(state) !== defaults.offer
-        case "offerTime":
-          return state.offerTimePreset !== defaults.offerTimePreset
         case "openNow":
           if (state.date === "today") {
             return state.openNow

@@ -13,6 +13,11 @@ import UserOutlined from "@bolteu/kalep-react-icons/dist/UserOutlined"
 export interface BottomNavProps {
   activeTab: string
   onTabChange: (id: string) => void
+  /**
+   * When true, nav is `relative` for stacking inside a parent fixed bottom dock
+   * (see HomeScreen). When false, `fixed` to the shell bottom as a standalone bar.
+   */
+  docked?: boolean
 }
 
 type IconComp = ComponentType<KalepIcon>
@@ -31,10 +36,18 @@ const TABS: ReadonlyArray<{
 ]
 
 /** Persistent bottom navigation bar pinned to the bottom of the device frame. */
-export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
+export function BottomNav({
+  activeTab,
+  onTabChange,
+  docked = false,
+}: BottomNavProps) {
+  const positionClass = docked
+    ? "relative z-50 w-full"
+    : "fixed bottom-0 left-1/2 z-50 w-full max-w-[var(--shell-width)] -translate-x-1/2"
+
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[var(--shell-width)] z-50 bg-layer-floor-2 border-t border-separator pt-2 pb-[env(safe-area-inset-bottom,0)]"
+      className={`${positionClass} box-border flex flex-col border-t border-separator bg-layer-floor-2 pt-2 pb-[env(safe-area-inset-bottom,0)]`}
       aria-label="Main"
     >
       <div className="flex items-start justify-around">
@@ -63,12 +76,6 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             </button>
           )
         })}
-      </div>
-      <div className="h-[2.125rem] flex items-end justify-center pb-2">
-        <div
-          className="w-[8.375rem] h-[0.3125rem] rounded-full bg-[var(--color-content-primary)] opacity-35"
-          aria-hidden
-        />
       </div>
     </nav>
   )

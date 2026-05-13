@@ -23,7 +23,7 @@
  * motion is disabled so entry/exit can be driven by GSAP on the panel.
  */
 .__kalep section.dineout-snackbar-toaster[data-sonner-toaster][data-y-position="bottom"] {
-  bottom: calc(var(--nav-height) + 0.75rem) !important;
+  bottom: calc(var(--nav-layout-offset) + 0.75rem) !important;
 }
 
 /* Pay screen (no tab bar): lift toasts above the sticky slide-to-pay footer + safe area. */

@@ -131,7 +131,7 @@ export function BillAmountScreen({
         >
           <ArrowLeft size="md" className="text-primary" aria-hidden />
         </button>
-        <div className="min-h-[24px] min-w-0 flex-1 text-center">
+        <div className="flex min-h-[24px] min-w-0 flex-1 items-center justify-center">
           <Typography
             variant="body-l-accent"
             color="primary"
@@ -146,6 +146,7 @@ export function BillAmountScreen({
             {restaurantName}
           </Typography>
         </div>
+        <span className="size-6 shrink-0" aria-hidden />
       </header>
 
       <div

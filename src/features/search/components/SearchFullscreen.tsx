@@ -124,7 +124,6 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
         {contentPhase === "results" ? (
           <div className="w-full min-w-0 pt-3">
             <SearchResultsStatic
-              offerTimePreset={filterState.offerTimePreset}
               onRestaurantPress={onRestaurantPress}
             />
           </div>

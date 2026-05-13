@@ -88,7 +88,6 @@ export function SectionOffersListScreen({
       >
         <div className="w-full min-w-0 pt-3">
           <SearchResultsStatic
-            offerTimePreset={filterState.offerTimePreset}
             headingOverride={title}
             onRestaurantPress={onRestaurantPress}
           />

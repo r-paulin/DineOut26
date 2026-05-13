@@ -36,6 +36,8 @@ export interface BottomSheetProps {
   userClaims?: readonly UserClaim[]
   claimedOffersById?: Readonly<Record<string, ClaimedOffer>>
   onHomeClaimedOfferPress?: () => void
+  /** When true, sheet is `relative` inside a parent fixed bottom dock (HomeScreen). */
+  docked?: boolean
 }
 
 /**
@@ -44,7 +46,7 @@ export interface BottomSheetProps {
  *
  * Note: This is the DineOut custom sheet, NOT Kalep's `<BottomSheet>`. Kalep's
  * is a `vaul` modal; we need a persistent peek/min/full sheet with the map
- * interactive behind it. Snap heights and chrome follow Figma discovery states.
+ * behind it (pan/zoom disabled in peek; tap map minimizes to enable gestures).
  */
 export function BottomSheet({
   snap,
@@ -62,6 +64,7 @@ export function BottomSheet({
   userClaims = [],
   claimedOffersById = {},
   onHomeClaimedOfferPress,
+  docked = false,
 }: BottomSheetProps) {
   const [howItWorksOpen, setHowItWorksOpen] = useState(false)
   const {
@@ -93,9 +96,13 @@ export function BottomSheet({
       ? `rounded-t-[var(--sheet-radius)] bg-action-primary ${sheetShadow}`
       : `rounded-t-[var(--sheet-radius)] bg-layer-floor-1 ${sheetShadow}`
 
+  const positionClass = docked
+    ? "relative z-20 w-full"
+    : "fixed left-1/2 bottom-[var(--nav-layout-offset)] z-20 w-full max-w-[var(--shell-width)] -translate-x-1/2"
+
   return (
     <div
-      className={`fixed left-1/2 -translate-x-1/2 bottom-[var(--nav-height)] w-full max-w-[var(--shell-width)] z-20 overflow-hidden flex flex-col box-border ${surfaceClass} ${transitionClass}`}
+      className={`${positionClass} overflow-hidden flex flex-col box-border ${surfaceClass} ${transitionClass}`}
       style={{ height: `${displayHeight}px` }}
       data-snap={snap}
     >

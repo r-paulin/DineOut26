@@ -22,7 +22,7 @@ export function MapViewFab({
   aboveBottomNav = true,
 }: MapViewFabProps) {
   const bottom = aboveBottomNav
-    ? "calc(var(--nav-height) + 1rem)"
+    ? "calc(var(--nav-layout-offset) + 1rem)"
     : "calc(env(safe-area-inset-bottom, 0px) + 1rem)"
 
   return (

@@ -1,9 +1,15 @@
 import type { SheetSnap } from "../offers.types"
 
-/** Figma HOME `BottomSheet` frame height (peek / default). */
+/**
+ * Legacy Figma peek height (px). Peek snap height is viewport-driven via
+ * {@link peekSheetHeightPx}; this constant remains for snapshots / imports.
+ */
 export const SHEET_HEIGHT_PEEK = 368
 /** Minimized: drag handle + sheet header (Figma discovery — no sticky row). */
 export const SHEET_HEIGHT_MIN = 112
+
+/** Minimum gap between peek and minimized snap heights (px) for drag math. */
+const PEEK_MIN_CLEARANCE_ABOVE_MIN = 48
 
 /** Resolve a CSS length from :root (may be rem) to CSS pixels. */
 export function readCssLengthPx(property: string, fallback: number): number {
@@ -28,7 +34,12 @@ export function readCssLengthPx(property: string, fallback: number): number {
 }
 
 export function readNavHeightPx(): number {
-  return readCssLengthPx("--nav-height", 82)
+  return readCssLengthPx("--nav-height", 62)
+}
+
+/** Tab bar + bottom safe area — matches fixed layers `bottom: var(--nav-layout-offset)`. */
+export function readNavLayoutOffsetPx(): number {
+  return readCssLengthPx("--nav-layout-offset", readNavHeightPx())
 }
 
 export function readSearchStackPx(): number {
@@ -50,19 +61,28 @@ export function readAppHeightPx(): number {
 export function fullSheetHeightPx(viewportInnerH: number): number {
   return Math.max(
     SHEET_HEIGHT_MIN,
-    viewportInnerH - readNavHeightPx() - readSearchStackPx(),
+    viewportInnerH - readNavLayoutOffsetPx() - readSearchStackPx(),
   )
+}
+
+/** Default discover peek: ~2/3 of viewport, capped to full-sheet max. */
+export function peekSheetHeightPx(viewportInnerH: number): number {
+  const full = fullSheetHeightPx(viewportInnerH)
+  const target = Math.round(viewportInnerH * (2 / 3))
+  const capped = Math.min(target, full)
+  const floored = Math.max(SHEET_HEIGHT_MIN + PEEK_MIN_CLEARANCE_ABOVE_MIN, capped)
+  return Math.min(floored, full)
 }
 
 export function heightForSnap(snap: SheetSnap, viewportInnerH: number): number {
   if (snap === "full") return fullSheetHeightPx(viewportInnerH)
-  if (snap === "peek") return SHEET_HEIGHT_PEEK
+  if (snap === "peek") return peekSheetHeightPx(viewportInnerH)
   return SHEET_HEIGHT_MIN
 }
 
 export function snapFromHeight(h: number, viewportInnerH: number): SheetSnap {
   const full = fullSheetHeightPx(viewportInnerH)
-  const peekY = SHEET_HEIGHT_PEEK
+  const peekY = peekSheetHeightPx(viewportInnerH)
   const candidates: Array<{ snap: SheetSnap; y: number }> = [
     { snap: "minimized", y: SHEET_HEIGHT_MIN },
     { snap: "peek", y: peekY },

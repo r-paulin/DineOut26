@@ -102,17 +102,17 @@ export function MapPlaceCardOpened({
       <div className="flex flex-col gap-0.5 bg-layer-floor-1 px-4 pb-4 pt-2">
         <Typography
           as="h2"
-          variant="heading-xs-accent"
+          variant="heading-s-accent"
           color="primary"
           noWrap
-          inlineStyle={{ letterSpacing: "-0.02125rem" }}
+          inlineStyle={{ letterSpacing: "-0.03rem" }}
         >
           {view.name}
         </Typography>
         <div className="flex min-w-0 items-baseline gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
           {view.isOpen ? (
             <>
-              <Typography variant="body-s-accent" color="primary" as="span">
+              <Typography variant="body-s-regular" color="primary" as="span">
                 Open
               </Typography>
               <Typography variant="body-s-regular" color="secondary" as="span">

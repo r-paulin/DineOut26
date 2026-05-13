@@ -6,7 +6,6 @@ import {
   AMENITY_OPTIONS,
   CUISINE_OPTIONS,
   OFFER_OPTIONS,
-  OFFER_TIME_PRESET_OPTIONS,
   PRICE_OPTIONS,
 } from "@/features/search/data/filterOptions"
 import type {
@@ -33,7 +32,6 @@ export interface FilterSheetProps {
 const SHEET_TITLE: Record<Exclude<FilterKey, "openNow">, string> = {
   date: "Date",
   offer: "Offers",
-  offerTime: "Offer time",
   price: "Price",
   cuisine: "Cuisine",
   amenity: "Amenities",
@@ -48,8 +46,6 @@ function committedDraftString(
       return state.date
     case "offer":
       return state.offer
-    case "offerTime":
-      return state.offerTimePreset
     case "price":
       return state.price ?? ""
     case "cuisine":
@@ -92,7 +88,6 @@ function FilterSheetPanel({
       return dateOptionRows.map((r) => ({ id: r.id, label: r.label }))
     }
     if (activeKey === "offer") return OFFER_OPTIONS
-    if (activeKey === "offerTime") return OFFER_TIME_PRESET_OPTIONS
     if (activeKey === "price") return PRICE_OPTIONS
     if (activeKey === "cuisine") return CUISINE_OPTIONS
     return AMENITY_OPTIONS
@@ -108,8 +103,6 @@ function FilterSheetPanel({
         return "today"
       case "offer":
         return "all"
-      case "offerTime":
-        return "any"
       case "price":
       case "cuisine":
       case "amenity":

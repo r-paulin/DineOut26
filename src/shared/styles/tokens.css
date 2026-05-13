@@ -61,7 +61,18 @@
 
   /* === DineOut-specific layout, no Kalep equivalent === */
   --shell-width: 100%;
-  --nav-height: 5.125rem;
+  /**
+   * Tab strip only (BottomNav: pt-2 + border-t + icon row + label + pb-1), no
+   * safe area — must match real nav chrome so fixed sheets sit flush above it.
+   */
+  --nav-height: calc(0.5rem + 1px + 3.375rem);
+  /**
+   * Viewport inset for content above the tab bar: {@link --nav-height} plus
+   * iOS home-indicator padding (BottomNav `padding-bottom`).
+   */
+  --nav-layout-offset: calc(
+    var(--nav-height) + env(safe-area-inset-bottom, 0px)
+  );
   --search-stack-height: 8rem;
   --layer-search-expanded: #eef0ef;
   --sheet-radius: 1rem;

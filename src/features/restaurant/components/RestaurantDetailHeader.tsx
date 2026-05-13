@@ -51,7 +51,7 @@ export function RestaurantDetailHeader({
 
   return (
     <header
-      className="relative w-full shrink-0 overflow-hidden bg-neutral-secondary"
+      className="relative flex w-full min-h-0 shrink-0 flex-col overflow-hidden bg-neutral-secondary"
       style={{ minHeight: HERO_MIN_H }}
     >
       <img
@@ -64,7 +64,7 @@ export function RestaurantDetailHeader({
         style={{ background: HERO_GRAD }}
         aria-hidden
       />
-      <div className="sticky top-0 z-[2] flex w-full items-start justify-between px-4 pt-6">
+      <div className="sticky top-0 z-[2] flex w-full shrink-0 items-start justify-between px-4 pt-6">
         <button
           type="button"
           className={`${NAV_BTN} text-static-key-dark`}
@@ -95,7 +95,7 @@ export function RestaurantDetailHeader({
           <ShareIosOutlined size="md" className="text-static-key-dark" />
         </button>
       </div>
-      <div className="relative z-[1] flex min-h-[200px] flex-col items-center justify-end px-6 pb-6 pt-16">
+      <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center px-6 py-6">
         <div className="mb-3 h-16 w-16 shrink-0 overflow-hidden rounded-[12px] border border-white/20 bg-neutral-secondary shadow-md">
           <img
             src={activeSrc}
@@ -113,7 +113,7 @@ export function RestaurantDetailHeader({
             }}
           />
         </div>
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center">
           <h1
             className="m-0 max-w-full text-center text-static-key-light [font-variation-settings:'wght'_var(--font-weight-semibold)]"
             style={{

@@ -85,22 +85,21 @@ export function HomeScreen() {
     closeRestaurantDetail,
   } = useDiscoverScreen()
 
-  const preset = filterState.offerTimePreset
   const offersToday = useMemo(
-    () => filterOffersByTimePreset(OFFERS_TODAY, preset),
-    [preset],
+    () => filterOffersByTimePreset(OFFERS_TODAY, "any"),
+    [],
   )
   const offersDinner = useMemo(
-    () => filterOffersByTimePreset(OFFERS_DINNER, preset),
-    [preset],
+    () => filterOffersByTimePreset(OFFERS_DINNER, "any"),
+    [],
   )
   const offersNearYou = useMemo(
-    () => filterOffersByTimePreset(OFFERS_NEAR_YOU, preset),
-    [preset],
+    () => filterOffersByTimePreset(OFFERS_NEAR_YOU, "any"),
+    [],
   )
   const offersAllRestaurants = useMemo(
-    () => filterOffersByTimePreset(OFFERS_ALL_RESTAURANTS, preset),
-    [preset],
+    () => filterOffersByTimePreset(OFFERS_ALL_RESTAURANTS, "any"),
+    [],
   )
   const mergedDiscoverOffers = useMemo(
     () => [
@@ -381,6 +380,29 @@ export function HomeScreen() {
   }
 
   const mapSurface = sheetSnap === "full" ? "flat" : "floating"
+  const showBottomNav =
+    !searchOpen && !sectionList && !restaurantDetailSlug
+  const showBottomSheet = !mapPlaceOpen && !restaurantDetailSlug
+  const discoverDockActive = showBottomNav && showBottomSheet
+
+  const bottomSheetProps = {
+    snap: sheetSnap,
+    onSnapChange: setSheetSnap,
+    offersToday,
+    offersDinner,
+    offersNearYou,
+    offersAllRestaurants,
+    focusRestaurantId,
+    onClearFocus,
+    scrollToTopSignal,
+    onSeeAllSection: openSectionList,
+    onRestaurantPress: openRestaurantDetail,
+    homeClaimedOfferCard,
+    userClaims,
+    claimedOffersById: claimedByOfferId,
+    onHomeClaimedOfferPress: handleHomeClaimedOfferPress,
+  }
+
   const mapFallback = (
     <div
       className="absolute inset-0 z-[1] bg-neutral-secondary"
@@ -410,7 +432,7 @@ export function HomeScreen() {
             {mapPlaceOpen && focusedOffer ? (
               <div
                 ref={mapCardOverlayRef}
-                className="pointer-events-none absolute bottom-[var(--nav-height)] left-0 right-0 z-[15] px-3 pb-3"
+                className="pointer-events-none absolute bottom-[var(--nav-layout-offset)] left-0 right-0 z-[15] px-3 pb-3"
                 role="region"
                 aria-label="Restaurant on map"
               >
@@ -435,24 +457,14 @@ export function HomeScreen() {
         surface={mapSurface}
         {...filterBarProps}
       />
-      {!mapPlaceOpen && !restaurantDetailSlug ? (
-        <BottomSheet
-          snap={sheetSnap}
-          onSnapChange={setSheetSnap}
-          offersToday={offersToday}
-          offersDinner={offersDinner}
-          offersNearYou={offersNearYou}
-          offersAllRestaurants={offersAllRestaurants}
-          focusRestaurantId={focusRestaurantId}
-          onClearFocus={onClearFocus}
-          scrollToTopSignal={scrollToTopSignal}
-          onSeeAllSection={openSectionList}
-          onRestaurantPress={openRestaurantDetail}
-          homeClaimedOfferCard={homeClaimedOfferCard}
-          userClaims={userClaims}
-          claimedOffersById={claimedByOfferId}
-          onHomeClaimedOfferPress={handleHomeClaimedOfferPress}
-        />
+      {discoverDockActive ? (
+        <div className="pointer-events-none fixed bottom-0 left-1/2 z-[25] flex w-full max-w-[var(--shell-width)] -translate-x-1/2 flex-col [&>*]:pointer-events-auto">
+          <BottomSheet {...bottomSheetProps} docked />
+          <BottomNav activeTab={activeTab} onTabChange={onTabChange} docked />
+        </div>
+      ) : null}
+      {showBottomSheet && !discoverDockActive ? (
+        <BottomSheet {...bottomSheetProps} />
       ) : null}
       {sheetSnap === "full" &&
       !searchOpen &&
@@ -460,7 +472,7 @@ export function HomeScreen() {
       !restaurantDetailSlug ? (
         <MapViewFab onClick={onViewMapFab} />
       ) : null}
-      {!searchOpen && !sectionList && !restaurantDetailSlug ? (
+      {showBottomNav && !discoverDockActive ? (
         <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
       ) : null}
       {searchOpen ? (

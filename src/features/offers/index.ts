@@ -58,8 +58,10 @@ export type { UseBottomSheetArgs } from "./hooks/useBottomSheet"
 export {
   fullSheetHeightPx,
   heightForSnap,
+  peekSheetHeightPx,
   readCssLengthPx,
   readNavHeightPx,
+  readNavLayoutOffsetPx,
   readSearchStackPx,
   SHEET_HEIGHT_MIN,
   SHEET_HEIGHT_PEEK,

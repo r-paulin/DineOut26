@@ -15,7 +15,7 @@ import type { SheetSnap } from "@/features/offers/offers.types"
 import {
   heightForSnap,
   readAppHeightPx,
-  readNavHeightPx,
+  readNavLayoutOffsetPx,
   readSearchStackPx,
 } from "@/features/offers/utils/bottomSheetLayout"
 import type { MapMarkerData } from "@/features/map/map.types"
@@ -67,7 +67,7 @@ function viewportPaddingForDiscover(
       : heightForSnap(snap, appH)
   return {
     top: readSearchStackPx(),
-    bottom: readNavHeightPx() + sheetOrCardH,
+    bottom: readNavLayoutOffsetPx() + sheetOrCardH,
     left: 0,
     right: 0,
   }
@@ -109,7 +109,7 @@ export function MapLayer({
       mapFloatingOverlayHeightPx > 0
         ? mapFloatingOverlayHeightPx
         : heightForSnap(sheetSnap, appH)
-    return readNavHeightPx() + sheetOrCardH + 16
+    return readNavLayoutOffsetPx() + sheetOrCardH + 16
   }, [sheetSnap, mapFloatingOverlayHeightPx])
 
   const applyViewportPaddingAndCenter = useCallback(
@@ -185,6 +185,33 @@ export function MapLayer({
     setShowRecenter(false)
   }, [sheetSnap, mapFloatingOverlayHeightPx])
 
+  const mapGesturesEnabled = sheetSnap !== "peek"
+
+  const syncMapInteractionHandlers = useCallback(
+    (map: MaplibreMap) => {
+      const handlers = [
+        map.dragPan,
+        map.scrollZoom,
+        map.touchZoomRotate,
+        map.doubleClickZoom,
+        map.keyboard,
+        map.dragRotate,
+        map.boxZoom,
+      ] as const
+      for (const h of handlers) {
+        if (mapGesturesEnabled) h.enable()
+        else h.disable()
+      }
+    },
+    [mapGesturesEnabled],
+  )
+
+  useEffect(() => {
+    const map = getMapInstance(mapRef)
+    if (!map) return
+    syncMapInteractionHandlers(map)
+  }, [sheetSnap, syncMapInteractionHandlers])
+
   const handleMapClick = useCallback(() => {
     onMapBackgroundClick?.()
   }, [onMapBackgroundClick])
@@ -214,6 +241,7 @@ export function MapLayer({
             if (map) {
               attachMissingStyleImageHandler(map)
               scheduleMapResize(map)
+              syncMapInteractionHandlers(map)
             }
             requestAnimationFrame(() => {
               applyViewportPaddingAndCenter(sheetSnap, { animate: false })

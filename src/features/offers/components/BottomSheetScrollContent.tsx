@@ -59,9 +59,8 @@ export function BottomSheetScrollContent({
   const isFull = snap === "full"
   const isMin = snap === "minimized"
   const scrollClass = isFull
-    ? "overflow-y-auto [-webkit-overflow-scrolling:touch] pt-8"
+    ? "overflow-y-auto [-webkit-overflow-scrolling:touch] pt-0"
     : "overflow-y-hidden [overscroll-behavior:none]"
-  const inertClass = isMin ? "pointer-events-none" : ""
   const scrollRootRef = useRef<HTMLDivElement>(null)
 
   /*
@@ -79,13 +78,13 @@ export function BottomSheetScrollContent({
   return (
     <div
       ref={scrollRootRef}
-      className={`flex-1 min-h-0 min-w-0 box-border bg-layer-floor-1 overflow-x-hidden px-6 pb-7 flex flex-col gap-4 ${scrollClass} ${inertClass}`}
+      className={`flex-1 min-h-0 min-w-0 box-border bg-layer-floor-1 overflow-x-hidden px-6 pb-7 flex flex-col gap-4 ${scrollClass}`}
       role="region"
       aria-label="DineOut offers"
     >
       <header
-        className="p-0 m-0 cursor-grab touch-none select-none active:cursor-grabbing"
-        onPointerDown={isMin ? undefined : beginDrag}
+        className="p-0 m-0 cursor-grab touch-none select-none active:cursor-grabbing relative z-[1]"
+        onPointerDown={beginDrag}
       >
         <Typography
           as="h1"
@@ -104,21 +103,24 @@ export function BottomSheetScrollContent({
         </Typography>
       </header>
 
-      {homeClaimedOfferCard ? (
-        <section
-          className="flex flex-col gap-2 -mx-1 pb-2"
-          aria-label="Your claimed offer"
-        >
-          <OfferBanner
-            offer={homeClaimedOfferCard}
-            userClaims={userClaims}
-            claimedOffersById={claimedOffersById}
-            onClaimedPress={onHomeClaimedOfferPress}
-          />
-        </section>
-      ) : null}
+      <div
+        className={`flex min-h-0 flex-1 flex-col gap-4 ${isMin ? "pointer-events-none" : ""}`}
+      >
+        {homeClaimedOfferCard ? (
+          <section
+            className="flex flex-col gap-2 -mx-1 pb-2"
+            aria-label="Your claimed offer"
+          >
+            <OfferBanner
+              offer={homeClaimedOfferCard}
+              userClaims={userClaims}
+              claimedOffersById={claimedOffersById}
+              onClaimedPress={onHomeClaimedOfferPress}
+            />
+          </section>
+        ) : null}
 
-      {offersToday.length > 0 ? (
+        {offersToday.length > 0 ? (
         <section
           className="flex flex-col gap-4 pb-6"
           aria-label="Today's best offers"
@@ -224,16 +226,17 @@ export function BottomSheetScrollContent({
         </section>
       ) : null}
 
-      {offersAllRestaurants.length > 0 ? (
-        <SheetVerticalOfferSection
-          sectionAriaLabel="All restaurants"
-          title="All restaurants"
-          showAllLink={false}
-          offers={offersAllRestaurants}
-          focusRestaurantId={focusRestaurantId}
-          onRestaurantPress={onRestaurantPress}
-        />
-      ) : null}
+        {offersAllRestaurants.length > 0 ? (
+          <SheetVerticalOfferSection
+            sectionAriaLabel="All restaurants"
+            title="All restaurants"
+            showAllLink={false}
+            offers={offersAllRestaurants}
+            focusRestaurantId={focusRestaurantId}
+            onRestaurantPress={onRestaurantPress}
+          />
+        ) : null}
+      </div>
     </div>
   )
 }
