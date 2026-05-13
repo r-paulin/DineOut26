@@ -1,0 +1,95 @@
+/* DineOut token bridge to Kalep design tokens.
+ *
+ * Most legacy DineOut tokens (--content-primary, --bg-action-primary, etc.)
+ * now resolve to their Kalep equivalents (--color-content-primary, ...) so
+ * existing CSS Modules pick up Kalep colors without code changes — and dark
+ * mode flips automatically because Kalep's tokens are theme-aware.
+ *
+ * Tokens with no Kalep equivalent (layout, device-frame metrics, custom
+ * typography sizes used in CSS Modules) live below the bridge.
+ *
+ * As components migrate to Tailwind + Kalep classes, the bridge entries for
+ * those components can be removed.
+ */
+:root {
+  /* === Color bridge — alias old DineOut names to Kalep === */
+  --content-primary: var(--color-content-primary);
+  --content-secondary: var(--color-content-secondary);
+  --content-tertiary: var(--color-content-tertiary);
+  --content-action-primary: var(--color-content-action-primary);
+  --content-danger-primary: var(--color-content-danger-primary);
+  --content-primary-inverted: var(--color-content-primary-inverted);
+  --bg-action-primary: var(--color-bg-action-primary);
+  --bg-neutral-secondary: var(--color-bg-neutral-secondary);
+  --bg-active-neutral-secondary: var(--color-bg-active-neutral-secondary);
+  --bg-danger-primary: var(--color-bg-danger-primary);
+  --bg-warning-primary: var(--color-bg-warning-primary);
+  --border-separator: var(--color-border-separator);
+  --border-action-primary: var(--color-border-action-primary);
+  --static-content-key-light: var(--color-static-content-key-light);
+  --static-bg-key-dark: var(--color-static-bg-key-dark);
+  --layer-floor-1: var(--color-layer-floor-1);
+  --layer-floor-2: var(--color-layer-floor-2);
+  --device-bg: var(--color-special-brand-alt);
+
+  /* Constants Kalep doesn't expose */
+  /** Map pin selected pill + tail — Consumer Dine-out spec (Figma). */
+  --map-pin-selected: #2b8659;
+  --green-500: #32bb78;
+  --neutral-white: #ffffff;
+  --content-action-primary-inverted: rgba(116, 239, 170, 1);
+
+  /* === Typography sizes still consumed by CSS Modules === */
+  --font-family: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-weight-regular: 450;
+  --font-weight-semibold: 650;
+  /** Map pins / compact discount numerals (bolder than semibold for legibility). */
+  --font-weight-bold: 700;
+  --letter-spacing-500: -0.01125rem;
+  --body-s-font-size: 0.875rem;
+  --body-s-line-height: 1.25rem;
+  --body-m-font-size: 1rem;
+  --body-m-line-height: 1.5rem;
+  --body-xs-font-size: 0.75rem;
+  --body-xs-line-height: 1rem;
+  --heading-m-font-size: 1.75rem;
+  --heading-m-line-height: 2.25rem;
+  --heading-xs-font-size: 1.25rem;
+  --heading-xs-line-height: 1.5625rem;
+  --heading-s-font-size: 1.5rem;
+  --heading-s-line-height: 1.875rem;
+
+  /* === DineOut-specific layout, no Kalep equivalent === */
+  --shell-width: 100%;
+  --nav-height: 5.125rem;
+  --search-stack-height: 8rem;
+  --layer-search-expanded: #eef0ef;
+  --sheet-radius: 1rem;
+  --radius-search-field: 0.75rem;
+  --icon-size-m: 1.5rem;
+  --icon-size-s: 1.125rem;
+  --icon-size-xs: 0.875rem;
+  --device-bezel-outer: #a0b39f;
+  --device-bezel-inner: #000000;
+  --device-screen-w: 24.5625rem;
+  --device-screen-h: 53.25rem;
+  --device-screen-radius: 2.25rem;
+  --safe-area-top: env(safe-area-inset-top);
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  /** Bottom sheets / Vaul drawers: inset from top of fixed layer so scrim shows through. */
+  --modal-top-gap: 40px;
+
+  /* Existing DineOut shadows kept until BottomSheet/HomeScreen migrate */
+  --elevation-1: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.16);
+  --elevation-2: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+
+  /* App-h flips inside the iPhone wrapper on tablet+ */
+  --app-h: 100dvh;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --shell-width: var(--device-screen-w);
+    --app-h: var(--device-screen-h);
+  }
+}

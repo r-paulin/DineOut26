@@ -1,0 +1,204 @@
+@import "@fontsource-variable/inter";
+@import "@bolteu/kalep-react/src/components/Chip/Chip.css";
+@import "@bolteu/kalep-react/src/components/Badge/Badge.css";
+@import "@bolteu/kalep-react/src/components/Datepicker/Datepicker.css";
+@import "./shared/styles/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Kalep typography under `.__kalep` uses `font-family: InterVariable`, while
+ * DineOut loads Inter via `@fontsource-variable/inter` as "Inter Variable".
+ * Map bolt-font elements back to the same stack so weights/sizes render.
+ */
+.__kalep [class*="bolt-font-"] {
+  font-family: var(--font-family), system-ui, sans-serif !important;
+}
+
+/**
+ * DineOut snackbar toaster (Sonner): fixed above bottom nav, **12px** horizontal
+ * inset from the shell edges, full-width toast cards. Sonner’s default `<li>`
+ * motion is disabled so entry/exit can be driven by GSAP on the panel.
+ */
+.__kalep section.dineout-snackbar-toaster[data-sonner-toaster][data-y-position="bottom"] {
+  bottom: calc(var(--nav-height) + 0.75rem) !important;
+}
+
+/* Pay screen (no tab bar): lift toasts above the sticky slide-to-pay footer + safe area. */
+html[data-dineout-pay-screen]
+  .__kalep
+  section.dineout-snackbar-toaster[data-sonner-toaster][data-y-position="bottom"] {
+  bottom: calc(16.5rem + max(0.5rem, var(--safe-area-bottom, 0px))) !important;
+}
+
+.__kalep section.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="center"] {
+  left: 12px !important;
+  right: 12px !important;
+  transform: none !important;
+  width: auto !important;
+  max-width: min(
+    calc(var(--shell-width, 100vw) - 24px),
+    calc(100vw - 24px)
+  ) !important;
+}
+
+.__kalep
+  section.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="center"]
+  [data-sonner-toast] {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Disable Sonner’s default enter/leave transitions on the host `<li>` so the
+   * card can use GSAP; keep `animation` for swipe-dismiss keyframes. */
+  .__kalep section.dineout-snackbar-toaster [data-sonner-toast] {
+    transition: none !important;
+  }
+
+  .__kalep section.dineout-snackbar-toaster [data-sonner-toast][data-mounted="true"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .__kalep section.dineout-snackbar-toaster [data-sonner-toast] > * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-regular);
+  /* Omit font-variation-settings here: Kalep `bolt-font-*` sets partial axes
+   * (e.g. opsz); inheriting a body `wght` tuple fights variable-font resolution
+   * and Typography can render too light without the `.__kalep` font-size rules. */
+  background: var(--device-bg);
+  color: var(--content-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbars app-wide; scrolling still works (wheel, touch, keyboard). */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
+}
+
+/* WebKit needs a non-empty compound before `::-webkit-scrollbar`. Vite/Rolldown
+   minify strips `*` in `*::-webkit-scrollbar` → invalid bare `::-webkit-scrollbar`.
+   `:is(*)` keeps a valid subject after minification. */
+:is(*)::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* UI icons from /public/icons/ — square box + object-fit keeps SVG aspect ratio */
+img.icon24 {
+  width: var(--icon-size-m);
+  height: var(--icon-size-m);
+  object-fit: contain;
+  object-position: center;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Filter chips (matches SearchPanel / SearchFullscreen .chip svg) */
+img.iconChip {
+  width: var(--icon-size-s);
+  height: var(--icon-size-s);
+  object-fit: contain;
+  object-position: center;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Typography helpers matching Figma */
+.ffeature {
+  font-feature-settings:
+    "cv03" 1,
+    "cv04" 1,
+    "lnum" 1,
+    "pnum" 1;
+}
+
+/**
+ * Global press feedback.
+ *
+ * Tapping any interactive control (`<button>`, `<a href>`, or any element with
+ * `role="button"`) triggers a subtle scale-down to 0.975, matching the offer
+ * card / banner behaviour. The transform applies only during `:active` so the
+ * release reverts immediately (same feel as the existing `OfferBanner`).
+ *
+ * Opt-outs:
+ *   - `[data-no-press]` — explicit opt-out for nav tabs / drag handles / etc.
+ *   - `[role="tab"]`, `[role="tablist"] [role="tab"]` — tab strips own their
+ *     own selection indicator and shouldn't bounce.
+ *   - `[disabled]` / `[aria-disabled="true"]` — disabled controls don't react.
+ *
+ * Honours `prefers-reduced-motion`.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  button:not([data-no-press]):not([role="tab"]):not([disabled]):active,
+  a[href]:not([data-no-press]):active,
+  [role="button"]:not([data-no-press]):not([aria-disabled="true"]):active {
+    transform: scale(0.975);
+    transition: transform 100ms ease-out;
+    transform-origin: center;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bill-amount-cursor-blink {
+    animation: bill-amount-cursor-blink 1s step-end infinite;
+  }
+}
+
+@keyframes bill-amount-cursor-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bill-amount-cursor-blink {
+    animation: none;
+    opacity: 1;
+  }
+}
