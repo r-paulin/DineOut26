@@ -85,7 +85,7 @@ export function BottomSheetScrollContent({
     >
       <header
         className="p-0 m-0 cursor-grab touch-none select-none active:cursor-grabbing"
-        onPointerDown={beginDrag}
+        onPointerDown={isMin ? undefined : beginDrag}
       >
         <Typography
           as="h1"

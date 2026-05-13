@@ -4,7 +4,6 @@ import ShareIosOutlined from "@bolteu/kalep-react-icons/dist/ShareIosOutlined"
 import gsap from "gsap"
 import { CustomEase } from "gsap/CustomEase"
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
-import { BottomNav } from "@/shared/components/BottomNav"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
 import { buildVenueSharePayload } from "@/shared/utils/venueShare"
@@ -54,21 +53,19 @@ const ABOUT_OVERLAY_NAV_BTN =
   "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-primary shadow-none outline-none ring-0 hover:bg-active-neutral-secondary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-action-primary"
 
 /**
- * Full-screen restaurant detail: scrollable body, persistent bottom nav,
- * prototype data from {@link getRestaurantDetailDemo}.
+ * Full-screen restaurant detail: scrollable body, prototype data from
+ * {@link getRestaurantDetailDemo}.
  *
  * Entry / exit: push + scrim via GSAP. Do not put animated transform/opacity on
  * these nodes via React `style` — re-renders would reset them mid-tween.
  * Respects `prefers-reduced-motion`.
  *
- * **About** is an in-stack page over the main scroll (same shell + bottom nav as
- * detail), not a portaled modal — see `aboutOpen` / `aboutStackRef`.
+ * **About** is an in-stack page over the main scroll (same shell as detail), not
+ * a portaled modal — see `aboutOpen` / `aboutStackRef`.
  */
 export function RestaurantDetailScreen({
   model,
   onBack,
-  activeTab,
-  onTabChange,
   onOpenHours,
   onOpenMenu,
   onOpenMaps,
@@ -85,7 +82,7 @@ export function RestaurantDetailScreen({
 }: RestaurantDetailScreenProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const aboutScrollRef = useRef<HTMLDivElement>(null)
-  /** In-panel About stack (covers scroll only; {@link BottomNav} stays visible). */
+  /** In-panel About stack (covers main scroll only). */
   const stackAreaRef = useRef<HTMLDivElement>(null)
   const aboutStackRef = useRef<HTMLDivElement>(null)
   const onBackRef = useRef(onBack)
@@ -136,7 +133,7 @@ export function RestaurantDetailScreen({
 
   /**
    * About opens as an in-stack page (same shell as detail): horizontal slide
-   * only — no second scrim or portal, so {@link BottomNav} matches main detail.
+   * only — no second scrim or portal.
    */
   useLayoutEffect(() => {
     if (!aboutOpen) return
@@ -312,7 +309,9 @@ export function RestaurantDetailScreen({
             ref={scrollRef}
             className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-layer-floor-1"
             onScroll={handleScroll}
-            style={{ paddingBottom: "calc(var(--nav-height) + 0.5rem)" }}
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)",
+            }}
             aria-hidden={aboutOpen}
           >
             <RestaurantDetailHeader
@@ -418,7 +417,9 @@ export function RestaurantDetailScreen({
               <div
                 ref={aboutScrollRef}
                 className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain bg-layer-floor-1"
-                style={{ paddingBottom: "calc(var(--nav-height) + 0.5rem)" }}
+                style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)",
+            }}
                 onScroll={handleAboutScroll}
               >
                 <RestaurantAbout
@@ -433,7 +434,6 @@ export function RestaurantDetailScreen({
             </div>
           ) : null}
         </div>
-        <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
       </div>
       <RestaurantRatingSheet
         isOpen={ratingSheetOpen}

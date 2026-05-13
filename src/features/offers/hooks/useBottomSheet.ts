@@ -34,6 +34,8 @@ export function useBottomSheet({
   const [dragHeight, setDragHeight] = useState<number | null>(null)
   /** When set, short tap (small vertical delta) runs this first; return true to skip default snap toggle. */
   const shortTapOverrideRef = useRef<(() => boolean) | null>(null)
+  /** Snap at pointerdown — used so minimized drag-resize is ignored (tap-to-advance only). */
+  const dragStartSnapRef = useRef<SheetSnap>(snap)
 
   const settledHeight = useMemo(() => heightForSnap(snap, winH), [snap, winH])
   const displayHeight =
@@ -73,6 +75,7 @@ export function useBottomSheet({
     if (!dragging) return
 
     const move = (e: PointerEvent) => {
+      if (dragStartSnapRef.current === "minimized") return
       const bounds = dragViewportRef.current
       const { maxH } = bounds
       const dy = e.clientY - dragStartClientY.current
@@ -94,14 +97,17 @@ export function useBottomSheet({
           setDragHeight(null)
           return
         }
-        if (snap === "minimized") onSnapChange("peek")
-        else if (snap === "peek") onSnapChange("full")
+        const startSnap = dragStartSnapRef.current
+        if (startSnap === "minimized") onSnapChange("peek")
+        else if (startSnap === "peek") onSnapChange("full")
         else onSnapChange("peek")
       } else {
         shortTapOverrideRef.current = null
-        const raw = dragStartHeight.current - dy
-        const clamped = Math.min(maxH, Math.max(minH, Math.round(raw)))
-        onSnapChange(snapFromHeight(clamped, appH))
+        if (dragStartSnapRef.current !== "minimized") {
+          const raw = dragStartHeight.current - dy
+          const clamped = Math.min(maxH, Math.max(minH, Math.round(raw)))
+          onSnapChange(snapFromHeight(clamped, appH))
+        }
       }
       setDragging(false)
       setDragHeight(null)
@@ -115,7 +121,7 @@ export function useBottomSheet({
       window.removeEventListener("pointerup", end)
       window.removeEventListener("pointercancel", end)
     }
-  }, [dragging, minH, onSnapChange, snap])
+  }, [dragging, minH, onSnapChange])
 
   const beginDrag = useCallback(
     (
@@ -123,6 +129,7 @@ export function useBottomSheet({
       options?: { onShortTap?: () => boolean },
     ) => {
       e.preventDefault()
+      dragStartSnapRef.current = snap
       shortTapOverrideRef.current = options?.onShortTap ?? null
       const appH = readAppHeightPx()
       setWinH(appH)
@@ -135,7 +142,7 @@ export function useBottomSheet({
       dragStartHeight.current = settledHeight
       setDragHeight(settledHeight)
     },
-    [settledHeight],
+    [settledHeight, snap],
   )
 
   const showStickyHeader = snap === "peek"
