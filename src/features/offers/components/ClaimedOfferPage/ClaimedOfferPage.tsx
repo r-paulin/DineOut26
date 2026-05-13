@@ -62,6 +62,8 @@ export interface ClaimedOfferPageProps {
   }
   onClose: () => void
   onCancelOffer: () => void
+  /** When user chose Bolt DineOut at claim time, opens the in-app pay bill flow (parent provides navigation). */
+  onPayWithBoltDineOut?: () => void
   /** Portal target for other overlays; cancel {@link Dialog} uses `document.body` so it stacks above this full-screen layer. */
   portalContainer?: HTMLElement | null
 }
@@ -74,6 +76,7 @@ export function ClaimedOfferPage({
   claim,
   onClose,
   onCancelOffer,
+  onPayWithBoltDineOut,
   portalContainer,
 }: ClaimedOfferPageProps) {
   void portalContainer
@@ -325,6 +328,10 @@ export function ClaimedOfferPage({
               disabled={expired}
               aria-label={paymentPrimary}
               onClick={() => {
+                if (claim.paymentMethod === "dineout" && onPayWithBoltDineOut) {
+                  onPayWithBoltDineOut()
+                  return
+                }
                 snackbar.add({
                   description:
                     claim.paymentMethod === "dineout" ?

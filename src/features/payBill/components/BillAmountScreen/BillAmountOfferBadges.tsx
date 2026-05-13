@@ -1,6 +1,5 @@
 import { Typography } from "@bolteu/kalep-react"
 import Offer from "@bolteu/kalep-react-icons/dist/Offer"
-import Plus from "@bolteu/kalep-react-icons/dist/Plus"
 import type { PayBillAmountBadges } from "@/features/payBill/payBill.types"
 
 export interface BillAmountOfferBadgesProps {
@@ -26,28 +25,17 @@ function Pill({ label }: { label: string }) {
   )
 }
 
-/**
- * Figma offer pills under bill amount: default, optional plus, claimed.
- */
+/** Figma offer pill under bill amount (venue / DineOut line only). */
 export function BillAmountOfferBadges({ badges }: BillAmountOfferBadgesProps) {
   if (!badges) return null
-  const { defaultLabel, claimedLabel } = badges
+  const { defaultLabel } = badges
   const hasDefault = Boolean(defaultLabel?.trim())
-  const hasClaimed = Boolean(claimedLabel?.trim())
-  if (!hasDefault && !hasClaimed) return null
+  if (!hasDefault) return null
 
   return (
     <div className="flex w-full justify-center px-6 pt-3">
       <div className="flex max-w-full flex-wrap items-center justify-center gap-[8px]">
-        {hasDefault ?
-          <Pill label={defaultLabel!.trim()} />
-        : null}
-        {hasDefault && hasClaimed ?
-          <Plus size="md" className="shrink-0 text-secondary" aria-hidden />
-        : null}
-        {hasClaimed ?
-          <Pill label={claimedLabel!.trim()} />
-        : null}
+        <Pill label={defaultLabel!.trim()} />
       </div>
     </div>
   )

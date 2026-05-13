@@ -80,6 +80,7 @@ export function PayBillFlow({
         {step === "billAmount" ?
           <BillAmountScreen
             restaurantName={entry.restaurantName}
+            claimedOffer={entry.offer}
             billAmountBadges={entry.billAmountBadges}
             onDismiss={dismissAll}
             onContinue={(amt) => {

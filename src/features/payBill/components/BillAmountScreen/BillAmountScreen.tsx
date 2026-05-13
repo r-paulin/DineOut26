@@ -2,8 +2,10 @@ import { Button, Typography } from "@bolteu/kalep-react"
 import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
 import gsap from "gsap"
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { BillAmountOfferBadges } from "@/features/payBill/components/BillAmountScreen/BillAmountOfferBadges"
 import { ReceiptAmountBlock } from "@/features/payBill/components/BillAmountScreen/ReceiptAmountBlock"
+import { ClaimedOfferBillInlineNotice } from "@/features/payBill/components/shared/ClaimedOfferBillInlineNotice"
 import { useAnimatedBillCents } from "@/features/payBill/hooks/useAnimatedBillCents"
 import type { PayBillAmountBadges } from "@/features/payBill/payBill.types"
 import {
@@ -20,6 +22,8 @@ const FONT_FEAT =
 
 export interface BillAmountScreenProps {
   restaurantName: string
+  /** When set, show Figma inline notice; claimed % is not shown as a pill. */
+  claimedOffer: ClaimedOffer | null
   billAmountBadges?: PayBillAmountBadges
   onDismiss: () => void
   onContinue: (amount: number) => void
@@ -30,6 +34,7 @@ export interface BillAmountScreenProps {
  */
 export function BillAmountScreen({
   restaurantName,
+  claimedOffer,
   billAmountBadges,
   onDismiss,
   onContinue,
@@ -143,8 +148,24 @@ export function BillAmountScreen({
         </div>
       </header>
 
+      <div
+        className="h-px w-full shrink-0 bg-[var(--color-border-separator)]"
+        aria-hidden
+      />
+
+      {claimedOffer ?
+        <ClaimedOfferBillInlineNotice
+          discountPercent={claimedOffer.discountPercent}
+          remindToEnterDiscountedTotal
+        />
+      : null}
+
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <div className="flex flex-col items-center pt-[220px]">
+        <div
+          className={
+            claimedOffer ? "flex flex-col items-center pt-[140px]" : "flex flex-col items-center pt-[220px]"
+          }
+        >
           <ReceiptAmountBlock
             label={labelText}
             labelColor={labelColor}

@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -27,6 +28,9 @@
     "zustand": "^5.0.13"
   },
   "overrides": {
+    "@bolteu/design-tokens": "file:./vendor-tarballs/bolteu-design-tokens-2.1.1.tgz",
+    "@bolteu/kalep-icons-svg": "file:./vendor-tarballs/bolteu-kalep-icons-svg-2.6.1.tgz",
+    "@bolteu/kalep-tailwind": "file:./vendor-tarballs/bolteu-kalep-tailwind-3.2.0.tgz",
     "@bolteu/kalep-react": {
       "react": "$react",
       "react-dom": "$react-dom"

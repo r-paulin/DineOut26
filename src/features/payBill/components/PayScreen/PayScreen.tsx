@@ -19,10 +19,10 @@ import {
 } from "@/features/payBill/constants/checkoutPaymentOptions"
 import { PayBillSavedBadge } from "@/features/payBill/components/PayScreen/PayBillSavedBadge"
 import { SlidingButton } from "@/features/payBill/components/PayScreen/SlidingButton"
+import { ClaimedOfferBillInlineNotice } from "@/features/payBill/components/shared/ClaimedOfferBillInlineNotice"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
 import {
-  discountFirstEur,
   discountSecondEur,
   finalAmountCompound,
   round2,
@@ -180,7 +180,6 @@ export function PayScreen({
   const checkoutPaymentOptionId = usePayBillStore((s) => s.checkoutPaymentOptionId)
   const setCheckoutPaymentOptionId = usePayBillStore((s) => s.setCheckoutPaymentOptionId)
 
-  const [claimedDiscountSheet, setClaimedDiscountSheet] = useState(false)
   const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
   const [boltInfoSheet, setBoltInfoSheet] = useState(false)
   const [cardSheet, setCardSheet] = useState(false)
@@ -242,7 +241,6 @@ export function PayScreen({
   const offerId = offer?.offerId ?? payBillSyntheticOfferId(restaurantSlug)
   const subtotal = subtotalWithTip(receiptTotal, tip)
   const finalAmt = finalAmountCompound(receiptTotal, tip, d1, d2)
-  const firstDiscEur = discountFirstEur(receiptTotal, tip, d1)
   const secondDiscEur = discountSecondEur(receiptTotal, tip, d1, d2)
   const showDineOutBenefitRow = d2 > 0
 
@@ -326,6 +324,10 @@ export function PayScreen({
         <span className="size-6 shrink-0" aria-hidden />
       </header>
 
+      {offer ?
+        <ClaimedOfferBillInlineNotice discountPercent={offer.discountPercent} />
+      : null}
+
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <div className="flex shrink-0 flex-col gap-2 bg-layer-floor-1 px-6 pb-6 pt-2">
           <ReceiptItem
@@ -338,23 +340,6 @@ export function PayScreen({
               label="Tips"
               amount={formatEurMajor(tip)}
               variant="regular"
-            />
-          : null}
-          {d1 > 0 ?
-            <ReceiptItem
-              label="Claimed offer discount"
-              amount={formatEurMajor(-firstDiscEur)}
-              variant="regular"
-              labelSuffix={
-                <button
-                  type="button"
-                  className="inline-flex border-none bg-transparent p-0"
-                  aria-label="Claimed offer discount info"
-                  onClick={() => setClaimedDiscountSheet(true)}
-                >
-                  <InfoCircleOutlined size="md" className="text-secondary" />
-                </button>
-              }
             />
           : null}
           {showDineOutBenefitRow ?
@@ -470,20 +455,11 @@ export function PayScreen({
       </div>
 
       <AppInfoBottomSheet
-        open={claimedDiscountSheet}
-        onOpenChange={setClaimedDiscountSheet}
-        container={portalContainer}
-        title="Claimed offer discount"
-        body="This discount comes from your claimed offer. It is applied to your bill including tips, before any DineOut payment benefit."
-        zOverlay={Z_PAY_SHEET_OVERLAY}
-        zContent={Z_PAY_SHEET_CONTENT}
-      />
-      <AppInfoBottomSheet
         open={dineOutBenefitSheet}
         onOpenChange={setDineOutBenefitSheet}
         container={portalContainer}
         title="DineOut benefit"
-        body="When you pay with DineOut, an extra discount applies to your bill including tips. With a claimed offer, it stacks after your offer discount; without a claim, the DineOut payment benefit still applies."
+        body="When you pay with DineOut, an extra discount applies to your bill including tips."
         zOverlay={Z_PAY_SHEET_OVERLAY}
         zContent={Z_PAY_SHEET_CONTENT}
       />

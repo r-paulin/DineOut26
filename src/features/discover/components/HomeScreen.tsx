@@ -310,6 +310,18 @@ export function HomeScreen() {
     setClaimedView(null)
   }, [claimedView])
 
+  const handlePayFromClaimedOffer = useCallback(() => {
+    if (!claimedView) return
+    const detail = getRestaurantDetailDemo(claimedView.restaurantSlug)
+    setPayBillEntry({
+      restaurantName: detail.name,
+      restaurantSlug: claimedView.restaurantSlug,
+      offer: claimedView,
+      billAmountBadges: buildPayBillAmountBadges(detail),
+    })
+    setClaimedView(null)
+  }, [claimedView])
+
   const handleOpenPayBill = useCallback(() => {
     if (!restaurantDetailSlug || !baseRestaurantDetail) return
     const claims = Object.values(claimedByOfferId).filter(
@@ -321,7 +333,7 @@ export function HomeScreen() {
           restaurantName: baseRestaurantDetail.name,
           restaurantSlug: restaurantDetailSlug,
           offer: claim,
-          billAmountBadges: buildPayBillAmountBadges(baseRestaurantDetail, claim),
+          billAmountBadges: buildPayBillAmountBadges(baseRestaurantDetail),
         })
         return
       }
@@ -330,7 +342,7 @@ export function HomeScreen() {
       restaurantName: baseRestaurantDetail.name,
       restaurantSlug: restaurantDetailSlug,
       offer: null,
-      billAmountBadges: buildPayBillAmountBadges(baseRestaurantDetail, null),
+      billAmountBadges: buildPayBillAmountBadges(baseRestaurantDetail),
     })
   }, [baseRestaurantDetail, claimedByOfferId, restaurantDetailSlug])
 
@@ -524,6 +536,7 @@ export function HomeScreen() {
           claim={claimedView}
           onClose={handleClaimedOfferClose}
           onCancelOffer={handleCancelClaimedOffer}
+          onPayWithBoltDineOut={handlePayFromClaimedOffer}
           portalContainer={portalRoot}
         />
       ) : null}

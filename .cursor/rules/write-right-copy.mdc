@@ -1,0 +1,25 @@
+---
+description: Write Right (Bolt) UX copy — validate or draft all user-facing strings before implementing Figma or design-led UI
+globs: "**/*.{tsx,ts,css}"
+alwaysApply: false
+---
+
+# Write Right — copy before design implementation
+
+Before adding or changing **user-visible text** (labels, buttons, snackbars, sheets, errors, placeholders, `aria-label`s, empty states) to match a design:
+
+1. **If the Write Right skill is available** (`write-right` / Bolt Write Right from `write-right.skill`), load it and use **Validate** or **Generate** mode as appropriate. Its `core/guidelines/` files override this summary for edge cases.
+
+2. **Otherwise apply this checklist** (Bolt Product Style Guide / Write Right):
+
+- **Voice:** intentional, positive, professional, supportive, straightforward; match tone to context (reassuring for errors, neutral for payment/settings, understated for success — no exclamation marks).
+- **Casing:** sentence case everywhere; proper nouns (Bolt, DineOut, product names) only where branded.
+- **Punctuation:** one short sentence → no final full stop; two or more sentences → full stop on each; no exclamation marks; no emojis.
+- **Buttons:** present-tense verb first, 1–3 words, no punctuation; prefer **Go back** not “Back”, **Close** not “Cancel” for dismiss-only; passive acknowledgement **OK** not “Got it”; avoid “Successfully…” on success surfaces.
+- **Glossary (Bolt):** sign in/out not log in/out; pickup/dropoff (one word); tap/select not “click”; OK not Okay; turn on/off not enable/disable where relevant.
+- **UK English** for customer-facing copy unless the product explicitly ships US (e.g. **re-centre**, **couldn’t**).
+- **Inclusive:** avoid unnecessary gendered roles (e.g. prefer “staff” over “waiter” where generic); avoid ableist or vague panic copy (“Oops”).
+
+3. **Workflow:** Draft or validate copy **first** (or in the same change as layout), then implement layout/styling. Do not paste placeholder lorem or inconsistent terminology from Figma if it violates the above — fix copy to comply, then match spacing and hierarchy from the design.
+
+4. **Snackbar / toast / banner:** prefer short past-tense outcome phrases (e.g. “Offer claimed”); no “successfully” / “unfortunately”; respect length hints in Write Right `components.md` when the skill is loaded.
