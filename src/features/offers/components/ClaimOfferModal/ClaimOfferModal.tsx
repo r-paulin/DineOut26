@@ -46,11 +46,12 @@ function toOfferTimeConfig(o: ClaimOfferModalOffer): OfferTimeConfig {
   }
 }
 
-function availabilitySubtitle(o: ClaimOfferModalOffer): string {
-  if (o.isAllDay) {
-    return `Available ${o.date}, ${o.workingHoursStart}–${o.workingHoursEnd}`
-  }
-  return `Available ${o.date}, ${o.offerStart}–${o.offerEnd}`
+function claimModalVenueScheduleLine(o: ClaimOfferModalOffer): string {
+  const time =
+    o.isAllDay ?
+      `${o.workingHoursStart}–${o.workingHoursEnd}`
+    : `${o.offerStart}–${o.offerEnd}`
+  return `${o.restaurantName} · ${o.date}, ${time}`
 }
 
 /**
@@ -181,12 +182,12 @@ export function ClaimOfferModal({
             style={{ zIndex: Z_CLAIM_MODAL_CONTENT }}
           >
             <Drawer.Title className="sr-only">
-              Claim offer at {offer.restaurantName}
+              {offer.title} — {offer.restaurantName}
             </Drawer.Title>
             <Drawer.Close asChild>
               <button
                 type="button"
-                className={SHEET_CLOSE_ON_SURFACE_CLASS}
+                className={`${SHEET_CLOSE_ON_SURFACE_CLASS} !right-3 !top-3 !size-7`}
                 aria-label="Close"
               >
                 <Cross size="xs" className={SHEET_CLOSE_ICON_ON_SURFACE_CLASS} aria-hidden />
@@ -197,10 +198,10 @@ export function ClaimOfferModal({
               className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain"
             >
               <Drawer.Description className="sr-only">
-                Claim this walk-in offer at {offer.restaurantName}.
+                Claim {offer.title} at {offer.restaurantName}.
               </Drawer.Description>
 
-              <div className="flex flex-col gap-2 bg-layer-floor-1 px-6 pb-4 pt-6 pe-14">
+              <div className="flex flex-col gap-2 bg-layer-floor-1 px-6 pb-3 pt-10 pe-14">
                 <h1 id={titleId} className="m-0 p-0">
                   <Typography
                     variant="heading-m-accent"
@@ -208,7 +209,7 @@ export function ClaimOfferModal({
                     as="span"
                     inlineStyle={SEMIBOLD}
                   >
-                    {offer.restaurantName}
+                    {offer.title}
                   </Typography>
                 </h1>
                 <Typography
@@ -216,7 +217,7 @@ export function ClaimOfferModal({
                   color="secondary"
                   as="p"
                 >
-                  {availabilitySubtitle(offer)}
+                  {claimModalVenueScheduleLine(offer)}
                 </Typography>
               </div>
 
@@ -240,13 +241,13 @@ export function ClaimOfferModal({
               <div className="flex flex-col">
                 <button
                   type="button"
-                  className="flex w-full flex-row items-center justify-between border-0 bg-transparent px-6 py-4 text-left"
+                  className="flex w-full flex-row items-center justify-between gap-3 border-0 border-b border-separator bg-transparent px-6 pb-[13px] pt-[14px] text-left transition-colors hover:bg-active-neutral-secondary active:bg-active-neutral-secondary"
                   onClick={handleArrivalRowPress}
                 >
                   <Typography as="span" variant="body-m-regular" color="primary">
                     When will you arrive?
                   </Typography>
-                  <span className="flex min-w-0 shrink-0 items-center gap-2 rounded-[8px] bg-neutral-secondary px-3 py-2">
+                  <span className="flex min-w-0 shrink-0 items-center gap-1 rounded-lg bg-neutral-secondary px-3 py-2">
                     <Typography
                       as="span"
                       variant="body-m-accent"
@@ -262,13 +263,13 @@ export function ClaimOfferModal({
 
                 <button
                   type="button"
-                  className="flex w-full flex-row items-center justify-between border-0 bg-transparent px-6 py-4 text-left"
+                  className="flex w-full flex-row items-center justify-between gap-3 border-0 border-b border-separator bg-transparent px-6 pb-[13px] pt-[14px] text-left transition-colors hover:bg-active-neutral-secondary active:bg-active-neutral-secondary"
                   onClick={() => setGuestSheetOpen(true)}
                 >
                   <Typography as="span" variant="body-m-regular" color="primary">
                     How many guests?
                   </Typography>
-                  <span className="flex min-w-0 shrink-0 items-center gap-2 rounded-[8px] bg-neutral-secondary px-3 py-2">
+                  <span className="flex min-w-0 shrink-0 items-center gap-1 rounded-lg bg-neutral-secondary px-3 py-2">
                     <Typography
                       as="span"
                       variant="body-m-accent"
@@ -288,14 +289,17 @@ export function ClaimOfferModal({
                 onChange={setPaymentMethod}
               />
 
-              <div className="flex flex-col gap-2 px-6 pb-8 pt-0">
-                <Typography variant="body-xs-regular" color="secondary" as="p">
+              <div className="flex flex-col gap-3 px-6 pb-8 pt-0">
+                <Typography variant="body-s-regular" color="secondary" as="p">
                   Offers may exclude some items. Bolt Food offers can&apos;t be
                   combined with other offers at the venue and don&apos;t apply to
-                  delivery or pickup orders. Venues may add a service charge and other{" "}
+                  delivery or pickup orders.
+                </Typography>
+                <Typography variant="body-s-regular" color="secondary" as="p">
+                  Venues may add a service charge and other{" "}
                   <button
                     type="button"
-                    className="border-none bg-transparent p-0 text-left text-action-primary underline underline-offset-2"
+                    className="inline border-none bg-transparent p-0 align-baseline text-action-primary underline underline-offset-2 transition-opacity hover:opacity-90 active:opacity-80"
                     onClick={() => {
                       snackbar.add({
                         description:
@@ -304,14 +308,20 @@ export function ClaimOfferModal({
                       })
                     }}
                   >
-                    Terms and Conditions
+                    <Typography
+                      as="span"
+                      variant="body-s-regular"
+                      color="action-primary"
+                    >
+                      Terms and Conditions
+                    </Typography>
                   </button>{" "}
                   may apply.
                 </Typography>
               </div>
             </div>
 
-            <div className="shrink-0 bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-4">
+            <div className="shrink-0 bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-3">
               <Button
                 type="button"
                 variant="primary"

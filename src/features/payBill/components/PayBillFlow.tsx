@@ -4,12 +4,8 @@ import { BillAmountScreen } from "@/features/payBill/components/BillAmountScreen
 import { PayScreen } from "@/features/payBill/components/PayScreen/PayScreen"
 import { PaySuccessScreen } from "@/features/payBill/components/PaySuccessScreen/PaySuccessScreen"
 import { PaymentConfirmationScreen } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationScreen"
-import { RatingScreen } from "@/features/payBill/components/RatingScreen/RatingScreen"
 import { TipScreen } from "@/features/payBill/components/TipScreen/TipScreen"
-import {
-  payBillSyntheticOfferId,
-  type PayBillFlowEntry,
-} from "@/features/payBill/payBill.types"
+import { type PayBillFlowEntry } from "@/features/payBill/payBill.types"
 import { DEFAULT_TIP_PERCENT_PRESETS } from "@/features/payBill/utils/tipPresets"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
 
@@ -17,9 +13,8 @@ export interface PayBillFlowProps {
   entry: PayBillFlowEntry
   portalContainer?: HTMLElement | null
   onClose: () => void
-  onRated?: () => void
-  /** Rating “X”: after closing pay flow, e.g. return to map + thank-you snackbar. */
-  onRatingDismiss?: () => void
+  /** After the user taps Done on the payment confirmation screen. */
+  onPaidDone?: () => void
 }
 
 /**
@@ -29,8 +24,7 @@ export function PayBillFlow({
   entry,
   portalContainer,
   onClose,
-  onRated,
-  onRatingDismiss,
+  onPaidDone,
 }: PayBillFlowProps) {
   const step = usePayBillStore((s) => s.step)
   const open = usePayBillStore((s) => s.open)
@@ -56,17 +50,11 @@ export function PayBillFlow({
     onClose()
   }, [onClose, reset])
 
-  const dismissFromRating = useCallback(() => {
+  const completeAfterConfirmation = useCallback(() => {
     reset()
     onClose()
-    onRatingDismiss?.()
-  }, [onClose, onRatingDismiss, reset])
-
-  const afterRating = useCallback(() => {
-    reset()
-    onClose()
-    onRated?.()
-  }, [onClose, onRated, reset])
+    onPaidDone?.()
+  }, [onClose, onPaidDone, reset])
 
   const node = (
     <div className="fixed inset-0 z-[120] flex w-full justify-center bg-layer-floor-1">
@@ -136,16 +124,7 @@ export function PayBillFlow({
             offer={entry.offer}
             portalContainer={portalContainer}
             onDismiss={dismissAll}
-            onDone={() => setStep("rating")}
-          />
-        : step === "rating" ?
-          <RatingScreen
-            restaurantName={entry.restaurantName}
-            offerId={
-              entry.offer?.offerId ?? payBillSyntheticOfferId(entry.restaurantSlug)
-            }
-            onClose={dismissFromRating}
-            onSubmitDone={afterRating}
+            onDone={completeAfterConfirmation}
           />
         : null}
       </div>

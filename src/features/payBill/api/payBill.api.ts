@@ -1,10 +1,7 @@
-import { createLogger } from "@/shared/utils/logger"
 import {
   discountAmountCompound,
   finalAmountCompound,
 } from "@/features/payBill/utils/discountCalc"
-
-const log = createLogger("payBill.api")
 
 export interface PayBillPaymentRequest {
   offerId: string
@@ -44,19 +41,5 @@ export function payBillMock(
       const paidAt = new Date().toISOString()
       resolve({ transactionId, paidAt, paidAmount, discountAmount })
     }, 900)
-  })
-}
-
-/** Fire-and-forget rating (PRD). */
-export function submitOfferRating(
-  offerId: string,
-  body: { rating: number; feedback: string | null },
-): void {
-  void fetch(`/api/offers/${encodeURIComponent(offerId)}/rating`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  }).catch((err: unknown) => {
-    log.warn("rating submit failed", { offerId, err })
   })
 }

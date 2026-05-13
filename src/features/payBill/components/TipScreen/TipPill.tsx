@@ -25,10 +25,10 @@ export function TipPill({
         if (isSelected) onDeselect()
         else onSelect()
       }}
-      className={`flex min-h-[60px] min-w-0 flex-1 flex-col items-center justify-center rounded-lg p-3 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary ${
+      className={`inline-flex min-h-[60px] !min-w-[68px] w-auto max-w-none shrink-0 flex-col items-center justify-center !rounded-[8px] p-3 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary ${
         isSelected ?
-          "bg-action-primary text-static-key-light"
-        : "bg-neutral-secondary text-primary"
+          "bg-action-primary text-static-key-light hover:opacity-95 active:opacity-90"
+        : "bg-neutral-secondary text-primary hover:bg-active-neutral-secondary active:opacity-90"
       }`}
     >
       {twoLine ?

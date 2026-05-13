@@ -321,9 +321,9 @@ export function SlidingButton({
       role="group"
       aria-label={`${label}. ${sublabel ?? "Slide to confirm"}`}
       className={[
-        "relative flex h-14 w-full shrink-0 touch-none items-stretch overflow-hidden rounded-full py-1 pl-1 pr-2 shadow-[0px_4px_12px_rgba(0,0,0,0.12)] select-none",
+        "relative flex h-14 w-full shrink-0 touch-none items-stretch overflow-hidden rounded-full py-1 pl-1 pr-2 shadow-[var(--elevation-2)] select-none transition-[filter] duration-150",
         trackMuted,
-        disabled ? "opacity-70" : "",
+        disabled ? "opacity-70" : "hover:brightness-[1.02] active:brightness-[0.98]",
       ].join(" ")}
     >
       <div ref={railRef} className="relative h-full min-w-0 flex-1">
@@ -361,7 +361,7 @@ export function SlidingButton({
           aria-valuemax={100}
           aria-label="Slide to confirm"
           aria-disabled={disabled || isLoading}
-          className="absolute left-0 top-1/2 z-[1] flex -translate-y-1/2 cursor-grab items-center justify-center rounded-full bg-static-key-light shadow-[0px_2px_8px_rgba(0,0,0,0.18)] outline-none active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-static-key-light focus-visible:ring-offset-2 focus-visible:ring-offset-action-primary"
+          className="absolute left-0 top-1/2 z-[1] flex -translate-y-1/2 cursor-grab items-center justify-center rounded-full bg-static-key-light shadow-[var(--elevation-2)] outline-none active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-static-key-light focus-visible:ring-offset-2 focus-visible:ring-offset-action-primary enabled:hover:brightness-[1.03] enabled:active:brightness-[0.97]"
           style={{ width: THUMB_PX, height: THUMB_PX }}
           onPointerDown={onThumbDown}
           onKeyDown={onThumbKeyDown}

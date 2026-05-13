@@ -59,7 +59,7 @@ export function BottomSheetScrollContent({
   const isFull = snap === "full"
   const isMin = snap === "minimized"
   const scrollClass = isFull
-    ? "overflow-y-auto [-webkit-overflow-scrolling:touch] pt-0"
+    ? "overflow-y-auto [-webkit-overflow-scrolling:touch] pt-[1em]"
     : "overflow-y-hidden [overscroll-behavior:none]"
   const scrollRootRef = useRef<HTMLDivElement>(null)
 
@@ -78,7 +78,7 @@ export function BottomSheetScrollContent({
   return (
     <div
       ref={scrollRootRef}
-      className={`flex-1 min-h-0 min-w-0 box-border bg-layer-floor-1 overflow-x-hidden px-6 pb-7 flex flex-col gap-4 ${scrollClass}`}
+      className={`flex-1 min-h-0 min-w-0 box-border bg-layer-floor-1 overflow-x-hidden px-6 pb-7 flex flex-col gap-1 ${scrollClass}`}
       role="region"
       aria-label="DineOut offers"
     >
@@ -104,7 +104,7 @@ export function BottomSheetScrollContent({
       </header>
 
       <div
-        className={`flex min-h-0 flex-1 flex-col gap-4 ${isMin ? "pointer-events-none" : ""}`}
+        className={`flex min-h-0 flex-1 flex-col gap-1 ${isMin ? "pointer-events-none" : ""}`}
       >
         {homeClaimedOfferCard ? (
           <section
@@ -122,7 +122,7 @@ export function BottomSheetScrollContent({
 
         {offersToday.length > 0 ? (
         <section
-          className="flex flex-col gap-4 pb-6"
+          className="flex flex-col gap-4 pb-3"
           aria-label="Today's best offers"
         >
           <SheetSectionHeader
@@ -163,7 +163,7 @@ export function BottomSheetScrollContent({
 
       {offersDinner.length > 0 ? (
         <section
-          className="flex flex-col gap-4 pb-6"
+          className="flex flex-col gap-4 pb-3"
           aria-label="Dinner destinations"
         >
           <SheetSectionHeader
@@ -196,7 +196,7 @@ export function BottomSheetScrollContent({
       ) : null}
 
       {offersNearYou.length > 0 ? (
-        <section className="flex flex-col gap-4 pb-6" aria-label="Near you">
+        <section className="flex flex-col gap-4 pb-3" aria-label="Near you">
           <SheetSectionHeader
             title="Near you"
             onAllClick={() =>

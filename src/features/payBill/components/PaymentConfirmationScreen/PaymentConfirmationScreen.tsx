@@ -8,6 +8,7 @@ import paidCheckmarkUrl from "@/features/payBill/assets/pay-paid-checkmark-72.pn
 import { ClaimedOfferBillInlineNotice } from "@/features/payBill/components/shared/ClaimedOfferBillInlineNotice"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import {
+  discountFirstEur,
   discountSecondEur,
   subtotalWithTip,
 } from "@/features/payBill/utils/discountCalc"
@@ -43,7 +44,7 @@ const Z_CONFIRM_SHEET_CONTENT = 201
 
 /**
  * Figma PAY BILL / Paid: nav + checkmark, “Successfully paid” + strike + hero amount,
- * payment code card, receipt, Done → rating.
+ * payment code card, receipt, Done closes the flow.
  */
 export function PaymentConfirmationScreen({
   restaurantName,
@@ -62,9 +63,9 @@ export function PaymentConfirmationScreen({
   const subtotal = subtotalWithTip(receiptTotal, tip)
   const { discountPercent: d1, discountAddPercent: d2 } =
     effectivePayDiscountPercents(offer)
+  const firstDiscEur = discountFirstEur(receiptTotal, tip, d1)
   const secondDiscEur = discountSecondEur(receiptTotal, tip, d1, d2)
   const showStrikeSubtotal = subtotal > paidAmount + 0.001
-  const showDineOutBenefitRow = d2 > 0
   const paymentCode = formatPaymentCodeDisplay(offer, transactionId)
 
   useLayoutEffect(() => {
@@ -194,18 +195,47 @@ export function PaymentConfirmationScreen({
 
         <div className="flex shrink-0 flex-col gap-2 bg-layer-floor-1 px-6 py-6">
           <ReceiptItem
-            label="Receipt total"
+            label="Receipt"
             amount={formatEurMajor(receiptTotal)}
-            variant="bold"
+            variant="regular"
+            labelColor="secondary"
+            labelTypographyVariant="body-m-regular"
           />
           {tip != null && tip > 0 ?
-            <ReceiptItem label="Tips" amount={formatEurMajor(tip)} variant="regular" />
-          : null}
-          {showDineOutBenefitRow ?
             <ReceiptItem
-              label="DineOut benefit"
+              label="Tip"
+              amount={formatEurMajor(tip)}
+              variant="regular"
+              labelColor="secondary"
+              labelTypographyVariant="body-m-regular"
+            />
+          : null}
+          {d1 > 0 ?
+            <ReceiptItem
+              label={`Discount ${d1}%`}
+              amount={formatEurMajor(-firstDiscEur)}
+              variant="regular"
+              labelColor="secondary"
+              labelTypographyVariant="body-m-regular"
+              labelSuffix={
+                <button
+                  type="button"
+                  className="inline-flex border-none bg-transparent p-0"
+                  aria-label="Discount info"
+                  onClick={() => setDineOutBenefitSheet(true)}
+                >
+                  <InfoCircleOutlined size="sm" className="text-secondary" aria-hidden />
+                </button>
+              }
+            />
+          : null}
+          {d2 > 0 ?
+            <ReceiptItem
+              label={`Discount ${d2}%`}
               amount={formatEurMajor(-secondDiscEur)}
               variant="regular"
+              labelColor="secondary"
+              labelTypographyVariant="body-m-regular"
               labelSuffix={
                 <button
                   type="button"
@@ -213,7 +243,7 @@ export function PaymentConfirmationScreen({
                   aria-label="DineOut benefit info"
                   onClick={() => setDineOutBenefitSheet(true)}
                 >
-                  <InfoCircleOutlined size="md" className="text-secondary" />
+                  <InfoCircleOutlined size="sm" className="text-secondary" aria-hidden />
                 </button>
               }
             />

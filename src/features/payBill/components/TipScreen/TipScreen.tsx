@@ -25,7 +25,7 @@ export interface TipScreenProps {
 }
 
 /**
- * Tip selection (Figma PAY BILL / Add a tip): % presets from receipt, custom modal, GSAP entrance.
+ * Tip selection (Figma `15822:12199` PAY BILL / Add a tip): horizontal tip chips incl. No tip, presets, Other; custom modal; GSAP entrance.
  */
 export function TipScreen({
   restaurantName,
@@ -50,6 +50,12 @@ export function TipScreen({
   )
 
   const options: TipOption[] = useMemo(() => {
+    const noneOption: TipOption = {
+      id: "none",
+      label: "0 €",
+      secondaryLabel: "No tip",
+      amount: 0,
+    }
     const presets = tipPercentPresets.map((pct, i) => {
       const eur = percentTipEur(receiptTotalEur, pct)
       return {
@@ -60,12 +66,13 @@ export function TipScreen({
       }
     })
     return [
+      noneOption,
       ...presets,
       { id: "other", label: "Other", amount: null, isCustom: true },
     ]
   }, [receiptTotalEur, tipPercentPresets])
 
-  const [selectedId, setSelectedId] = useState<string>(() => options[0]?.id ?? "")
+  const [selectedId, setSelectedId] = useState("")
   const [customAmount, setCustomAmount] = useState<number | null>(null)
   const [customModal, setCustomModal] = useState(false)
 
@@ -105,10 +112,6 @@ export function TipScreen({
     })
   }, [onContinue, tipValue])
 
-  const onSkipTip = useCallback(() => {
-    onContinue({ tip: null, snackbarIntent: "no-tip" })
-  }, [onContinue])
-
   const initialCustomCents =
     customAmount != null ? Math.round(customAmount * 100) : 0
 
@@ -144,40 +147,9 @@ export function TipScreen({
         <span className="size-6 shrink-0" aria-hidden />
       </header>
 
-      <div className="shrink-0 px-6">
-        <div className="flex items-start justify-between gap-3 pb-5 pt-1">
-          <Typography
-            variant="body-m-accent"
-            color="primary"
-            as="p"
-            inlineStyle={{
-              fontVariationSettings: "'wght' var(--font-weight-semibold)",
-              fontFeatureSettings: FONT_FEAT,
-            }}
-          >
-            Receipt total
-          </Typography>
-          <Typography
-            variant="body-s-accent"
-            color="primary"
-            as="p"
-            align="end"
-            noWrap
-            inlineStyle={{
-              fontVariationSettings: "'wght' var(--font-weight-semibold)",
-              fontFeatureSettings: FONT_FEAT,
-            }}
-          >
-            {formatEurMajor(receiptTotalEur)}
-          </Typography>
-        </div>
-        <div
-          className="h-px w-full shrink-0 bg-[var(--color-border-separator)]"
-          aria-hidden
-        />
-      </div>
+      <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
 
-      <div className="flex flex-1 flex-col items-center px-6 pt-6">
+      <div className="flex min-h-0 flex-1 flex-col items-center gap-6 px-6 pb-6 pt-6">
         <div
           ref={illustrationRef}
           className="flex h-[148px] w-[200px] shrink-0 items-center justify-center overflow-hidden"
@@ -191,7 +163,7 @@ export function TipScreen({
         </div>
         <div
           ref={titleBlockRef}
-          className="mt-10 flex max-w-[320px] flex-col items-center gap-1 text-center"
+          className="flex w-full max-w-[min(100%,24rem)] flex-col items-center gap-1 px-0 text-center"
         >
           <Typography
             variant="heading-m-accent"
@@ -205,49 +177,56 @@ export function TipScreen({
           >
             Tip your waiter
           </Typography>
-          <Typography
-            variant="body-m-regular"
-            color="secondary"
-            align="center"
-            as="p"
-            lines={3}
-          >
+          <Typography variant="body-m-regular" color="secondary" align="center" as="p">
             This is a thank you for great service — 100% goes to the staff
           </Typography>
         </div>
 
         <div
           ref={tipRowRef}
-          className="mt-10 flex w-full max-w-[360px] gap-[10px] px-0 pb-6"
+          className="flex w-full shrink-0 flex-col items-center gap-6"
         >
-          {options.map((opt) => {
-            const isSel = selectedId === opt.id
-            const displayOpt =
-              opt.isCustom && customAmount != null ?
-                { ...opt, label: formatEurMajor(customAmount) }
-              : opt
-            return (
-              <TipPill
-                key={opt.id}
-                option={displayOpt}
-                isSelected={isSel}
-                onSelect={() => handleSelect(opt)}
-                onDeselect={() => {
-                  if (opt.isCustom && isSel) {
-                    setCustomModal(true)
-                    return
-                  }
-                  handleDeselect()
-                }}
-              />
-            )
-          })}
+          <div className="w-full overflow-x-auto overflow-y-hidden [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex w-max min-w-full flex-nowrap items-stretch gap-2 pb-0 pt-0">
+              {options.map((opt) => {
+                const isSel = selectedId === opt.id
+                const displayOpt =
+                  opt.isCustom && customAmount != null ?
+                    { ...opt, label: formatEurMajor(customAmount) }
+                  : opt
+                return (
+                  <TipPill
+                    key={opt.id}
+                    option={displayOpt}
+                    isSelected={isSel}
+                    onSelect={() => handleSelect(opt)}
+                    onDeselect={() => {
+                      if (opt.isCustom && isSel) {
+                        setCustomModal(true)
+                        return
+                      }
+                      handleDeselect()
+                    }}
+                  />
+                )
+              })}
+            </div>
+          </div>
+          <Typography
+            variant="body-s-regular"
+            color="secondary"
+            align="center"
+            as="p"
+            inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
+          >
+            Total on receipt: {formatEurMajor(receiptTotalEur)}
+          </Typography>
         </div>
       </div>
 
       <div
         ref={footerRef}
-        className="sticky bottom-0 mt-auto flex w-full flex-col gap-3 bg-layer-floor-1 px-6 pb-[max(1rem,var(--safe-area-bottom))] pt-2"
+        className="sticky bottom-0 mt-auto flex w-full shrink-0 flex-col gap-4 bg-layer-floor-1 px-6 pb-[max(1rem,var(--safe-area-bottom))] pt-6"
       >
         <Button
           variant="primary"
@@ -256,14 +235,6 @@ export function TipScreen({
           overrideClassName="!min-h-14 h-14 rounded-full"
         >
           Continue
-        </Button>
-        <Button
-          variant="secondary"
-          fullWidth
-          onClick={onSkipTip}
-          overrideClassName="!min-h-14 h-14 rounded-full"
-        >
-          Skip tip
         </Button>
       </div>
 

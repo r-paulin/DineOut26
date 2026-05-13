@@ -55,23 +55,36 @@ export function readAppHeightPx(): number {
   return readCssLengthPx("--app-h", fallbackInnerHeight)
 }
 
-/** Full sheet fills viewport below search stack and above nav (Figma expanded).
- * `--modal-top-gap` is not subtracted here — that inset is for overlay modals
- * only; this persistent sheet should meet the search stack with no extra gap. */
-export function fullSheetHeightPx(viewportInnerH: number): number {
+/** Gap compensation (px) when full sheet is shorter than the space under the search stack. */
+const FULL_SHEET_GAP_VAR = "--discover-full-sheet-gap"
+
+function readFullSheetGapCompensationPx(): number {
+  return readCssLengthPx(FULL_SHEET_GAP_VAR, 0)
+}
+
+/** Viewport height below search stack and above nav, without full-sheet gap tweak. */
+export function baseFullSheetHeightPx(viewportInnerH: number): number {
   return Math.max(
     SHEET_HEIGHT_MIN,
     viewportInnerH - readNavLayoutOffsetPx() - readSearchStackPx(),
   )
 }
 
-/** Default discover peek: ~2/3 of viewport, capped to full-sheet max. */
+/** Full sheet fills viewport below search stack and above nav (Figma expanded).
+ * Optional {@link FULL_SHEET_GAP_VAR} on `:root` extends height when the sheet
+ * sits below the measured search bottom (dock layout / rounding). */
+export function fullSheetHeightPx(viewportInnerH: number): number {
+  const gap = readFullSheetGapCompensationPx()
+  return Math.max(SHEET_HEIGHT_MIN, baseFullSheetHeightPx(viewportInnerH) + gap)
+}
+
+/** Default discover peek: 60% of viewport, capped so it never exceeds flush full height. */
 export function peekSheetHeightPx(viewportInnerH: number): number {
-  const full = fullSheetHeightPx(viewportInnerH)
-  const target = Math.round(viewportInnerH * (2 / 3))
-  const capped = Math.min(target, full)
+  const fullCap = baseFullSheetHeightPx(viewportInnerH)
+  const target = Math.round(viewportInnerH * 0.6)
+  const capped = Math.min(target, fullCap)
   const floored = Math.max(SHEET_HEIGHT_MIN + PEEK_MIN_CLEARANCE_ABOVE_MIN, capped)
-  return Math.min(floored, full)
+  return Math.min(floored, fullCap)
 }
 
 export function heightForSnap(snap: SheetSnap, viewportInnerH: number): number {

@@ -24,7 +24,11 @@ export type {
   SheetSectionHeaderProps,
   SheetVerticalOfferSectionProps,
 } from "./components"
-export { DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT } from "./constants/dineOutStackablePromo"
+export {
+  DINEOUT_CLAIM_INLINE_PRIMARY,
+  DINEOUT_CLAIM_INLINE_SECONDARY,
+  DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT,
+} from "./constants/dineOutStackablePromo"
 export {
   OFFERS_ALL_RESTAURANTS,
   OFFERS_DINNER,
@@ -56,6 +60,7 @@ export { computeOfferCardCampaignForSlug } from "./utils/offerCampaign"
 export { useBottomSheet } from "./hooks/useBottomSheet"
 export type { UseBottomSheetArgs } from "./hooks/useBottomSheet"
 export {
+  baseFullSheetHeightPx,
   fullSheetHeightPx,
   heightForSnap,
   peekSheetHeightPx,

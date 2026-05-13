@@ -104,6 +104,8 @@ export type {
 /** Payload for {@link ClaimOfferModal} (subset of {@link RestaurantOfferCardModel}). */
 export interface ClaimOfferModalOffer {
   id: string
+  /** Offer headline (e.g. “Claim 20% discount”) for the claim sheet title. */
+  title: string
   restaurantName: string
   discountPercent: number
   date: string

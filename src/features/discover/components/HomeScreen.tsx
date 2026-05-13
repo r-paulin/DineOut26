@@ -192,6 +192,45 @@ export function HomeScreen() {
   }, [mapPlaceOpen, focusedOffer?.id])
   const mapFloatingOverlayPx = mapPlaceOpen ? measuredMapFloatingOverlayPx : 0
 
+  const searchPanelRef = useRef<HTMLDivElement>(null)
+  const discoverDockRef = useRef<HTMLDivElement>(null)
+  const [discoverLayoutEpoch, setDiscoverLayoutEpoch] = useState(0)
+  const [discoverDockBottomInsetPx, setDiscoverDockBottomInsetPx] = useState<
+    number | null
+  >(null)
+  const lastSearchStackHeightRef = useRef(0)
+  const lastDockInsetRef = useRef(0)
+  const lastFullGapAppliedPxRef = useRef(0)
+
+  useLayoutEffect(() => {
+    const el = searchPanelRef.current
+    if (!el || typeof ResizeObserver === "undefined") return
+
+    const apply = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height)
+      if (h <= 0) return
+      if (h === lastSearchStackHeightRef.current) return
+      lastSearchStackHeightRef.current = h
+      document.documentElement.style.setProperty("--search-stack-height", `${h}px`)
+      setDiscoverLayoutEpoch((n) => n + 1)
+    }
+
+    const ro = new ResizeObserver(apply)
+    ro.observe(el)
+    apply()
+    return () => {
+      ro.disconnect()
+      lastSearchStackHeightRef.current = 0
+      document.documentElement.style.removeProperty("--search-stack-height")
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    return () => {
+      document.documentElement.style.removeProperty("--discover-full-sheet-gap")
+    }
+  }, [])
+
   const handleInfoContinue = useCallback(() => {
     const id = offerClaimModalOfferId
     if (!id || !restaurantDetailSlug || !baseRestaurantDetail) {
@@ -349,21 +388,12 @@ export function HomeScreen() {
     setPayBillEntry(null)
   }, [])
 
-  const handlePayBillRatingDismiss = useCallback(() => {
+  const handlePayBillPaidDone = useCallback(() => {
     closeRestaurantDetail()
     snackbar.add({
       title: "Thank you for your order with DineOut",
       description: "We appreciate you choosing DineOut.",
       timeout: 4500,
-    })
-  }, [closeRestaurantDetail, snackbar])
-
-  const handlePayBillRated = useCallback(() => {
-    closeRestaurantDetail()
-    snackbar.add({
-      title: "Thanks for your feedback",
-      description: "Your rating helps other diners.",
-      timeout: 4000,
     })
   }, [closeRestaurantDetail, snackbar])
 
@@ -385,6 +415,63 @@ export function HomeScreen() {
   const showBottomSheet = !mapPlaceOpen && !restaurantDetailSlug
   const discoverDockActive = showBottomNav && showBottomSheet
 
+  useLayoutEffect(() => {
+    if (!discoverDockActive) {
+      setDiscoverDockBottomInsetPx(null)
+      lastDockInsetRef.current = 0
+      return
+    }
+    const el = discoverDockRef.current
+    if (!el || typeof ResizeObserver === "undefined") return
+
+    const apply = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height)
+      if (h <= 0) return
+      if (h === lastDockInsetRef.current) return
+      lastDockInsetRef.current = h
+      setDiscoverDockBottomInsetPx(h)
+      setDiscoverLayoutEpoch((n) => n + 1)
+    }
+
+    const ro = new ResizeObserver(apply)
+    ro.observe(el)
+    apply()
+    return () => {
+      ro.disconnect()
+      lastDockInsetRef.current = 0
+      setDiscoverDockBottomInsetPx(null)
+    }
+  }, [discoverDockActive])
+
+  useLayoutEffect(() => {
+    if (!discoverDockActive || sheetSnap !== "full") {
+      if (lastFullGapAppliedPxRef.current !== 0) {
+        lastFullGapAppliedPxRef.current = 0
+        document.documentElement.style.removeProperty(
+          "--discover-full-sheet-gap",
+        )
+        setDiscoverLayoutEpoch((n) => n + 1)
+      }
+      return
+    }
+    const dock = discoverDockRef.current
+    const search = searchPanelRef.current
+    if (!dock || !search) return
+    const sheet = dock.firstElementChild
+    if (!(sheet instanceof HTMLElement)) return
+    const gap =
+      sheet.getBoundingClientRect().top - search.getBoundingClientRect().bottom
+    const measured = gap > 1 ? Math.ceil(gap) : 0
+    const next = Math.max(lastFullGapAppliedPxRef.current, measured)
+    if (next === lastFullGapAppliedPxRef.current) return
+    lastFullGapAppliedPxRef.current = next
+    document.documentElement.style.setProperty(
+      "--discover-full-sheet-gap",
+      `${next}px`,
+    )
+    setDiscoverLayoutEpoch((n) => n + 1)
+  }, [discoverDockActive, sheetSnap, discoverLayoutEpoch])
+
   const bottomSheetProps = {
     snap: sheetSnap,
     onSnapChange: setSheetSnap,
@@ -401,6 +488,7 @@ export function HomeScreen() {
     userClaims,
     claimedOffersById: claimedByOfferId,
     onHomeClaimedOfferPress: handleHomeClaimedOfferPress,
+    discoverLayoutEpoch,
   }
 
   const mapFallback = (
@@ -428,6 +516,10 @@ export function HomeScreen() {
               sheetSnap={sheetSnap}
               mapFloatingOverlayHeightPx={mapFloatingOverlayPx}
               markers={mapMarkers}
+              discoverLayoutEpoch={discoverLayoutEpoch}
+              discoverDockBottomInsetPx={
+                discoverDockActive ? discoverDockBottomInsetPx : null
+              }
             />
             {mapPlaceOpen && focusedOffer ? (
               <div
@@ -449,6 +541,7 @@ export function HomeScreen() {
         </Suspense>
       </MapSurfaceErrorBoundary>
       <SearchPanel
+        ref={searchPanelRef}
         onOpenSearch={() => {
           closeSectionList()
           setSearchOpen(true)
@@ -458,7 +551,10 @@ export function HomeScreen() {
         {...filterBarProps}
       />
       {discoverDockActive ? (
-        <div className="pointer-events-none fixed bottom-0 left-1/2 z-[25] flex w-full max-w-[var(--shell-width)] -translate-x-1/2 flex-col [&>*]:pointer-events-auto">
+        <div
+          ref={discoverDockRef}
+          className="pointer-events-none fixed bottom-0 left-1/2 z-[25] flex w-full max-w-[var(--shell-width)] -translate-x-1/2 flex-col [&>*]:pointer-events-auto"
+        >
           <BottomSheet {...bottomSheetProps} docked />
           <BottomNav activeTab={activeTab} onTabChange={onTabChange} docked />
         </div>
@@ -524,8 +620,7 @@ export function HomeScreen() {
           entry={payBillEntry}
           portalContainer={portalRoot}
           onClose={handlePayBillFlowClose}
-          onRated={handlePayBillRated}
-          onRatingDismiss={handlePayBillRatingDismiss}
+          onPaidDone={handlePayBillPaidDone}
         />
       : null}
       {restaurantDetailSlug && pendingClaimOffer ? (

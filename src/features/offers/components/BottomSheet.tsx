@@ -38,6 +38,8 @@ export interface BottomSheetProps {
   onHomeClaimedOfferPress?: () => void
   /** When true, sheet is `relative` inside a parent fixed bottom dock (HomeScreen). */
   docked?: boolean
+  /** Bumps when discover search stack height is measured so sheet heights match layout. */
+  discoverLayoutEpoch?: number
 }
 
 /**
@@ -65,6 +67,7 @@ export function BottomSheet({
   claimedOffersById = {},
   onHomeClaimedOfferPress,
   docked = false,
+  discoverLayoutEpoch = 0,
 }: BottomSheetProps) {
   const [howItWorksOpen, setHowItWorksOpen] = useState(false)
   const {
@@ -80,6 +83,7 @@ export function BottomSheet({
     onSnapChange,
     focusRestaurantId,
     onClearFocus,
+    discoverLayoutEpoch,
   })
 
   const isFull = snap === "full"

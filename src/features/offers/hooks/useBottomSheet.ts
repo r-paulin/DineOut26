@@ -14,6 +14,8 @@ export interface UseBottomSheetArgs {
   /** Scroll “Today” carousel when a map pin focuses a restaurant (sheet visible). */
   focusRestaurantId: string | null
   onClearFocus?: () => void
+  /** Increment when discover `--search-stack-height` updates so snap heights recompute. */
+  discoverLayoutEpoch?: number
 }
 
 export function useBottomSheet({
@@ -21,6 +23,7 @@ export function useBottomSheet({
   onSnapChange,
   focusRestaurantId,
   onClearFocus,
+  discoverLayoutEpoch = 0,
 }: UseBottomSheetArgs) {
   const carouselTodayRef = useRef<HTMLDivElement>(null)
   const [winH, setWinH] = useState(() => readAppHeightPx())
@@ -37,7 +40,10 @@ export function useBottomSheet({
   /** Snap at pointerdown — minimized skips live resize; tap / swipe release opens peek or dismisses from peek. */
   const dragStartSnapRef = useRef<SheetSnap>(snap)
 
-  const settledHeight = useMemo(() => heightForSnap(snap, winH), [snap, winH])
+  const settledHeight = useMemo(
+    () => heightForSnap(snap, winH),
+    [snap, winH, discoverLayoutEpoch],
+  )
   const displayHeight =
     dragging && dragHeight !== null ? dragHeight : settledHeight
 
@@ -46,7 +52,7 @@ export function useBottomSheet({
       appH: winH,
       maxH: fullSheetHeightPx(winH),
     }
-  }, [winH])
+  }, [winH, discoverLayoutEpoch])
 
   useEffect(() => {
     const onResize = () => setWinH(readAppHeightPx())

@@ -1,10 +1,12 @@
 import { Radio, RadioGroup, Typography } from "@bolteu/kalep-react"
-import Alert from "@bolteu/kalep-react-icons/dist/Alert"
 import CheckCircle from "@bolteu/kalep-react-icons/dist/CheckCircle"
 import gsap from "gsap"
 import { useLayoutEffect, useRef, useState } from "react"
 import { flushSync } from "react-dom"
-import { DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT } from "@/features/offers/constants/dineOutStackablePromo"
+import {
+  DINEOUT_CLAIM_INLINE_PRIMARY,
+  DINEOUT_CLAIM_INLINE_SECONDARY,
+} from "@/features/offers/constants/dineOutStackablePromo"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
@@ -13,78 +15,42 @@ export interface PaymentSelectorProps {
   onChange: (next: PaymentMethod) => void
 }
 
-function PromoWithBoldPercent(text: string) {
-  const m = text.match(/(\d+%)/)
-  if (!m || m.index === undefined) {
-    return (
-      <Typography as="p" variant="body-s-regular" color="primary">
-        {text}
-      </Typography>
-    )
-  }
-  const i = m.index
-  const pct = m[1]!
-  return (
-    <Typography as="p" variant="body-s-regular" color="primary">
-      {text.slice(0, i)}
-      <b>{pct}</b>
-      {text.slice(i + pct.length)}
-    </Typography>
-  )
-}
+const SEMIBOLD = {
+  fontVariationSettings: "'wght' var(--font-weight-semibold)",
+} as const
 
 /**
- * Payment method radios + contextual info banner.
- * Uses {@link Alert} instead of `WarningFilled` (not in kalep-react-icons).
- * Banner swap uses GSAP (fade + light scale) in place when the selection changes.
+ * Payment method radios + DineOut-only inline promo (Figma MODAL / Claiming offer).
+ * GSAP fades the promo when switching away from Bolt DineOut.
  */
-export function PaymentSelector({
-  value,
-  onChange,
-}: PaymentSelectorProps) {
+export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
   const groupName = "claim-offer-payment"
-  /** Stacks with venue offers; always 40% (see restaurant “More benefits” DineOut row). */
-  const dineoutBannerText = DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT
-
-  const [renderedMethod, setRenderedMethod] = useState<PaymentMethod>(value)
+  const [renderedPromo, setRenderedPromo] = useState<"dineout" | "empty">(() =>
+    value === "dineout" ? "dineout" : "empty",
+  )
   const bannerRef = useRef<HTMLDivElement>(null)
-  const tlRef = useRef<gsap.core.Timeline | null>(null)
-  /** Last payment method reflected in the banner DOM (avoids `[renderedMethod]` deps — cleanup would kill mid-enter). */
-  const lastBannerMethodRef = useRef<PaymentMethod>(value)
+  const lastValueRef = useRef(value)
 
   useLayoutEffect(() => {
-    if (value === lastBannerMethodRef.current) return
+    const prev = lastValueRef.current
+    lastValueRef.current = value
 
     const el = bannerRef.current
-    tlRef.current?.kill()
-    tlRef.current = null
     if (el) gsap.killTweensOf(el)
 
-    if (!el || prefersReducedMotion()) {
-      setRenderedMethod(value)
-      lastBannerMethodRef.current = value
-      return
-    }
-
-    const tl = gsap.timeline()
-    tlRef.current = tl
-
-    tl.to(el, {
-      autoAlpha: 0,
-      scale: 0.98,
-      duration: 0.15,
-      ease: "power2.in",
-      transformOrigin: "50% 50%",
-      force3D: true,
-    })
-      .call(() => {
-        flushSync(() => {
-          setRenderedMethod(value)
-          lastBannerMethodRef.current = value
-        })
+    if (value === "dineout") {
+      if (prev === "dineout") return
+      if (prefersReducedMotion()) {
+        setRenderedPromo("dineout")
+        return
+      }
+      flushSync(() => {
+        setRenderedPromo("dineout")
       })
-      .fromTo(
-        el,
+      const node = bannerRef.current
+      if (!node) return
+      gsap.fromTo(
+        node,
         {
           autoAlpha: 0,
           scale: 0.98,
@@ -96,26 +62,48 @@ export function PaymentSelector({
           scale: 1,
           duration: 0.22,
           ease: "power2.out",
+          force3D: true,
         },
       )
-
-    return () => {
-      tl.kill()
+      return
     }
+
+    if (prev !== "dineout") return
+
+    if (!el || prefersReducedMotion()) {
+      setRenderedPromo("empty")
+      return
+    }
+    gsap.to(el, {
+      autoAlpha: 0,
+      scale: 0.98,
+      duration: 0.15,
+      ease: "power2.in",
+      transformOrigin: "50% 50%",
+      force3D: true,
+      onComplete: () => {
+        setRenderedPromo("empty")
+      },
+    })
   }, [value])
 
   return (
-    <div className="flex flex-col px-6 pt-4">
-      <Typography variant="body-m-accent" color="primary" as="p">
-        Payment method
-      </Typography>
-      <div className="mt-1">
-        <Typography variant="body-s-regular" color="secondary" as="p">
-          Select how you&apos;ll settle the bill at the restaurant
-        </Typography>
+    <div className="flex flex-col">
+      <div className="flex flex-col px-6 pt-0">
+        <div className="flex gap-3 pt-[15px]">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <Typography variant="body-m-accent" color="primary" as="p">
+              Payment method
+            </Typography>
+            <Typography variant="body-s-regular" color="secondary" as="p">
+              Select how you&apos;ll settle the bill at the restaurant
+            </Typography>
+          </div>
+        </div>
+        <div className="mt-0 h-px w-full shrink-0 bg-separator" aria-hidden />
       </div>
 
-      <div className="mt-4">
+      <div className="px-6 pt-0">
         <RadioGroup
           name={groupName}
           value={value}
@@ -129,7 +117,7 @@ export function PaymentSelector({
             <div className="w-full border-b border-separator">
               <label
                 htmlFor={`${groupName}-dineout`}
-                className="flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4"
+                className="flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4 transition-colors hover:bg-active-neutral-secondary focus-within:bg-active-neutral-secondary"
               >
                 <span className="min-w-0 flex-1 text-start">
                   <Typography as="span" variant="body-m-regular" color="primary">
@@ -142,7 +130,7 @@ export function PaymentSelector({
             <div className="w-full">
               <label
                 htmlFor={`${groupName}-card`}
-                className="flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4"
+                className="flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4 transition-colors hover:bg-active-neutral-secondary focus-within:bg-active-neutral-secondary"
               >
                 <span className="min-w-0 flex-1 text-start">
                   <Typography as="span" variant="body-m-regular" color="primary">
@@ -156,32 +144,32 @@ export function PaymentSelector({
         </RadioGroup>
       </div>
 
-      <div
-        ref={bannerRef}
-        className="mt-4 mb-8 w-full [will-change:transform,opacity]"
-      >
-        {renderedMethod === "dineout" ? (
-          <div className="flex w-full gap-3 rounded-lg bg-action-secondary px-3 py-3">
+      <div className="min-h-0 px-6 pb-8 pt-0">
+        {renderedPromo === "dineout" ?
+          <div
+            ref={bannerRef}
+            className="flex min-h-[48px] w-full gap-2 rounded-xl bg-action-secondary px-3 py-3 [will-change:transform,opacity]"
+          >
             <CheckCircle
               size="md"
               className="size-6 shrink-0 text-action-primary"
               aria-hidden
             />
-            <div className="min-w-0 flex-1">{PromoWithBoldPercent(dineoutBannerText)}</div>
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5 py-0.5">
+              <Typography
+                as="p"
+                variant="body-s-accent"
+                color="primary"
+                inlineStyle={SEMIBOLD}
+              >
+                {DINEOUT_CLAIM_INLINE_PRIMARY}
+              </Typography>
+              <Typography as="p" variant="body-s-regular" color="primary">
+                {DINEOUT_CLAIM_INLINE_SECONDARY}
+              </Typography>
+            </div>
           </div>
-        ) : (
-          <div className="flex w-full gap-3 rounded-lg bg-danger-secondary px-3 py-3">
-            <Alert
-              size="md"
-              className="size-6 shrink-0 text-danger-primary"
-              aria-hidden
-            />
-            <Typography as="p" variant="body-s-regular" color="primary">
-              The restaurant offer applies. No additional DineOut rewards are
-              included with this payment option.
-            </Typography>
-          </div>
-        )}
+        : null}
       </div>
     </div>
   )

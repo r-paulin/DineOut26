@@ -1,6 +1,7 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
 import gsap from "gsap"
+import type { CSSProperties } from "react"
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { BillAmountOfferBadges } from "@/features/payBill/components/BillAmountScreen/BillAmountOfferBadges"
@@ -15,6 +16,8 @@ import {
   initialBillNumpadState,
   isBillAmountValidForContinue,
 } from "@/features/payBill/utils/billAmount"
+import { useCoarsePointer } from "@/shared/hooks/useCoarsePointer"
+import { useVisualViewportLayout } from "@/shared/hooks/useVisualViewportLayout"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
 const FONT_FEAT =
@@ -52,6 +55,9 @@ export function BillAmountScreen({
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const labelMotionRef = useRef<HTMLDivElement>(null)
   const errorColorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const coarse = useCoarsePointer()
+  const vvLayout = useVisualViewportLayout(coarse)
 
   const cents = billStateToCents(state)
   useAnimatedBillCents(state, amountRef, scaleWrapRef)
@@ -120,8 +126,29 @@ export function BillAmountScreen({
     runInvalidSubmitFeedback()
   }, [cents, onContinue, runInvalidSubmitFeedback, valid])
 
+  const rootStyle: CSSProperties | undefined =
+    coarse && vvLayout ?
+      {
+        position: "fixed",
+        left: 0,
+        right: 0,
+        width: "100%",
+        top: vvLayout.offsetTop,
+        height: vvLayout.height,
+        maxHeight: vvLayout.height,
+      }
+    : undefined
+
   return (
-    <div className="flex h-[var(--app-h)] max-h-[var(--app-h)] w-full min-h-0 flex-col bg-layer-floor-1">
+    <div
+      className={[
+        "flex w-full min-h-0 flex-col bg-layer-floor-1",
+        !(coarse && vvLayout) ? "h-[var(--app-h)] max-h-[var(--app-h)]" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={rootStyle}
+    >
       <header className="flex shrink-0 items-center gap-4 px-6 pt-[max(1rem,var(--safe-area-top))] pb-3">
         <button
           type="button"
@@ -197,7 +224,7 @@ export function BillAmountScreen({
             fullWidth
             aria-disabled={!valid}
             onClick={onContinueClick}
-            overrideClassName="!min-h-[68px] h-[68px] rounded-full"
+            overrideClassName="!min-h-14 h-14 rounded-full"
           >
             Continue
           </Button>

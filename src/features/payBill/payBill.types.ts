@@ -6,7 +6,6 @@ export type PayBillStep =
   | "pay"
   | "success"
   | "confirmation"
-  | "rating"
 
 export type PayBillSnackbarIntent = "tip-added" | "no-tip" | null
 
@@ -40,7 +39,7 @@ export interface PayBillFlowEntry {
   billAmountBadges?: PayBillAmountBadges
 }
 
-/** Stable id for rating + mock payment when paying without a claimed offer. */
+/** Stable offer id for mock payment when paying without a claimed offer. */
 export function payBillSyntheticOfferId(restaurantSlug: string): string {
   return `dineout-pay-${restaurantSlug}`
 }

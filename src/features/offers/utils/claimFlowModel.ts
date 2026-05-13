@@ -18,6 +18,7 @@ export function mapOfferCardToClaimModalOffer(
 ): ClaimOfferModalOffer {
   return {
     id: card.id,
+    title: card.title,
     restaurantName: card.restaurantName ?? "Restaurant",
     discountPercent: card.discountPercent,
     date: card.date,

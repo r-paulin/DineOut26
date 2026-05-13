@@ -73,7 +73,7 @@
   --nav-layout-offset: calc(
     var(--nav-height) + env(safe-area-inset-bottom, 0px)
   );
-  --search-stack-height: 8rem;
+  --search-stack-height: 8rem; /* HomeScreen measures SearchPanel and overrides with px */
   --layer-search-expanded: #eef0ef;
   --sheet-radius: 1rem;
   --radius-search-field: 0.75rem;

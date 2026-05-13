@@ -82,7 +82,7 @@ export function ReceiptAmountBlock({
           onFocus={(ev) => {
             window.setTimeout(() => ev.target.select(), 0)
           }}
-          className="absolute inset-0 z-[1] min-h-[72px] w-full cursor-text rounded-lg border-none bg-transparent p-0 text-left text-base leading-normal text-transparent outline-none [caret-color:transparent] focus-visible:ring-2 focus-visible:ring-action-primary"
+          className="absolute inset-0 z-[1] min-h-[72px] w-full cursor-text rounded-lg border-none bg-transparent p-0 text-left text-base leading-normal text-transparent outline-none ring-0 [caret-color:transparent] focus-visible:ring-0"
         />
         <span
           ref={scaleWrapRef}
