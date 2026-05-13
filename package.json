@@ -5,6 +5,7 @@
   "type": "module",
   "packageManager": "npm@10.9.2",
   "scripts": {
+    "pages:build": "npm ci && npm run build",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

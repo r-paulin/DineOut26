@@ -1,0 +1,17 @@
+Cloudflare Pages (Git) — dependency install
+
+Pages v3 often runs "bun install" before your build command, even when package-lock.json exists. Bun does not install this repo’s vendored @bolteu/* tarballs the same way npm does.
+
+Required in the Cloudflare dashboard for this project:
+
+1) Settings > Environment variables (Production and Preview as needed)
+   Name:  SKIP_DEPENDENCY_INSTALL
+   Value: 1
+
+2) Settings > Builds > Build configuration
+   Build command:  npm run pages:build
+   Build output:   dist
+
+After saving, redeploy. The log should skip the automatic bun install; npm ci runs inside pages:build.
+
+Confirm the deployment commit matches Git (log includes CF_PAGES_COMMIT_SHA). Nested "overrides" errors in the log mean an old package.json is still being built.

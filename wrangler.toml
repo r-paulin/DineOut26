@@ -1,7 +1,10 @@
-# Cloudflare Pages (Git): build command `npm ci && npm run build`, output `dist`.
-# Keep package-lock.json committed so the default install uses npm, not Bun.
-# If the build log still shows `bun install`, set SKIP_DEPENDENCY_INSTALL=1 in
-# Pages > Settings > Environment variables and use the same build command above.
+# Cloudflare Pages (Git): v3 may run `bun install` before your build command even
+# with package-lock.json. Bun fails on vendored @bolteu/* tarballs here.
+#
+# Required: Pages > Settings > Environment variables
+#   SKIP_DEPENDENCY_INSTALL = 1
+# Builds > Build command: npm run pages:build   (output directory: dist)
+# See cloudflare-pages-setup.txt in this repo.
 name = "dineout2026"
 compatibility_date = "2024-09-23"
 
@@ -9,4 +12,4 @@ compatibility_date = "2024-09-23"
 directory = "./dist"
 
 [build]
-command = "npm ci && npm run build"
+command = "npm run pages:build"
