@@ -450,7 +450,7 @@ export function DineOutPromoSheet({
                 fullWidth
                 onClick={() => onDismiss()}
               >
-                Got it
+                OK
               </Button>
             </div>
           </div>

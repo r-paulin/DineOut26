@@ -42,7 +42,7 @@ const Z_CONFIRM_SHEET_OVERLAY = 200
 const Z_CONFIRM_SHEET_CONTENT = 201
 
 /**
- * Figma PAY BILL / Paid: nav + checkmark, “Successfully paid” + strike + hero amount,
+ * Figma PAY BILL / Paid: nav + checkmark, “Bill paid” + strike + hero amount,
  * payment code card, receipt, Done → rating.
  */
 export function PaymentConfirmationScreen({
@@ -87,8 +87,13 @@ export function PaymentConfirmationScreen({
   }, [])
 
   return (
-    <div className="flex h-[var(--app-h)] max-h-[var(--app-h)] w-full min-h-0 flex-col overflow-hidden bg-layer-floor-1">
-      <header className="flex shrink-0 items-center gap-2.5 px-3.5 pb-3 pt-[max(1.5rem,var(--safe-area-top))] pr-16">
+    <div className="relative flex h-[var(--app-h)] max-h-[var(--app-h)] w-full min-h-0 flex-col overflow-hidden bg-layer-floor-1">
+      {/*
+        Same bar pattern as RatingScreen: close + flex title + 40px spacer so the title
+        stays optically centered; symmetric horizontal padding so the close control is not
+        flush to the screen edge.
+      */}
+      <header className="absolute left-0 right-0 top-0 z-10 flex items-center gap-2.5 bg-layer-floor-1 px-4 pb-3 pt-[max(1.5rem,var(--safe-area-top))]">
         <button
           type="button"
           aria-label="Close"
@@ -112,9 +117,16 @@ export function PaymentConfirmationScreen({
             {restaurantName}
           </Typography>
         </div>
+        <span className="size-10 shrink-0" aria-hidden />
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div
+        className="flex min-h-0 flex-1 flex-col"
+        style={{
+          paddingTop:
+            "calc(max(1.5rem, var(--safe-area-top, 0px)) + 2.5rem + 0.75rem)",
+        }}
+      >
         {/*
           Figma `15823:25243`: PageContent / Bill is flex-1 + scroll; payment code is `w-full`
           inside horizontal padding. Receipt + actions are shrink-0 siblings pinned under the
@@ -142,7 +154,7 @@ export function PaymentConfirmationScreen({
                 align="center"
                 inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
               >
-                Successfully paid
+                Bill paid
                 {showStrikeSubtotal ?
                   <>
                     {" "}
@@ -164,7 +176,7 @@ export function PaymentConfirmationScreen({
               </p>
             </div>
 
-            <div className="w-full rounded-xl bg-neutral-secondary px-6 py-3 text-center">
+            <div className="w-full rounded-[12px] bg-neutral-secondary px-6 py-3 text-center">
               <Typography variant="body-s-regular" color="secondary" as="p">
                 Payment code
               </Typography>
@@ -182,7 +194,7 @@ export function PaymentConfirmationScreen({
                 {paymentCode}
               </Typography>
               <Typography variant="body-s-regular" color="primary" as="p" paddingTop={1}>
-                Show this code to the waiter to confirm your payment
+                Show this code to staff to confirm payment
               </Typography>
             </div>
           </div>
@@ -197,7 +209,7 @@ export function PaymentConfirmationScreen({
             variant="bold"
           />
           {tip != null && tip > 0 ?
-            <ReceiptItem label="Tips" amount={formatEurMajor(tip)} variant="regular" />
+            <ReceiptItem label="Tip" amount={formatEurMajor(tip)} variant="regular" />
           : null}
           {d1 > 0 ?
             <ReceiptItem

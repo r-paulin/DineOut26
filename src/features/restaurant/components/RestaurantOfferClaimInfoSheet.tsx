@@ -36,7 +36,7 @@ const ROWS = [
   },
   {
     title: "One offer per visit",
-    subtitle: "Only one offer can be redeemed at a time per visit.",
+    subtitle: "Only one offer can be redeemed at a time per visit",
   },
 ] as const
 

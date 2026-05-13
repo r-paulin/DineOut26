@@ -120,7 +120,7 @@ export function TipScreen({
       <header className="flex shrink-0 items-center gap-4 px-6 pt-[max(1rem,var(--safe-area-top))] pb-3">
         <button
           type="button"
-          aria-label="Back"
+          aria-label="Go back"
           onClick={onBack}
           className="flex size-6 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
         >
@@ -203,7 +203,7 @@ export function TipScreen({
               fontFeatureSettings: FONT_FEAT,
             }}
           >
-            Tip your waiter
+            Tip restaurant staff
           </Typography>
           <Typography
             variant="body-m-regular"

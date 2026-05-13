@@ -18,6 +18,7 @@ import {
   mapOfferCardToClaimModalOffer,
 } from "@/features/offers"
 import { buildMapMarkersFromOffers, MapViewFab } from "@/features/map"
+import { getArrivalTimeSheetSlots } from "@/features/offers/utils/offerTimePicker"
 import { filterOffersByTimePreset } from "@/features/offers/utils/offerCampaign"
 import { offerWindowBaseDateFromSchedule } from "@/features/offers/utils/offerScheduleLocal"
 import {
@@ -137,6 +138,31 @@ export function HomeScreen() {
   const { portalRoot } = useDeviceShell()
   const snackbar = useSnackbar()
 
+  /** Full-screen overlays hide {@link BottomNav}; keep snackbars above sticky CTAs — `index.css`. */
+  useLayoutEffect(() => {
+    const el = document.documentElement
+    const overlayNoNav =
+      (searchOpen ||
+        sectionList != null ||
+        restaurantDetailSlug != null ||
+        claimedView != null) &&
+      payBillEntry == null
+    if (overlayNoNav) {
+      el.setAttribute("data-dineout-overlay-no-nav", "")
+    } else {
+      el.removeAttribute("data-dineout-overlay-no-nav")
+    }
+    return () => {
+      el.removeAttribute("data-dineout-overlay-no-nav")
+    }
+  }, [
+    searchOpen,
+    sectionList,
+    restaurantDetailSlug,
+    claimedView,
+    payBillEntry,
+  ])
+
   const baseRestaurantDetail = useMemo(
     () =>
       restaurantDetailSlug ?
@@ -205,7 +231,7 @@ export function HomeScreen() {
     const card = findOfferCardById(baseRestaurantDetail, id)
     if (!card) {
       snackbar.add({
-        description: "Could not find this offer. Try again.",
+        description: "Couldn't find this offer. Try again.",
         timeout: 4000,
       })
       return
@@ -225,9 +251,9 @@ export function HomeScreen() {
       new Date(),
       scheduleOpts,
     )
-    if (cfg.mode === "slots" && (!cfg.slots || cfg.slots.length === 0)) {
+    if (getArrivalTimeSheetSlots(cfg).length === 0) {
       snackbar.add({
-        description: "This offer is no longer available to claim.",
+        description: "This offer is no longer available to claim",
         timeout: 4000,
       })
       return
@@ -251,7 +277,7 @@ export function HomeScreen() {
       const card = findOfferCardById(baseRestaurantDetail, pendingClaimOffer.id)
       if (!card) {
         snackbar.add({
-          description: "Could not complete claim. Try again.",
+          description: "Couldn't complete claim. Try again.",
           timeout: 4000,
         })
         return
@@ -277,7 +303,7 @@ export function HomeScreen() {
       setPendingClaimOffer(null)
       snackbar.add({
         title: "Offer claimed",
-        description: "Open it when you arrive and show it to the waiter",
+        description: "Open it when you arrive and show it to staff",
         actions: [
           {
             label: "View offer",
@@ -342,7 +368,7 @@ export function HomeScreen() {
     closeRestaurantDetail()
     snackbar.add({
       title: "Thank you for your order with DineOut",
-      description: "We appreciate you choosing DineOut.",
+      description: "We appreciate you choosing DineOut",
       timeout: 4500,
     })
   }, [closeRestaurantDetail, snackbar])
@@ -351,7 +377,7 @@ export function HomeScreen() {
     closeRestaurantDetail()
     snackbar.add({
       title: "Thanks for your feedback",
-      description: "Your rating helps other diners.",
+      description: "Your rating helps other diners",
       timeout: 4000,
     })
   }, [closeRestaurantDetail, snackbar])
@@ -454,8 +480,6 @@ export function HomeScreen() {
       {searchOpen ? (
         <SearchFullscreen
           onClose={() => setSearchOpen(false)}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
           surface="flat"
           onRestaurantPress={openRestaurantDetail}
           {...filterBarProps}
@@ -465,8 +489,6 @@ export function HomeScreen() {
         <SectionOffersListScreen
           onClose={closeSectionList}
           title={sectionList.title}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
           surface="flat"
           onRestaurantPress={openRestaurantDetail}
           {...filterBarProps}
@@ -484,8 +506,6 @@ export function HomeScreen() {
             setClaimedView(null)
             closeRestaurantDetail()
           }}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
           onOfferAvailablePress={(id) => setOfferClaimModalOfferId(id)}
           onOfferClaimedPress={(id) => {
             const c = claimedByOfferId[id]

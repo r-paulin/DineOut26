@@ -21,6 +21,7 @@ import { useSnackbar } from "@/shared/snackbar"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 import { toTelHref } from "@/shared/utils/telHref"
+import { BoltDineOutWordmark } from "./BoltDineOutWordmark"
 import { useOfferCountdown } from "./useOfferCountdown"
 
 const EASE_ENTER = CustomEase.create("claimedEnter", "M0,0,C0.32,0.72,0,1,1,1")
@@ -142,7 +143,7 @@ export function ClaimedOfferPage({
           <IconButton
             variant="secondary"
             icon={<ArrowLeft size="md" aria-hidden />}
-            aria-label="Back"
+            aria-label="Go back"
             overrideClassName="size-10 shrink-0 rounded-full border-0 bg-static-key-light p-0 shadow-[0_0.125rem_0.1875rem_rgba(0,0,0,0.16)] hover:bg-active-neutral-secondary"
             size="sm"
             onClick={handleAnimatedClose}
@@ -150,7 +151,8 @@ export function ClaimedOfferPage({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-layer-floor-1 pb-36">
-          <div className="px-6 pb-3 pt-2 text-center">
+          <div className="flex flex-col items-center gap-3 px-6 pb-3 pt-2 text-center">
+            <BoltDineOutWordmark />
             <Typography
               variant="heading-m-accent"
               color="primary"
@@ -160,7 +162,7 @@ export function ClaimedOfferPage({
             >
               {restaurant.name}
             </Typography>
-            <div className="mt-4 rounded-[12px] bg-neutral-secondary px-6 py-5">
+            <div className="w-full rounded-[12px] bg-neutral-secondary px-6 py-5">
               <Typography
                 variant="body-s-regular"
                 color="secondary"
@@ -190,7 +192,7 @@ export function ClaimedOfferPage({
                   <div className="flex shrink-0 items-center text-action-primary">
                     <Calendar size="lg" className={ROW_ICON_CLASS} aria-hidden />
                   </div>
-                  <div className="flex min-w-0 flex-1 flex-col gap-0 overflow-hidden">
+                  <div className="flex min-w-0 flex-1 flex-col gap-0">
                     <Typography variant="body-m-regular" color="primary" as="span">
                       {`${claim.arrivalDate} · ${claim.arrivalTime}`}
                     </Typography>
@@ -199,7 +201,7 @@ export function ClaimedOfferPage({
                       color={expired ? "danger-primary" : "secondary"}
                       as="span"
                     >
-                      {expired ? "Offer expired" : `Offer window closes in ${countdownLive}`}
+                      {expired ? "Offer ended" : `Offer window closes in ${countdownLive}`}
                     </Typography>
                   </div>
                 </div>
@@ -304,12 +306,12 @@ export function ClaimedOfferPage({
                 className="border-none bg-transparent p-0 text-left text-action-primary underline underline-offset-2"
                 onClick={() => {
                   snackbar.add({
-                    description: "Terms and conditions will be available in a future release.",
+                    description: "Terms and conditions will be available in a future release",
                     timeout: 4000,
                   })
                 }}
               >
-                Terms and Conditions
+                Terms and conditions
               </button>{" "}
               may apply.
             </Typography>
@@ -328,8 +330,8 @@ export function ClaimedOfferPage({
                 snackbar.add({
                   description:
                     claim.paymentMethod === "dineout" ?
-                      "Bolt DineOut payment will be available in a future release."
-                    : "In-venue card or cash payment instructions will be available in a future release.",
+                      "Bolt DineOut payment will be available in a future release"
+                    : "In-venue card or cash payment instructions will be available in a future release",
                   timeout: 4000,
                 })
               }}
@@ -361,7 +363,7 @@ export function ClaimedOfferPage({
                 Cancel offer
               </Button>
               <Button fullWidth variant="secondary" onClick={() => setCancelDialogOpen(false)}>
-                Back
+                Go back
               </Button>
             </div>
           </div>

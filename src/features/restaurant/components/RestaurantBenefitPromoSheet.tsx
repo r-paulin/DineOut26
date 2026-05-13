@@ -36,7 +36,7 @@ const LIST_ICONS: ReactElement[] = [
 const DINEOUT40_COPY = {
   title: "40% off your first 2 orders",
   intro:
-    "Extra savings that apply automatically when you pay with Bolt DineOut.",
+    "Extra savings that apply automatically when you pay with Bolt DineOut",
   rows: [
     {
       title: "Pay your bill through the app",
@@ -46,12 +46,12 @@ const DINEOUT40_COPY = {
     {
       title: "Stacks with other offers",
       subtitle:
-        "Combine this discount with other eligible DineOut offers you've claimed.",
+        "Combine this discount with other eligible DineOut offers you've claimed",
     },
     {
       title: "Applied to the restaurant's bill",
       subtitle:
-        "The discount is calculated on the total bill provided by the restaurant.",
+        "The discount is calculated on the total bill provided by the restaurant",
     },
     {
       title: "No claiming required",
@@ -63,24 +63,24 @@ const DINEOUT40_COPY = {
 const VISA10_COPY = {
   title: "Get 10€ off when you pay with Visa",
   intro:
-    "Use a Visa card when paying in the Bolt DineOut and get 10€ off your restaurant bill.",
+    "Use a Visa card when paying in the Bolt DineOut and get 10€ off your restaurant bill",
   rows: [
     {
       title: "Pay your bill through the app",
-      subtitle: "Select Visa as your payment method when settling the bill.",
+      subtitle: "Select Visa as your payment method when settling the bill",
     },
     {
       title: "Stacks with other offers",
       subtitle:
-        "Combine this discount with other eligible DineOut offers you've claimed.",
+        "Combine this discount with other eligible DineOut offers you've claimed",
     },
     {
       title: "Applied to the restaurant's bill",
-      subtitle: "The 10€ discount is deducted from your total before payment.",
+      subtitle: "The 10€ discount is deducted from your total before payment",
     },
     {
       title: "No claiming required",
-      subtitle: "Just pay with Visa — no code needed.",
+      subtitle: "Just pay with Visa — no code needed",
     },
   ],
 } as const
@@ -210,7 +210,7 @@ export function RestaurantBenefitPromoSheet({
               fullWidth
               onClick={() => onOpenChange(false)}
             >
-              Got it
+              OK
             </Button>
           </div>
         </Drawer.Content>

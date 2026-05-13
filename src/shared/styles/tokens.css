@@ -61,7 +61,7 @@
 
   /* === DineOut-specific layout, no Kalep equivalent === */
   --shell-width: 100%;
-  --nav-height: 5.125rem;
+  --nav-height: 4rem;
   --search-stack-height: 8rem;
   --layer-search-expanded: #eef0ef;
   --sheet-radius: 1rem;

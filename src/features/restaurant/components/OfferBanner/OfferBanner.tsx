@@ -142,12 +142,12 @@ function OfferBannerVisible({
             {state === "claimed" && claim ? (
               <OfferBannerClaimedLines claim={claim} />
             ) : state === "claimed" ? (
-              <Typography variant="body-xs-regular" color="secondary" as="p">
+              <Typography variant="body-s-regular" color="secondary" as="p">
                 {metaLine}
               </Typography>
             ) : (
               <Typography
-                variant="body-xs-regular"
+                variant="body-s-regular"
                 color={state === "expired" ? "secondary" : "primary"}
                 as="p"
               >
@@ -158,21 +158,23 @@ function OfferBannerVisible({
         </div>
         <div className="flex shrink-0 flex-col items-center justify-center self-stretch">
           <div
-            className={`relative h-[132px] w-[100px] shrink-0 overflow-hidden rounded-[10px] ${state === "claimed" ? "bg-action-secondary" : "bg-neutral-secondary"}`}
+            className={`relative h-[132px] w-[100px] shrink-0 rounded-[10px] ${state === "claimed" ? "bg-action-secondary" : "bg-neutral-secondary"}`}
           >
-            <img
-              src={offer.restaurantImage}
-              alt=""
-              className={`absolute inset-0 size-full max-w-none rounded-[10px] object-cover ${state === "expired" ? "opacity-[0.72] saturate-[0.85]" : ""}`}
+            <div className="absolute inset-0 overflow-hidden rounded-[10px]">
+              <img
+                src={offer.restaurantImage}
+                alt=""
+                className={`absolute inset-0 size-full max-w-none rounded-[10px] object-cover ${state === "expired" ? "opacity-[0.72] saturate-[0.85]" : ""}`}
+              />
+            </div>
+            <DiscountTagOverlay
+              displayDiscount={displayDiscount}
+              tagFill={tagFill}
+              labelColor={discountLabelColor}
             />
           </div>
         </div>
       </div>
-      <DiscountTagOverlay
-        displayDiscount={displayDiscount}
-        tagFill={tagFill}
-        labelColor={discountLabelColor}
-      />
     </button>
   )
 }
@@ -276,12 +278,7 @@ function DiscountTagOverlay({
 }) {
   return (
     <div
-      className="pointer-events-none absolute z-[2]"
-      style={{
-        left: "58.84%",
-        right: "21.64%",
-        top: "80px",
-      }}
+      className="pointer-events-none absolute left-0 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2"
       aria-hidden
     >
       <OfferBannerDiscountSticker

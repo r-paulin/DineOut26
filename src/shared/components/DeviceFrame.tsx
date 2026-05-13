@@ -66,7 +66,7 @@ const btnPowerStyle: CSSProperties = {
  * Renders the app inside an iPhone-style bezel on viewports >= 768px and as a
  * full-bleed pass-through below that breakpoint. The screen element uses
  * `transform: translateZ(0)` so it becomes the containing block for any
- * `position: fixed` descendant (BottomNav, BottomSheet, SearchPanel, etc.) —
+ * `position: fixed` descendant (BottomNav on home, BottomSheet, SearchPanel, etc.) —
  * do not remove that transform without re-checking those overlays.
  *
  * `DeviceShellOutlet` exposes `portalRoot` so modal layers (e.g. Kalep BottomSheet)

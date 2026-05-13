@@ -75,5 +75,5 @@ export {
   findOfferByRestaurantId,
   restaurantKey,
 } from "./utils/findOfferByRestaurantId"
-export { getTimePickerConfig } from "./utils/offerTimePicker"
+export { getTimePickerConfig, getArrivalTimeSheetSlots } from "./utils/offerTimePicker"
 export type { GetTimePickerConfigOptions } from "./utils/offerTimePicker"

@@ -143,8 +143,6 @@ export interface RestaurantDetailModel {
 export interface RestaurantDetailScreenProps {
   model: RestaurantDetailModel
   onBack: () => void
-  activeTab: string
-  onTabChange: (id: string) => void
   /**
    * Dev / future: deep-link handlers. Pass `null` to disable the paired in-app
    * UI (sheet/modal) from opening; `undefined` keeps prototype behavior (sheet opens).

@@ -8,13 +8,13 @@ export interface PaySuccessScreenProps {
   onAdvance: () => void
 }
 
-const ADVANCE_MS = 900
+const ADVANCE_MS = 1200
 
 const FONT_FEAT =
   "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
 /**
- * Figma PAY BILL / Success: dark brand canvas, 3D checkmark PNG with GSAP entrance; auto-advances.
+ * Figma PAY BILL / Success: #0C2C1C canvas, 3D checkmark PNG with GSAP entrance; auto-advances after 1.2s.
  */
 export function PaySuccessScreen({ onAdvance }: PaySuccessScreenProps) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -52,7 +52,7 @@ export function PaySuccessScreen({ onAdvance }: PaySuccessScreenProps) {
   return (
     <div
       ref={rootRef}
-      className="flex h-[var(--app-h)] max-h-[var(--app-h)] w-full flex-col bg-special-brand"
+      className="flex h-[var(--app-h)] max-h-[var(--app-h)] w-full flex-col bg-[#0C2C1C]"
     >
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-6 py-10">
         <div className="relative size-[180px] shrink-0">
@@ -76,7 +76,7 @@ export function PaySuccessScreen({ onAdvance }: PaySuccessScreenProps) {
             fontVariationSettings: "'wght' var(--font-weight-semibold)",
           }}
         >
-          Payment successful
+          Bill paid
         </Typography>
       </div>
     </div>

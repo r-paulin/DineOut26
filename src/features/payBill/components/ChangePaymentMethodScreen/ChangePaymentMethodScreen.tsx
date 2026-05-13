@@ -64,7 +64,7 @@ export function ChangePaymentMethodScreen({
         <div className="flex w-full items-start justify-between gap-3">
           <button
             type="button"
-            aria-label="Back"
+            aria-label="Go back"
             onClick={onBack}
             className="flex min-h-[24px] min-w-[64px] shrink-0 items-center justify-start rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
           >
@@ -164,6 +164,7 @@ export function ChangePaymentMethodScreen({
           <div className="w-full border-b border-separator">
             <button
               type="button"
+              data-no-press
               onClick={onAddCard}
               className="flex w-full cursor-pointer items-start gap-3 border-none bg-transparent pb-[15px] pt-4 text-start outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
             >

@@ -2,14 +2,17 @@ import { Button, Typography } from "@bolteu/kalep-react"
 import { useSnackbar } from "@/shared/snackbar"
 import ChevronDown from "@bolteu/kalep-react-icons/dist/ChevronDown"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
-import { useCallback, useId, useMemo, useRef, useState } from "react"
+import { useCallback, useId, useMemo, useState } from "react"
 import { Drawer } from "vaul"
 import type { ClaimData, ClaimOfferModalOffer, PaymentMethod } from "@/features/offers/offers.types"
 import type {
   GetTimePickerConfigOptions,
   OfferTimeConfig,
 } from "@/features/offers/utils/offerTimePicker"
-import { getTimePickerConfig } from "@/features/offers/utils/offerTimePicker"
+import {
+  getArrivalTimeSheetSlots,
+  getTimePickerConfig,
+} from "@/features/offers/utils/offerTimePicker"
 import {
   Z_CLAIM_MODAL_CONTENT,
   Z_CLAIM_MODAL_OVERLAY,
@@ -73,8 +76,6 @@ export function ClaimOfferModal({
     if (offer.offerScheduleDate == null) return undefined
     return { offerScheduleDate: offer.offerScheduleDate }
   }, [offer.offerScheduleDate])
-  const timeInputRef = useRef<HTMLInputElement>(null)
-
   const [arrivalTime, setArrivalTime] = useState(() =>
     getTimePickerConfig(timeCfgBase, new Date(), schedulePickerOpts).initialValue,
   )
@@ -97,34 +98,25 @@ export function ClaimOfferModal({
 
   const handleArrivalRowPress = useCallback(() => {
     const cfg = getTimePickerConfig(timeCfgBase, new Date(), schedulePickerOpts)
-    if (cfg.mode === "slots") {
-      if (!cfg.slots?.length) {
-        onClose()
-        return
-      }
-      setSlotList(cfg.slots)
-      const next =
-        cfg.slots.includes(arrivalTime) ?
-          arrivalTime
-        : (cfg.slots[0] ?? cfg.initialValue)
-      setArrivalTime(next)
-      setTimeSheetOpen(true)
+    const sheetSlots = getArrivalTimeSheetSlots(cfg)
+    if (!sheetSlots.length) {
+      onClose()
       return
     }
-    const el = timeInputRef.current
-    if (!el) return
-    try {
-      el.showPicker?.()
-    } catch {
-      el.click()
-    }
+    setSlotList(sheetSlots)
+    const next =
+      sheetSlots.includes(arrivalTime) ?
+        arrivalTime
+      : (sheetSlots[0] ?? cfg.initialValue)
+    setArrivalTime(next)
+    setTimeSheetOpen(true)
   }, [arrivalTime, timeCfgBase, schedulePickerOpts, onClose])
 
   const handleClaim = useCallback(() => {
     const cfg = getTimePickerConfig(timeCfgBase, new Date(), schedulePickerOpts)
-    if (cfg.mode === "slots" && (!cfg.slots || cfg.slots.length === 0)) {
+    if (getArrivalTimeSheetSlots(cfg).length === 0) {
       snackbar.add({
-        description: "This offer is no longer available.",
+        description: "This offer is no longer available",
         timeout: 4000,
       })
       return
@@ -143,12 +135,6 @@ export function ClaimOfferModal({
     timeCfgBase,
     schedulePickerOpts,
   ])
-
-  const nativeCfg = getTimePickerConfig(
-    timeCfgBase,
-    new Date(),
-    schedulePickerOpts,
-  )
 
   return (
     <Drawer.Root
@@ -197,7 +183,7 @@ export function ClaimOfferModal({
               className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain"
             >
               <Drawer.Description className="sr-only">
-                Claim this walk-in offer at {offer.restaurantName}.
+                Claim this walk-in offer at {offer.restaurantName}
               </Drawer.Description>
 
               <div className="flex flex-col gap-2 bg-layer-floor-1 px-6 pb-4 pt-6 pe-14">
@@ -220,26 +206,10 @@ export function ClaimOfferModal({
                 </Typography>
               </div>
 
-              <input
-                ref={timeInputRef}
-                type="time"
-                className="pointer-events-none fixed left-0 top-0 size-0 opacity-0"
-                tabIndex={-1}
-                aria-hidden
-                step={60}
-                min={
-                  nativeCfg.mode === "native" ? nativeCfg.minTime : undefined
-                }
-                max={
-                  nativeCfg.mode === "native" ? nativeCfg.maxTime : undefined
-                }
-                value={arrivalTime}
-                onChange={(e) => setArrivalTime(e.target.value)}
-              />
-
               <div className="flex flex-col">
                 <button
                   type="button"
+                  data-no-press
                   className="flex w-full flex-row items-center justify-between border-0 bg-transparent px-6 py-4 text-left"
                   onClick={handleArrivalRowPress}
                 >
@@ -262,6 +232,7 @@ export function ClaimOfferModal({
 
                 <button
                   type="button"
+                  data-no-press
                   className="flex w-full flex-row items-center justify-between border-0 bg-transparent px-6 py-4 text-left"
                   onClick={() => setGuestSheetOpen(true)}
                 >
@@ -299,12 +270,12 @@ export function ClaimOfferModal({
                     onClick={() => {
                       snackbar.add({
                         description:
-                          "Terms and conditions will be available in a future release.",
+                          "Terms and conditions will be available in a future release",
                         timeout: 4000,
                       })
                     }}
                   >
-                    Terms and Conditions
+                    Terms and conditions
                   </button>{" "}
                   may apply.
                 </Typography>

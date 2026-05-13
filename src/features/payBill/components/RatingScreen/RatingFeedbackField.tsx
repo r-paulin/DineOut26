@@ -29,8 +29,8 @@ export function RatingFeedbackField({
         maxLength={1000}
         rows={1}
         spellCheck={false}
-        aria-label="Leave a feedback"
-        placeholder="Leave a feedback"
+        aria-label="Share feedback"
+        placeholder="Share feedback"
         className={[
           "m-0 max-h-[168px] min-h-[56px] w-full resize-none border-none bg-transparent",
           "px-4 py-[15px] text-start text-body-m-regular text-primary outline-none",

@@ -3,9 +3,11 @@ import {
   filterFutureSlots,
   formatMinutesToHHMM,
   generateQuarterHourSlots,
+  getArrivalTimeSheetSlots,
   getTimePickerConfig,
   isOfferUnclaimableByClock,
   parseHHMMToMinutes,
+  quarterHourSlotsBetween,
 } from "./offerTimePicker"
 
 const baseOffer = {
@@ -30,6 +32,69 @@ describe("generateQuarterHourSlots", () => {
       "11:45",
       "12:00",
     ])
+  })
+})
+
+describe("quarterHourSlotsBetween", () => {
+  it("returns quarter steps from first slot on/after min through max", () => {
+    expect(quarterHourSlotsBetween("12:00", "13:00")).toEqual([
+      "12:00",
+      "12:15",
+      "12:30",
+      "12:45",
+      "13:00",
+    ])
+  })
+
+  it("when min is not on the grid, starts at the next quarter hour", () => {
+    expect(quarterHourSlotsBetween("14:23", "15:30")).toEqual([
+      "14:30",
+      "14:45",
+      "15:00",
+      "15:15",
+      "15:30",
+    ])
+  })
+
+  it("returns a single clamped time when the window is narrower than 15 minutes", () => {
+    expect(quarterHourSlotsBetween("14:23", "14:25")).toEqual(["14:23"])
+  })
+
+  it("returns empty when min > max", () => {
+    expect(quarterHourSlotsBetween("15:00", "14:00")).toEqual([])
+  })
+})
+
+describe("getArrivalTimeSheetSlots", () => {
+  it("uses config slots in slots mode", () => {
+    const cfg = getTimePickerConfig(
+      {
+        ...baseOffer,
+        isAllDay: false,
+        offerStart: "11:00",
+        offerEnd: "12:00",
+      },
+      at(9, 0),
+    )
+    expect(getArrivalTimeSheetSlots(cfg)).toEqual(
+      generateQuarterHourSlots("11:00", "12:00"),
+    )
+  })
+
+  it("uses quarter-hour window in native mode", () => {
+    const cfg = getTimePickerConfig(
+      {
+        ...baseOffer,
+        isAllDay: true,
+        offerStart: "00:00",
+        offerEnd: "23:59",
+      },
+      at(15, 30),
+    )
+    expect(cfg.mode).toBe("native")
+    expect(getArrivalTimeSheetSlots(cfg)).toEqual(
+      quarterHourSlotsBetween("15:30", "23:00"),
+    )
   })
 })
 

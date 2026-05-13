@@ -107,6 +107,7 @@ export function ListItem({
     return (
       <a
         href={href}
+        data-no-press
         className={mergedClass}
         aria-label={ariaLabel}
         {...(external
@@ -126,6 +127,7 @@ export function ListItem({
     return (
       <button
         type="button"
+        data-no-press
         className={mergedClass}
         aria-label={ariaLabel}
         onClick={onPress}

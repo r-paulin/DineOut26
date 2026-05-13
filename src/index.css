@@ -21,12 +21,24 @@
  * DineOut snackbar toaster (Sonner): fixed above bottom nav, **12px** horizontal
  * inset from the shell edges, full-width toast cards. Sonner’s default `<li>`
  * motion is disabled so entry/exit can be driven by GSAP on the panel.
+ *
+ * Context flags on `<html>` (set from React):
+ * - Default: `bottom` clears the tab bar (`--nav-height`).
+ * - `data-dineout-overlay-no-nav`: search / section list / detail / claimed offer — no tab bar,
+ *   lift so toasts clear typical sticky footers.
+ * - `data-dineout-pay-screen`: {@link PayBillFlow} — tallest checkout + slide-to-pay strip.
  */
 .__kalep section.dineout-snackbar-toaster[data-sonner-toaster][data-y-position="bottom"] {
   bottom: calc(var(--nav-height) + 0.75rem) !important;
 }
 
-/* Pay screen (no tab bar): lift toasts above the sticky slide-to-pay footer + safe area. */
+html[data-dineout-overlay-no-nav]
+  .__kalep
+  section.dineout-snackbar-toaster[data-sonner-toaster][data-y-position="bottom"] {
+  bottom: calc(8.5rem + max(0.75rem, var(--safe-area-bottom, 0px))) !important;
+}
+
+/* Pay stack: lift above slide-to-pay + totals + safe area (see PayBillFlow mount effect). */
 html[data-dineout-pay-screen]
   .__kalep
   section.dineout-snackbar-toaster[data-sonner-toaster][data-y-position="bottom"] {
@@ -147,7 +159,8 @@ img.iconChip {
  * release reverts immediately (same feel as the existing `OfferBanner`).
  *
  * Opt-outs:
- *   - `[data-no-press]` — explicit opt-out for nav tabs / drag handles / etc.
+ *   - `[data-no-press]` — list rows, nav tabs, drag handles, etc. (shared
+ *     `ListItem`, search result cards, claim time/guest pickers).
  *   - `[role="tab"]`, `[role="tablist"] [role="tab"]` — tab strips own their
  *     own selection indicator and shouldn't bounce.
  *   - `[disabled]` / `[aria-disabled="true"]` — disabled controls don't react.

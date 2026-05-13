@@ -91,6 +91,7 @@ export function GuestPickerSheet({
                   >
                     <button
                       type="button"
+                      data-no-press
                       className="flex w-full cursor-pointer flex-row items-center justify-between border-none bg-transparent px-6 py-4 text-left"
                       onClick={() => {
                         onChange(n)

@@ -69,7 +69,7 @@ export function RestaurantDetailHeader({
           type="button"
           className={`${NAV_BTN} text-static-key-dark`}
           onClick={onBack}
-          aria-label="Back"
+          aria-label="Go back"
         >
           <ArrowLeft size="md" className="text-static-key-dark" />
         </button>

@@ -1,5 +1,4 @@
-import ReCenter from "@bolteu/kalep-react-icons/dist/ReCenter"
-import { IconButton } from "@bolteu/kalep-react"
+import MyLocationIos from "@bolteu/kalep-react-icons/dist/MyLocationIos"
 
 export interface MapRecenterFabProps {
   visible: boolean
@@ -8,7 +7,8 @@ export interface MapRecenterFabProps {
 }
 
 /**
- * Figma `[Eater] Icon-Nav-Button` — white circular FAB, ReCenter icon, light shadow.
+ * Figma Consumer Dine-out `15838:19194` — `[Eater] Icon-Nav-Button`: 48×48 white
+ * circle, {@link MyLocationIos}, elevation `0px 2px 3px rgba(0,0,0,0.16)`.
  */
 export function MapRecenterFab({
   visible,
@@ -22,15 +22,15 @@ export function MapRecenterFab({
       className="pointer-events-auto fixed right-4 z-[40]"
       style={{ bottom: `${bottomPx}px` }}
     >
-      <IconButton
-        variant="secondary"
-        shape="round"
-        size="md"
-        aria-label="Re-center map on your location"
+      <button
+        type="button"
+        data-no-press
+        aria-label="Re-centre map on your location"
         onClick={onClick}
-        overrideClassName="border border-separator bg-layer-floor-1 shadow-[0_0.125rem_0.375rem_rgba(0,0,0,0.16)]"
-        icon={<ReCenter size="md" className="text-primary" />}
-      />
+        className="relative flex size-12 cursor-pointer items-center justify-center rounded-full border-none bg-layer-floor-1 p-0 text-primary outline-none drop-shadow-[0px_2px_3px_rgba(0,0,0,0.16)] transition-colors hover:bg-active-neutral-secondary focus-visible:ring-2 focus-visible:ring-action-primary"
+      >
+        <MyLocationIos size="md" className="text-primary" aria-hidden />
+      </button>
     </div>
   )
 }

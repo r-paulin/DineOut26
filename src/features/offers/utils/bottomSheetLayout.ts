@@ -28,7 +28,7 @@ export function readCssLengthPx(property: string, fallback: number): number {
 }
 
 export function readNavHeightPx(): number {
-  return readCssLengthPx("--nav-height", 82)
+  return readCssLengthPx("--nav-height", 64)
 }
 
 export function readSearchStackPx(): number {

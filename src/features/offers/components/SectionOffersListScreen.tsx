@@ -1,6 +1,5 @@
 import { Typography } from "@bolteu/kalep-react"
 import Search from "@bolteu/kalep-react-icons/dist/Search"
-import { BottomNav } from "@/shared/components/BottomNav"
 import { MapViewFab } from "@/features/map"
 import type { SearchFullscreenProps } from "@/features/search/search.types"
 import { FilterChipRow } from "@/features/search/components/FilterChipRow"
@@ -24,8 +23,6 @@ function preventBlurMouseDown(e: React.MouseEvent) {
 export function SectionOffersListScreen({
   title,
   onClose,
-  activeTab,
-  onTabChange,
   surface,
   filterState,
   getChipLabel,
@@ -61,7 +58,7 @@ export function SectionOffersListScreen({
             onMouseDown={preventBlurMouseDown}
             onClick={onClose}
           >
-            Cancel
+            Close
           </button>
         </div>
       </div>
@@ -85,7 +82,9 @@ export function SectionOffersListScreen({
       </div>
       <div
         className="flex-1 min-h-0 overflow-y-auto px-6 bg-layer-floor-1"
-        style={{ paddingBottom: "calc(var(--nav-height) + 1rem)" }}
+        style={{
+          paddingBottom: "calc(max(1rem, var(--safe-area-bottom, 0px)) + 1rem)",
+        }}
       >
         <div className="w-full min-w-0 pt-3">
           <SearchResultsStatic
@@ -96,7 +95,6 @@ export function SectionOffersListScreen({
         </div>
       </div>
       <MapViewFab onClick={onClose} zClassName="z-[125]" />
-      <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
     </div>
   )
 }

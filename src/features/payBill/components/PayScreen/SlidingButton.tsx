@@ -311,9 +311,10 @@ export function SlidingButton({
     [disabled, isLoading, maxTravel, setIconCrossfade, setLabelFade],
   )
 
+  /** Matches Kalep active / action-secondary: hsla(143, 100%, 28%, 0.22) — avoids washed-out white while loading. */
   const trackMuted =
     disabled || isLoading ?
-      "bg-action-primary/25"
+      "bg-[hsla(143,100%,28%,0.22)]"
     : "bg-action-primary"
 
   return (

@@ -13,3 +13,10 @@ export const Z_CLAIM_MODAL_CONTENT = 1601
 /** Nested pickers opened from claim modal (above claim modal chrome). */
 export const Z_CLAIM_NESTED_SHEET_OVERLAY = 1700
 export const Z_CLAIM_NESTED_SHEET_CONTENT = 1701
+
+/**
+ * Standalone arrival-time sheet above discover/search fullscreen (`z-[120]`) and
+ * the map FAB (`z-[125]`).
+ */
+export const Z_SEARCH_OPEN_AT_OVERLAY = 126
+export const Z_SEARCH_OPEN_AT_CONTENT = 127

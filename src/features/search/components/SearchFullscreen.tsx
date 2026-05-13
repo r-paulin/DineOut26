@@ -1,6 +1,5 @@
 import { List, Typography } from "@bolteu/kalep-react"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
-import { BottomNav } from "@/shared/components/BottomNav"
 import { POPULAR_CATEGORIES } from "@/features/search/data/searchCategories"
 import type { SearchFullscreenProps } from "@/features/search/search.types"
 import { useSearchFullscreen } from "@/features/search/hooks/useSearchFullscreen"
@@ -26,8 +25,6 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
   } = useSearchFullscreen({ onClose: props.onClose })
 
   const {
-    activeTab,
-    onTabChange,
     surface,
     filterState,
     getChipLabel,
@@ -43,8 +40,8 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
 
   return (
     <div
-      className="fixed left-0 right-0 bottom-0 top-[var(--modal-top-gap)] z-[120] flex flex-col w-full max-w-[var(--shell-width)] mx-auto bg-layer-floor-1 box-border"
-      style={{ minHeight: "calc(var(--app-h) - var(--modal-top-gap))" }}
+      className="fixed inset-0 z-[120] flex flex-col w-full max-w-[var(--shell-width)] mx-auto bg-layer-floor-1 box-border"
+      style={{ minHeight: "var(--app-h)" }}
       role="dialog"
       aria-modal="true"
       aria-label="Search"
@@ -80,7 +77,9 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
       </div>
       <div
         className="flex-1 min-h-0 overflow-y-auto px-6 bg-layer-floor-1"
-        style={{ paddingBottom: "calc(var(--nav-height) + 1rem)" }}
+        style={{
+          paddingBottom: "calc(max(1rem, var(--safe-area-bottom, 0px)) + 1rem)",
+        }}
       >
         {showBrowse && recents.length > 0 ? (
           <section className="mb-5 pt-1" aria-label="Recent searches">
@@ -159,7 +158,6 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
           </section>
         ) : null}
       </div>
-      <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
     </div>
   )
 }

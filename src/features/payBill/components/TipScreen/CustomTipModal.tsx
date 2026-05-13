@@ -1,22 +1,19 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import { Drawer } from "vaul"
-import { useCallback, useEffect, useRef, useState } from "react"
-import { Numpad } from "@/features/payBill/components/BillAmountScreen/Numpad"
+import type { CSSProperties } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { BillAmountEntryBlock } from "@/features/payBill/components/shared/BillAmountEntryBlock"
 import { useAnimatedBillCents } from "@/features/payBill/hooks/useAnimatedBillCents"
 import {
-  applyNumpadKey,
   billNumpadStateFromCents,
   billStateFromFormattedInput,
   billStateToCents,
   formatBillDisplayEur,
   initialBillNumpadState,
   isBillAmountValidForContinue,
-  type NumpadKey,
-  numpadKeyFromKeyboardEvent,
 } from "@/features/payBill/utils/billAmount"
-import { useCoarsePointer } from "@/shared/hooks/useCoarsePointer"
+import { useVisualViewportKeyboardBottomInset } from "@/shared/hooks/useVisualViewportKeyboardBottomInset"
 import {
   SHEET_CLOSE_ICON_ON_SURFACE_CLASS,
   SHEET_CLOSE_ON_SURFACE_NESTED_CLASS,
@@ -34,9 +31,13 @@ const FONT_FEAT =
   "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
 /**
- * Bottom sheet: custom tip — same amount field as {@link BillAmountScreen}; footer Save + touch numpad.
- * `modal={false}` so Radix does not mount the overlay `RemoveScroll` path (avoids body scroll-lock / layout
- * shift on the tip screen). A plain scrim restores dimming; other app drawers stay modal.
+ * Bottom sheet: custom tip — native decimal keyboard via transparent input (same
+ * pattern as {@link BillAmountScreen}). No in-app numpad so mobile only shows the
+ * system keyboard. Sheet `bottom` tracks {@link useVisualViewportKeyboardBottomInset}
+ * so Save stays above the keyboard.
+ *
+ * `modal={false}` so Radix does not mount the overlay `RemoveScroll` path (avoids body
+ * scroll-lock / layout shift on the tip screen). A plain scrim restores dimming.
  */
 export function CustomTipModal({
   open,
@@ -45,12 +46,12 @@ export function CustomTipModal({
   container,
   onSave,
 }: CustomTipModalProps) {
-  const coarse = useCoarsePointer()
   const [state, setState] = useState(initialBillNumpadState)
   const amountRef = useRef<HTMLSpanElement>(null)
   const scaleWrapRef = useRef<HTMLSpanElement>(null)
-  const shellRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
+  const keyboardBottomPx = useVisualViewportKeyboardBottomInset()
+  const sheetLifted = keyboardBottomPx > 48
 
   const cents = billStateToCents(state)
   useAnimatedBillCents(state, amountRef, scaleWrapRef)
@@ -61,30 +62,25 @@ export function CustomTipModal({
     setState(billNumpadStateFromCents(initialCents))
   }, [open, initialCents])
 
-  useEffect(() => {
-    if (!open || coarse) return
+  /** Native keyboard after portal paint (`autoFocus` alone is unreliable in drawers). */
+  useLayoutEffect(() => {
+    if (!open) return
     const id = window.requestAnimationFrame(() => {
-      shellRef.current?.focus()
+      hiddenInputRef.current?.focus({ preventScroll: true })
     })
     return () => window.cancelAnimationFrame(id)
-  }, [open, coarse])
-
-  const onShellKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (document.activeElement !== shellRef.current) return
-      const k = numpadKeyFromKeyboardEvent(e)
-      if (k == null) return
-      e.preventDefault()
-      setState((s) => applyNumpadKey(s, k))
-    },
-    [],
-  )
-
-  const onKey = useCallback((key: NumpadKey) => {
-    setState((prev) => applyNumpadKey(prev, key))
-  }, [])
+  }, [open])
 
   const valid = isBillAmountValidForContinue(state)
+
+  const drawerStyle: CSSProperties = {
+    bottom: keyboardBottomPx,
+    ...(sheetLifted ?
+      {
+        maxHeight: `min(90dvh, calc(100svh - ${keyboardBottomPx}px - 0.75rem))`,
+      }
+    : {}),
+  }
 
   return (
     <Drawer.Root
@@ -105,14 +101,15 @@ export function CustomTipModal({
         />
         <Drawer.Content
           className={[
-            "fixed inset-x-0 bottom-0 z-[201] flex max-h-[min(90dvh,100svh)] min-h-[70dvh]",
-            "flex-col rounded-t-[16px] bg-layer-floor-1 px-0 pb-0 outline-none",
+            "fixed inset-x-0 z-[201] flex flex-col rounded-t-[16px] bg-layer-floor-1 px-0 pb-0 outline-none",
             "overflow-hidden shadow-[0_0.375rem_0.75rem_rgba(0,0,0,0.24)]",
+            sheetLifted ? "min-h-0" : "min-h-[70dvh] max-h-[min(90dvh,100svh)]",
           ].join(" ")}
+          style={drawerStyle}
         >
           <Drawer.Title className="sr-only">Add a custom tip</Drawer.Title>
           <Drawer.Description className="sr-only">
-            Enter a custom tip amount using the numpad or keyboard, then save.
+            Enter a custom tip amount with the keyboard, then save.
           </Drawer.Description>
 
           <div className="relative shrink-0 px-6 pb-3 pt-6">
@@ -141,27 +138,17 @@ export function CustomTipModal({
             </div>
           </div>
 
-          <div
-            ref={shellRef}
-            tabIndex={coarse ? -1 : 0}
-            onKeyDown={coarse ? undefined : onShellKeyDown}
-            className={[
-              "flex min-h-0 flex-1 flex-col overflow-y-auto outline-none",
-              coarse ? ""
-              : "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-action-primary",
-            ].join(" ")}
-          >
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto outline-none">
             <BillAmountEntryBlock
               label="Tip amount"
-              coarse={coarse}
+              coarse
               display={display}
               amountRef={amountRef}
               scaleWrapRef={scaleWrapRef}
               hiddenInputRef={hiddenInputRef}
               sectionClassName="relative flex flex-col items-center px-6 pt-[clamp(1.5rem,8vh,96px)] pb-4"
               onTapAmount={() => {
-                if (coarse) hiddenInputRef.current?.focus()
-                else shellRef.current?.focus()
+                hiddenInputRef.current?.focus()
               }}
               onHiddenInputChange={(raw) => {
                 setState(billStateFromFormattedInput(raw))
@@ -171,7 +158,7 @@ export function CustomTipModal({
             />
           </div>
 
-          <div className="flex shrink-0 flex-col gap-3 px-6 pt-2 pb-[max(1.5rem,var(--safe-area-bottom))]">
+          <div className="flex shrink-0 flex-col px-6 pt-2 pb-[max(1.5rem,var(--safe-area-bottom))]">
             <Button
               variant="primary"
               fullWidth
@@ -184,7 +171,6 @@ export function CustomTipModal({
             >
               Save
             </Button>
-            {coarse ? <Numpad onKey={onKey} /> : null}
           </div>
         </Drawer.Content>
       </Drawer.Portal>

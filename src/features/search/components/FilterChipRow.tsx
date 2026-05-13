@@ -1,6 +1,12 @@
-import { useCallback, useRef } from "react"
+import { useCallback, useState } from "react"
+import { TimeSlotSheet } from "@/features/offers/components/ClaimOfferModal/TimeSlotSheet"
+import { generateQuarterHourSlots } from "@/features/offers/utils/offerTimePicker"
 import type { FilterKey, FilterState } from "@/features/search/filters.types"
+import { useDeviceShell } from "@/shared/context/useDeviceShell"
 import { FilterChip } from "./FilterChip"
+
+/** Full-day quarter-hour grid for “open at” when browsing a non-today date. */
+const OPEN_AT_TIME_SLOTS = generateQuarterHourSlots("00:00", "23:45")
 
 export interface FilterChipRowProps {
   surface: "floating" | "flat"
@@ -29,8 +35,8 @@ const ROW_ORDER: FilterKey[] = [
 ]
 
 /**
- * Horizontally scrolling filter chips for discover + search. Hosts a hidden
- * native `time` input when date ≠ Today so "Any time" / "At …" uses the OS picker.
+ * Horizontally scrolling filter chips for discover + search. Non-today “open at”
+ * uses the same quarter-hour bottom sheet as the claim flow (no native time input).
  */
 export function FilterChipRow({
   surface,
@@ -44,16 +50,11 @@ export function FilterChipRow({
   clearOpenNowFilter,
   setOpenAtTime,
 }: FilterChipRowProps) {
-  const timeInputRef = useRef<HTMLInputElement>(null)
+  const { portalRoot } = useDeviceShell()
+  const [openAtSheetOpen, setOpenAtSheetOpen] = useState(false)
 
-  const openNativeTimePicker = useCallback(() => {
-    const el = timeInputRef.current
-    if (!el) return
-    if (typeof el.showPicker === "function") {
-      void el.showPicker()
-    } else {
-      el.click()
-    }
+  const openOpenAtSheet = useCallback(() => {
+    setOpenAtSheetOpen(true)
   }, [])
 
   const onOpenNowClick = useCallback(() => {
@@ -65,11 +66,11 @@ export function FilterChipRow({
       toggleOpenNowToday()
       return
     }
-    openNativeTimePicker()
+    openOpenAtSheet()
   }, [
     clearOpenNowFilter,
     filterState.date,
-    openNativeTimePicker,
+    openOpenAtSheet,
     openNowTrailing,
     toggleOpenNowToday,
   ])
@@ -90,18 +91,6 @@ export function FilterChipRow({
 
   return (
     <div className="contents">
-      <input
-        ref={timeInputRef}
-        type="time"
-        aria-hidden
-        tabIndex={-1}
-        className="fixed w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0"
-        value={filterState.openAt ?? ""}
-        onChange={(e) => {
-          const v = e.target.value
-          setOpenAtTime(v === "" ? null : v)
-        }}
-      />
       <div
         className="flex flex-row items-center gap-2 w-max min-h-9 me-6 flex-none"
         role="list"
@@ -146,6 +135,16 @@ export function FilterChipRow({
           ),
         )}
       </div>
+      <TimeSlotSheet
+        variant="standalone"
+        listTitle="Arrival time"
+        isOpen={openAtSheetOpen}
+        onOpenChange={setOpenAtSheetOpen}
+        slots={OPEN_AT_TIME_SLOTS}
+        value={filterState.openAt ?? ""}
+        onChange={(t) => setOpenAtTime(t)}
+        container={portalRoot ?? undefined}
+      />
     </div>
   )
 }

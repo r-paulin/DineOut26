@@ -13,6 +13,7 @@ import {
   initialBillNumpadState,
   isBillAmountValidForContinue,
 } from "@/features/payBill/utils/billAmount"
+import { useVisualViewportKeyboardBottomInset } from "@/shared/hooks/useVisualViewportKeyboardBottomInset"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
 const FONT_FEAT =
@@ -47,6 +48,8 @@ export function BillAmountScreen({
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const labelMotionRef = useRef<HTMLDivElement>(null)
   const errorColorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const keyboardBottomPx = useVisualViewportKeyboardBottomInset()
+  const keyboardLikelyOpen = keyboardBottomPx > 48
 
   const cents = billStateToCents(state)
   useAnimatedBillCents(state, amountRef, scaleWrapRef)
@@ -120,7 +123,7 @@ export function BillAmountScreen({
       <header className="flex shrink-0 items-center gap-4 px-6 pt-[max(1rem,var(--safe-area-top))] pb-3">
         <button
           type="button"
-          aria-label="Back"
+          aria-label="Go back"
           onClick={onDismiss}
           className="flex size-6 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
         >
@@ -143,8 +146,18 @@ export function BillAmountScreen({
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <div className="flex flex-col items-center pt-[220px]">
+      <div
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+        style={{
+          paddingBottom:
+            "calc(6.25rem + max(0.75rem, var(--safe-area-bottom, 0px)))",
+        }}
+      >
+        <div
+          className={`flex flex-col items-center transition-[padding-top] duration-200 ease-out ${
+            keyboardLikelyOpen ? "pt-16 sm:pt-20" : "pt-[220px]"
+          }`}
+        >
           <ReceiptAmountBlock
             label={labelText}
             labelColor={labelColor}
@@ -167,7 +180,13 @@ export function BillAmountScreen({
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col bg-layer-floor-1 pb-[max(0.75rem,var(--safe-area-bottom))]">
+      <div
+        className="fixed left-1/2 z-30 flex w-full max-w-[var(--shell-width)] -translate-x-1/2 flex-col bg-layer-floor-1 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]"
+        style={{
+          bottom: keyboardBottomPx,
+          paddingBottom: "max(0.75rem, var(--safe-area-bottom, 0px))",
+        }}
+      >
         <div className="px-6 pb-3 pt-2">
           <Button
             type="button"

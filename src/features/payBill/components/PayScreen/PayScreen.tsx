@@ -209,7 +209,7 @@ export function PayScreen({
       snackbar.add({
         dismissible: false,
         title: "Tip added",
-        description: "Your tip will go to the restaurant staff.",
+        description: "Tip goes to restaurant staff",
         timeout: 3500,
       })
     } else if (kind === "no-tip") {
@@ -225,7 +225,7 @@ export function PayScreen({
     snackbar.add({
       dismissible: true,
       title: "Payment method updated",
-      description: "You can go back and continue with payment.",
+      description: "You can go back and continue with payment",
       timeout: 4000,
     })
   }, [snackbar])
@@ -302,7 +302,7 @@ export function PayScreen({
       <header className="flex shrink-0 items-center gap-4 px-6 pt-[max(1rem,var(--safe-area-top))] pb-3">
         <button
           type="button"
-          aria-label="Back"
+          aria-label="Go back"
           onClick={onBack}
           className="flex size-6 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
         >
@@ -335,7 +335,7 @@ export function PayScreen({
           />
           {tip != null && tip > 0 ?
             <ReceiptItem
-              label="Tips"
+              label="Tip"
               amount={formatEurMajor(tip)}
               variant="regular"
             />

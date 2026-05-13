@@ -4,16 +4,20 @@ function pad2(n: number): string {
   return String(n).padStart(2, "0")
 }
 
-/** Hours + minutes only (no seconds), e.g. `1h 05m` or `59m`. */
+/** Hours + minutes + seconds, e.g. `1h 05m 09s`, `59m 00s`, or `45s`. */
 export function formatCountdownHoursMinutes(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000))
   const totalMinutes = Math.floor(s / 60)
+  const sec = s % 60
   const h = Math.floor(totalMinutes / 60)
   const m = totalMinutes % 60
   if (h > 0) {
-    return `${h}h ${pad2(m)}m`
+    return `${h}h ${pad2(m)}m ${pad2(sec)}s`
   }
-  return `${m}m`
+  if (m > 0) {
+    return `${m}m ${pad2(sec)}s`
+  }
+  return `${sec}s`
 }
 
 /** Total minutes and seconds, e.g. `59:20` — updates every second when used as live text. */
@@ -25,7 +29,7 @@ export function formatCountdownMmSs(ms: number): string {
 }
 
 /**
- * Banner / claimed-offer row: `1h 05m` when ≥60 minutes left, otherwise `M:SS`
+ * Banner / claimed-offer row: `1h 05m 12s` when ≥60 minutes left, otherwise `M:SS`
  * so the timer ticks every second in the final hour.
  */
 export function formatOfferCountdownLive(ms: number): string {
@@ -47,7 +51,7 @@ function compute(closeIso: string): {
   if (!Number.isFinite(end)) {
     return {
       expired: true,
-      countdownHm: "0m",
+      countdownHm: "0s",
       countdownMmSs: "0:00",
       countdownLive: "0:00",
     }
@@ -70,7 +74,7 @@ export function useOfferCountdown(closeIso: string): {
   expired: boolean
   countdownHm: string
   countdownMmSs: string
-  /** Prefer in UI: ticks every second when under 1h remaining. */
+  /** Prefer in UI: includes seconds; under 1h remaining uses `M:SS`. */
   countdownLive: string
 } {
   const [state, setState] = useState(() => compute(closeIso))

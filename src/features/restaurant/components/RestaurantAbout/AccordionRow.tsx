@@ -45,6 +45,7 @@ export function AccordionRow({
       <div className="px-6">
         <button
           type="button"
+          data-no-press
           className={`flex h-14 w-full shrink-0 cursor-pointer items-center justify-between border-0 border-solid border-separator bg-transparent text-left ${
             expanded ? "border-b-0" : "border-b"
           }`}

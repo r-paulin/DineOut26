@@ -107,7 +107,7 @@ export function BottomSheetScrollContent({
       {homeClaimedOfferCard ? (
         <section
           className="flex flex-col gap-2 -mx-1 pb-2"
-          aria-label="Your claimed offer"
+          aria-label="Claimed offer"
         >
           <OfferBanner
             offer={homeClaimedOfferCard}

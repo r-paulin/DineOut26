@@ -11,3 +11,8 @@ export function restaurantImageUrl(filename: string): string {
 export function modalImageUrl(filename: string): string {
   return `/images/modal-img/${encodeURIComponent(filename)}`
 }
+
+/** Raster assets for {@link ClaimedOfferPage} (Figma `15753:12904`). */
+export function claimedOfferImageUrl(filename: string): string {
+  return `/images/claimed-offer/${encodeURIComponent(filename)}`
+}

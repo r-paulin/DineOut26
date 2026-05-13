@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom"
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useLayoutEffect } from "react"
 import { BillAmountScreen } from "@/features/payBill/components/BillAmountScreen/BillAmountScreen"
 import { PayScreen } from "@/features/payBill/components/PayScreen/PayScreen"
 import { PaySuccessScreen } from "@/features/payBill/components/PaySuccessScreen/PaySuccessScreen"
@@ -50,6 +50,15 @@ export function PayBillFlow({
   useEffect(() => {
     open(entry)
   }, [entry, open])
+
+  /** Lifts snackbars above pay footers — see `index.css` `[data-dineout-pay-screen]`. */
+  useLayoutEffect(() => {
+    const el = document.documentElement
+    el.setAttribute("data-dineout-pay-screen", "")
+    return () => {
+      el.removeAttribute("data-dineout-pay-screen")
+    }
+  }, [])
 
   const dismissAll = useCallback(() => {
     reset()

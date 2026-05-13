@@ -18,7 +18,5 @@ export interface FilterChipBarProps {
 
 export interface SearchFullscreenProps extends FilterChipBarProps {
   onClose: () => void
-  activeTab: string
-  onTabChange: (id: string) => void
   onRestaurantPress?: (slug: string) => void
 }

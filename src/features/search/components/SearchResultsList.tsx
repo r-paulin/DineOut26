@@ -40,6 +40,7 @@ export function SearchResultsList({
           <Fragment key={row.id}>
             <button
               type="button"
+              data-no-press
               className="flex flex-col gap-3 w-full border-none bg-transparent p-0 text-left cursor-pointer"
               onClick={() => onRestaurantPress?.(row.restaurantSlug)}
             >

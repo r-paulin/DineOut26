@@ -107,6 +107,36 @@ export function generateQuarterHourSlots(start: string, end: string): string[] {
 }
 
 /**
+ * Quarter-hour choices within `[minTime, maxTime]` (inclusive), for bottom-sheet
+ * pickers replacing native `type="time"`. When the window is narrower than one
+ * 15-minute step, returns a single `HH:MM` clamped to `minTime` (same inclusive
+ * window as the old native control).
+ */
+export function quarterHourSlotsBetween(minTime: string, maxTime: string): string[] {
+  const minM = parseHHMMToMinutes(minTime)
+  const maxM = parseHHMMToMinutes(maxTime)
+  if (minM == null || maxM == null || minM > maxM) return []
+
+  let cur = Math.ceil(minM / 15) * 15
+  if (cur > maxM) {
+    return [formatMinutesToHHMM(Math.min(minM, maxM))]
+  }
+
+  const out: string[] = []
+  while (cur <= maxM) {
+    out.push(formatMinutesToHHMM(cur))
+    cur += 15
+  }
+  return out
+}
+
+/** Options shown in the claim / search arrival-time bottom sheet for a resolved config. */
+export function getArrivalTimeSheetSlots(cfg: TimePickerConfig): string[] {
+  if (cfg.mode === "slots") return cfg.slots ?? []
+  return quarterHourSlotsBetween(cfg.minTime, cfg.maxTime)
+}
+
+/**
  * Slots strictly after `nowMinutes` (same-day clock): removes slot if slot ≤ now.
  */
 export function filterFutureSlots(slots: string[], now: Date): string[] {

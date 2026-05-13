@@ -101,7 +101,7 @@ export function RestaurantAbout({
 
   return (
     <section className="flex w-full flex-col bg-layer-floor-1">
-      <div className="flex w-full min-w-0 flex-col gap-0.5 px-6 py-3">
+      <div className="flex w-full min-w-0 flex-col gap-0.5 px-4 py-3">
         <div className="min-w-0 max-w-full" title={restaurant.name}>
           <Typography
             variant="heading-m-accent"
@@ -121,7 +121,7 @@ export function RestaurantAbout({
         </div>
       </div>
 
-      <div className="min-w-0 px-6 pb-3">
+      <div className="min-w-0 px-4 pb-3">
         <RestaurantGallery
           images={restaurant.images}
           onSelectIndex={openGalleryAt}
@@ -205,7 +205,7 @@ export function RestaurantAbout({
       />
 
       {showDisclaimer ? (
-        <footer className="flex flex-col gap-2 bg-layer-floor-0-grouped px-6 pt-6 pb-[max(0.75rem,var(--safe-area-bottom))]">
+        <footer className="flex flex-col gap-2 bg-layer-floor-0-grouped px-6 pt-6 pb-[32px]">
           <Typography variant="body-s-accent" color="secondary" as="h3">
             Notices and Disclaimers
           </Typography>

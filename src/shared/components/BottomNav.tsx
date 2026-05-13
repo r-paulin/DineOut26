@@ -64,12 +64,6 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           )
         })}
       </div>
-      <div className="h-[2.125rem] flex items-end justify-center pb-2">
-        <div
-          className="w-[8.375rem] h-[0.3125rem] rounded-full bg-[var(--color-content-primary)] opacity-35"
-          aria-hidden
-        />
-      </div>
     </nav>
   )
 }

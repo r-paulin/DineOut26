@@ -31,7 +31,7 @@ export function generateClaimPin(): string {
  * Instant when the walk-in offer stops being valid on `baseDate` (local): the
  * earlier of venue close and offer end (`HH:MM` on that calendar day). Used
  * for “Offer ends in …” countdowns on the claimed banner and claimed-offer
- * screen — **not** a post-arrival grace period.
+ * screen (`Hh Mm Ss` or `M:SS` under one hour) — **not** a post-arrival grace period.
  */
 export function computeOfferWindowCloseIso(args: {
   /** Base calendar date for the offer (local). */

@@ -130,14 +130,14 @@ export function SearchInput({
       {showCancel ? (
         <button
           type="button"
-          className="ffeature shrink-0 px-1 py-2 border-none bg-transparent text-sm leading-5 -tracking-[0.00375rem] text-primary cursor-pointer hover:opacity-85"
+          className="shrink-0 px-1 py-2 border-none bg-transparent text-sm leading-5 -tracking-[0.00375rem] text-primary cursor-pointer hover:opacity-85"
           onMouseDown={preventBlurMouseDown}
           onClick={() => {
             inputRef.current?.blur()
             onCancel?.()
           }}
         >
-          Cancel
+          Close
         </button>
       ) : null}
     </div>

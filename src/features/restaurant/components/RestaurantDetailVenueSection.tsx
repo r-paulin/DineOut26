@@ -105,7 +105,7 @@ export function RestaurantDetailVenueSection({
         <li className="m-0 p-0">
           <ListItem
             icon={<Time size="lg" className={ROW_ICON_CLASS} aria-hidden />}
-            label="Open hours"
+            label="Opening hours"
             value={openHoursSummary}
             interactive={Boolean(onOpenHours)}
             onPress={onOpenHours}
