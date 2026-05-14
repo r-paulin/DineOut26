@@ -48,20 +48,16 @@ export function PaymentConfirmationScreen({
 }: PaymentConfirmationScreenProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
-  const clusterRef = useRef<HTMLDivElement>(null)
   const imgWrapRef = useRef<HTMLDivElement>(null)
-  const titleLargeWrapRef = useRef<HTMLDivElement>(null)
-  const titleSmallWrapRef = useRef<HTMLDivElement>(null)
+  const titleWrapRef = useRef<HTMLDivElement>(null)
 
   const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
 
   const { phase } = usePaymentConfirmationReveal({
     rootRef,
     sheetRef,
-    clusterRef,
     imgWrapRef,
-    titleLargeWrapRef,
-    titleSmallWrapRef,
+    titleWrapRef,
   })
 
   const { discountAddPercent: d2 } = effectivePayDiscountPercents(offer)
@@ -70,8 +66,8 @@ export function PaymentConfirmationScreen({
 
   const heroLayout =
     phase === "celebration" ?
-      "flex flex-1 flex-col items-center justify-center px-6"
-    : "flex shrink-0 flex-col items-center px-6 pb-3 pt-10"
+      "flex flex-1 basis-0 min-h-0 flex-col items-center justify-center px-6"
+    : "flex flex-1 basis-0 min-h-0 flex-col items-center justify-center px-6 pt-10 pb-[min(72vh,calc(var(--app-h)*0.72))]"
 
   const imgBoxClass =
     phase === "revealed" ? "relative size-[72px] shrink-0" : "relative size-[180px] shrink-0"
@@ -89,7 +85,6 @@ export function PaymentConfirmationScreen({
       <div className="relative flex min-h-0 flex-1 flex-col">
         <div className={`${heroLayout} min-h-0`}>
           <div
-            ref={clusterRef}
             className={
               phase === "celebration" ?
                 "flex flex-col items-center gap-6"
@@ -108,16 +103,11 @@ export function PaymentConfirmationScreen({
             </div>
 
             {phase === "celebration" ?
-              <div className="relative w-full max-w-md text-center">
-                <div ref={titleLargeWrapRef}>
-                  <PaymentSuccessTitle variant="large" />
-                </div>
-                <div
-                  ref={titleSmallWrapRef}
-                  className="pointer-events-none absolute inset-x-0 top-0"
-                >
-                  <PaymentSuccessTitle variant="small" />
-                </div>
+              <div
+                ref={titleWrapRef}
+                className="w-full max-w-md text-center [transform:translateZ(0)]"
+              >
+                <PaymentSuccessTitle variant="large" />
               </div>
             : <div className="w-full max-w-md text-center">
                 <PaymentSuccessTitle variant="small" />

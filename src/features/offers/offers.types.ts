@@ -86,7 +86,7 @@ export interface ClaimedOffer {
   /** Cashback line on Pay screen (prototype EUR). */
   cashbackAmount?: number
   /**
-   * Tip step preset chips: integer **percentages** (e.g. 10, 15, 20), not EUR.
+   * Tip step preset chips: integer **percentages** (e.g. 5, 10, 15, 20), not EUR.
    * Chip amounts are `receiptTotalEur * percent / 100` at pay time.
    */
   tipPresetAmounts?: number[]

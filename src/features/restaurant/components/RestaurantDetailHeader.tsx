@@ -64,7 +64,7 @@ export function RestaurantDetailHeader({
         style={{ background: HERO_GRAD }}
         aria-hidden
       />
-      <div className="sticky top-0 z-[2] flex w-full shrink-0 items-start justify-between px-4 pt-6">
+      <div className="sticky top-0 z-[2] flex w-full shrink-0 items-center gap-2 px-6 pt-[max(1.5rem,var(--safe-area-top))]">
         <button
           type="button"
           className={`${NAV_BTN} text-static-key-dark`}
@@ -78,7 +78,7 @@ export function RestaurantDetailHeader({
           style={{ opacity: titleOpacity }}
         >
           <Typography
-            variant="body-m-accent"
+            variant="heading-m-accent"
             color="primary-inverted"
             as="span"
             noWrap
@@ -86,14 +86,16 @@ export function RestaurantDetailHeader({
             {name}
           </Typography>
         </div>
-        <button
-          type="button"
-          className={`${NAV_BTN} text-static-key-dark`}
-          onClick={onShare}
-          aria-label="Share"
-        >
-          <ShareIosOutlined size="md" className="text-static-key-dark" />
-        </button>
+        {onShare ?
+          <button
+            type="button"
+            className={`${NAV_BTN} text-static-key-dark`}
+            onClick={onShare}
+            aria-label="Share"
+          >
+            <ShareIosOutlined size="md" className="text-static-key-dark" />
+          </button>
+        : <span className="size-10 shrink-0" aria-hidden />}
       </div>
       <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center px-6 py-6">
         <div className="mb-3 h-16 w-16 shrink-0 overflow-hidden rounded-[12px] border border-white/20 bg-neutral-secondary shadow-md">
@@ -127,34 +129,33 @@ export function RestaurantDetailHeader({
           </h1>
           <button
             type="button"
-            className="flex max-w-full cursor-pointer items-center gap-1 rounded-full border-none bg-transparent px-1 py-0.5 text-left"
+            className="inline-flex max-w-full cursor-pointer flex-wrap items-center justify-center gap-0 rounded-full border-none bg-special-scrim py-1 pl-2 pr-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
             onClick={() => {
               onOpenAbout?.()
             }}
             aria-label="About this restaurant"
           >
-            <span className="flex min-w-0 items-center gap-2">
-              <span className="min-w-0 text-sm font-medium text-static-key-light">
-                {isOpen ? "Open" : "Closed"}
-              </span>
-              {isOpen ? (
-                <>
-                  <span
-                    className="mx-0.5 inline-block h-1 w-1 shrink-0 self-center rounded-full bg-[rgba(255,255,255,0.55)]"
-                    aria-hidden
-                  />
-                  <span className="min-w-0 text-sm text-static-key-light">
-                    Closes {closesAt}
-                  </span>
-                </>
-              ) : null}
-            </span>
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[99px] bg-black/25 backdrop-blur-sm"
+            <Typography variant="body-s-regular" color="primary-inverted" as="span">
+              {isOpen ? "Open " : "Closed"}
+            </Typography>
+            {isOpen ?
+              <>
+                <span
+                  className="mx-0.5 text-primary-inverted opacity-64"
+                  aria-hidden
+                >
+                  ·
+                </span>
+                <Typography variant="body-s-regular" color="primary-inverted" as="span">
+                  Closes {closesAt}
+                </Typography>
+              </>
+            : null}
+            <ChevronRight
+              size="sm"
+              className="ml-0.5 shrink-0 text-primary-inverted"
               aria-hidden
-            >
-              <ChevronRight size="sm" className="text-static-key-light" />
-            </span>
+            />
           </button>
         </div>
       </div>

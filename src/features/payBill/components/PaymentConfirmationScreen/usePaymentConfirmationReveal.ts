@@ -5,18 +5,17 @@ import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
 export type PaymentConfirmationPhase = "celebration" | "revealed"
 
-const ENTRANCE_S = 0.55
-const HOLD_AFTER_ENTRANCE_S = 1.45
-const SHEET_IN_S = 0.62
-const HERO_MORPH_S = 0.55
+const ENTRANCE_S = 1.05
+/** Pause after hero settles before the summary sheet moves. */
+const HOLD_BEFORE_SHEET_S = 0.55
+const SHEET_IN_S = 0.78
+const HERO_MORPH_S = 0.58
 
 export interface UsePaymentConfirmationRevealArgs {
   rootRef: RefObject<HTMLElement | null>
   sheetRef: RefObject<HTMLElement | null>
-  clusterRef: RefObject<HTMLElement | null>
   imgWrapRef: RefObject<HTMLElement | null>
-  titleLargeWrapRef: RefObject<HTMLElement | null>
-  titleSmallWrapRef: RefObject<HTMLElement | null>
+  titleWrapRef: RefObject<HTMLElement | null>
 }
 
 export interface UsePaymentConfirmationRevealResult {
@@ -24,42 +23,31 @@ export interface UsePaymentConfirmationRevealResult {
 }
 
 /**
- * Figma 15767 → 15823: entrance on the hero, 2s beat, then sheet slides up while the
- * checkmark scales 180→72 and the title crossfades to Heading XS.
+ * Figma 15767 → 15823: hero (check + title) eases into place slowly, short beat, then the
+ * white sheet slides up with ease-out; compact morph runs after the sheet is in view.
  */
 export function usePaymentConfirmationReveal({
   rootRef,
   sheetRef,
-  clusterRef,
   imgWrapRef,
-  titleLargeWrapRef,
-  titleSmallWrapRef,
+  titleWrapRef,
 }: UsePaymentConfirmationRevealArgs): UsePaymentConfirmationRevealResult {
   const [phase, setPhase] = useState<PaymentConfirmationPhase>("celebration")
 
   useLayoutEffect(() => {
     const root = rootRef.current
     const sheet = sheetRef.current
-    const cluster = clusterRef.current
     const imgWrap = imgWrapRef.current
-    const titleLargeWrap = titleLargeWrapRef.current
-    const titleSmallWrap = titleSmallWrapRef.current
-    if (
-      !root ||
-      !sheet ||
-      !cluster ||
-      !imgWrap ||
-      !titleLargeWrap ||
-      !titleSmallWrap
-    ) {
+    const titleWrap = titleWrapRef.current
+    if (!root || !sheet || !imgWrap || !titleWrap) {
       return
     }
 
     if (prefersReducedMotion()) {
+      gsap.set(root, { autoAlpha: 1 })
       gsap.set(sheet, { yPercent: 0 })
       gsap.set(imgWrap, { scale: 1, opacity: 1 })
-      gsap.set(titleLargeWrap, { autoAlpha: 0 })
-      gsap.set(titleSmallWrap, { autoAlpha: 1 })
+      gsap.set(titleWrap, { autoAlpha: 1, scale: 1 })
       queueMicrotask(() => {
         setPhase("revealed")
       })
@@ -67,15 +55,16 @@ export function usePaymentConfirmationReveal({
     }
 
     gsap.set(sheet, { yPercent: 100 })
-    gsap.set(titleSmallWrap, { autoAlpha: 0 })
+    gsap.set(root, { opacity: 0 })
+    gsap.set(titleWrap, { autoAlpha: 0, scale: 1, y: 40 })
+    gsap.set(imgWrap, { scale: 0.88, opacity: 0, y: 44 })
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         onComplete: () => {
-          gsap.set(cluster, { clearProps: "transform" })
-          gsap.set(imgWrap, { clearProps: "transform" })
-          gsap.set(titleLargeWrap, { clearProps: "autoAlpha,opacity,visibility" })
-          gsap.set(titleSmallWrap, { clearProps: "autoAlpha,opacity,visibility" })
+          gsap.set(root, { clearProps: "opacity" })
+          gsap.set(imgWrap, { clearProps: "transform,opacity" })
+          gsap.set(titleWrap, { clearProps: "transform,autoAlpha,opacity,visibility" })
           queueMicrotask(() => {
             setPhase("revealed")
           })
@@ -83,21 +72,40 @@ export function usePaymentConfirmationReveal({
       })
 
       tl.fromTo(
+        root,
+        { opacity: 0 },
+        { opacity: 1, duration: ENTRANCE_S, ease: "power2.out" },
+        0,
+      )
+      tl.fromTo(
         imgWrap,
-        { scale: 0.72, opacity: 0 },
+        { scale: 0.88, opacity: 0, y: 44 },
         {
           scale: 1,
           opacity: 1,
+          y: 0,
           duration: ENTRANCE_S,
-          ease: "back.out(1.25)",
+          ease: "power2.out",
         },
+        0,
       )
-      tl.to({}, { duration: HOLD_AFTER_ENTRANCE_S })
-      tl.to(
-        sheet,
-        { yPercent: 0, duration: SHEET_IN_S, ease: "power3.out" },
-        "<0.08",
+      tl.fromTo(
+        titleWrap,
+        { autoAlpha: 0, y: 36 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: ENTRANCE_S * 0.92,
+          ease: "power2.out",
+        },
+        0.08,
       )
+      tl.to({}, { duration: HOLD_BEFORE_SHEET_S })
+      tl.to(sheet, {
+        yPercent: 0,
+        duration: SHEET_IN_S,
+        ease: "power2.out",
+      })
       tl.to(
         imgWrap,
         {
@@ -106,28 +114,24 @@ export function usePaymentConfirmationReveal({
           duration: HERO_MORPH_S,
           ease: "power2.out",
         },
-        "<",
+        ">",
       )
       tl.to(
-        cluster,
-        { y: -88, duration: HERO_MORPH_S, ease: "power2.inOut" },
+        titleWrap,
+        {
+          scale: 0.4,
+          transformOrigin: "50% 50%",
+          duration: HERO_MORPH_S,
+          ease: "power2.out",
+        },
         "<",
       )
-      tl.to(titleLargeWrap, { autoAlpha: 0, duration: 0.22 }, "<0.12")
-      tl.to(titleSmallWrap, { autoAlpha: 1, duration: 0.28 }, "<0.1")
     }, root)
 
     return () => {
       ctx.revert()
     }
-  }, [
-    rootRef,
-    sheetRef,
-    clusterRef,
-    imgWrapRef,
-    titleLargeWrapRef,
-    titleSmallWrapRef,
-  ])
+  }, [rootRef, sheetRef, imgWrapRef, titleWrapRef])
 
   return { phase }
 }

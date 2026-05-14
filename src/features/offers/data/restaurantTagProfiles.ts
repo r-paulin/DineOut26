@@ -1,9 +1,12 @@
 /**
  * Canonical venue tag lines + positioning copy for prototype restaurants.
- * Keyed by `restaurantSlug` (map / offers / search).
+ * Dynamic reads use merged catalog (admin overrides).
  */
 
+import { getMergedRestaurantCatalogEntry } from "@/features/restaurants/restaurantCatalogRuntime"
+import { RESTAURANTS_BY_SLUG } from "@/features/restaurants/restaurants.catalog"
 import type { OfferCardModel } from "../offers.types"
+import type { RestaurantSlug } from "./restaurantOffers.types"
 
 export type RestaurantTagProfile = {
   /** Single line under price / area, e.g. `Open Kitchen · Tasting Menu · …`. */
@@ -12,41 +15,22 @@ export type RestaurantTagProfile = {
   tagDescription: string
 }
 
-export const RESTAURANT_TAG_PROFILES: Record<string, RestaurantTagProfile> = {
-  "three-chefs": {
-    tags: "Open Kitchen · Tasting Menu · Latvian Chefs",
-    tagDescription:
-      "Its defining features — the visible kitchen and chef-driven tasting format",
-  },
-  neiburgs: {
-    tags: "Michelin Listed · Wine Pairing · Seasonal Menu",
-    tagDescription: "Credibility markers that drive bookings",
-  },
-  "melna-bite": {
-    tags: "Modern Latvian · Farm to Table",
-    tagDescription:
-      "Captures its core identity — local sourcing with a contemporary twist",
-  },
-  kolonade: {
-    tags: "Park Terrace · City Views · Fine Dining",
-    tagDescription: "The setting is its biggest differentiator",
-  },
-  "max-cekot": {
-    tags: "Set Menu Only · Chef's Table · Industrial Space",
-    tagDescription:
-      "Unique format + unusual location — exactly what sets it apart",
-  },
-  rozengrals: {
-    tags: "Medieval Vault · Historic · Traditional",
-    tagDescription: "The 1293 vault is the whole experience",
-  },
-}
+/** Baseline profiles from shipped static catalog (not updated by admin at module level). */
+export const RESTAURANT_TAG_PROFILES: Record<string, RestaurantTagProfile> =
+  Object.fromEntries(
+    (Object.keys(RESTAURANTS_BY_SLUG) as RestaurantSlug[]).map((slug) => {
+      const e = RESTAURANTS_BY_SLUG[slug]
+      return [slug, { tags: e.tags, tagDescription: e.tagDescription }]
+    }),
+  )
 
 export function getRestaurantTagProfile(
   restaurantSlug: string | undefined,
 ): RestaurantTagProfile | undefined {
   if (!restaurantSlug) return undefined
-  return RESTAURANT_TAG_PROFILES[restaurantSlug]
+  const e = getMergedRestaurantCatalogEntry(restaurantSlug)
+  if (!e) return undefined
+  return { tags: e.tags, tagDescription: e.tagDescription }
 }
 
 /** Merges profile tag line + description onto an offer card (discover carousels / XL). */

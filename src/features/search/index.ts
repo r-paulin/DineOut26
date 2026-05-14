@@ -22,7 +22,7 @@ export type {
 } from "./components"
 export { POPULAR_CATEGORIES } from "./data/searchCategories"
 export type { SearchResultRigaRow } from "./data/searchResultsRiga"
-export { SEARCH_RESULTS_RIGA } from "./data/searchResultsRiga"
+export { getSearchResultsRiga } from "./data/searchResultsRiga"
 export type {
   DateValue,
   FilterKey,

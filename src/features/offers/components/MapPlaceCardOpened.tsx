@@ -13,6 +13,8 @@ export interface MapPlaceCardOpenedProps {
   onClose: () => void
   /** Opens full restaurant detail; slug from `offer.restaurantSlug ?? offer.id`. */
   onRestaurantPress?: (slug: string) => void
+  /** Brief pulse layout while discover filters apply (close stays usable). */
+  filterPending?: boolean
 }
 
 /**
@@ -23,6 +25,7 @@ export function MapPlaceCardOpened({
   offer,
   onClose,
   onRestaurantPress,
+  filterPending = false,
 }: MapPlaceCardOpenedProps) {
   const view = mapOfferToRestaurantCardView(offer)
   const slug = offer.restaurantSlug ?? offer.id
@@ -40,11 +43,13 @@ export function MapPlaceCardOpened({
       role={onRestaurantPress && slug ? "button" : undefined}
       tabIndex={onRestaurantPress && slug ? 0 : undefined}
       className={`relative w-full overflow-hidden rounded-[12px] shadow-[0_2px_3px_rgba(0,0,0,0.16)]${
-        onRestaurantPress && slug ? " cursor-pointer" : ""
-      }`}
-      onClick={onRestaurantPress && slug ? openDetail : undefined}
+        onRestaurantPress && slug && !filterPending ? " cursor-pointer" : ""
+      }${filterPending ? " pointer-events-none" : ""}`}
+      onClick={
+        onRestaurantPress && slug && !filterPending ? openDetail : undefined
+      }
       onKeyDown={
-        onRestaurantPress && slug
+        onRestaurantPress && slug && !filterPending
           ? (e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault()
@@ -53,6 +58,7 @@ export function MapPlaceCardOpened({
             }
           : undefined
       }
+      aria-busy={filterPending || undefined}
       aria-label={
         onRestaurantPress && slug
           ? `Open ${view.name} restaurant details`
@@ -71,8 +77,24 @@ export function MapPlaceCardOpened({
             style={{ background: IMAGE_GRAD }}
           />
           <div className="absolute left-3 top-3 z-[1] w-fit max-w-[calc(100%-3.5rem)]">
-            <OfferCardBadges campaign={offer.campaign} density="comfortable" />
+            <OfferCardBadges
+              campaign={offer.campaign}
+              restaurantSlug={slug}
+              density="comfortable"
+            />
           </div>
+          {filterPending ? (
+            <div
+              className="pointer-events-none absolute inset-0 z-[3] flex flex-col gap-2 bg-layer-floor-1 opacity-[0.97] p-3 animate-pulse"
+              aria-hidden
+            >
+              <div className="h-6 w-[45%] rounded-md bg-neutral-secondary" />
+              <div className="mt-auto flex gap-2">
+                <div className="h-7 w-16 rounded-md bg-neutral-secondary" />
+                <div className="h-7 w-20 rounded-md bg-neutral-secondary" />
+              </div>
+            </div>
+          ) : null}
         </div>
         <div className="pointer-events-none absolute inset-0 z-[1] flex items-end justify-end pb-3 pe-3">
           <div className="pointer-events-auto">
@@ -99,52 +121,68 @@ export function MapPlaceCardOpened({
           icon={<Cross size="md" className="text-primary" />}
         />
       </div>
-      <div className="flex flex-col gap-0.5 bg-layer-floor-1 px-4 pb-4 pt-2">
-        <Typography
-          as="h2"
-          variant="heading-s-accent"
-          color="primary"
-          noWrap
-          inlineStyle={{ letterSpacing: "-0.03rem" }}
-        >
-          {view.name}
-        </Typography>
-        <div className="flex min-w-0 items-baseline gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
-          {view.isOpen ? (
-            <>
-              <Typography variant="body-s-regular" color="primary" as="span">
-                Open
-              </Typography>
-              <Typography variant="body-s-regular" color="secondary" as="span">
-                {"\u00a0\u00b7\u00a0"}
-              </Typography>
-              {view.closesAt ? (
-                <Typography variant="body-s-regular" color="primary" as="span">
-                  {`Closes ${view.closesAt}`}
-                </Typography>
+      <div className="relative flex flex-col gap-0.5 bg-layer-floor-1 px-4 pb-4 pt-2">
+        {filterPending ? (
+          <div
+            className="flex flex-col gap-2 animate-pulse"
+            aria-hidden
+          >
+            <div className="h-5 w-[72%] rounded-md bg-neutral-secondary" />
+            <div className="h-4 w-[55%] rounded-md bg-neutral-secondary" />
+            <div className="flex flex-wrap gap-2">
+              <div className="h-4 w-24 rounded-md bg-neutral-secondary" />
+              <div className="h-4 w-16 rounded-md bg-neutral-secondary" />
+            </div>
+          </div>
+        ) : (
+          <>
+            <Typography
+              as="h2"
+              variant="heading-s-accent"
+              color="primary"
+              noWrap
+              inlineStyle={{ letterSpacing: "-0.03rem" }}
+            >
+              {view.name}
+            </Typography>
+            <div className="flex min-w-0 items-baseline gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
+              {view.isOpen ? (
+                <>
+                  <Typography variant="body-s-regular" color="positive-primary" as="span">
+                    Open
+                  </Typography>
+                  <Typography variant="body-s-regular" color="secondary" as="span">
+                    {"\u00a0\u00b7\u00a0"}
+                  </Typography>
+                  {view.closesAt ? (
+                    <Typography variant="body-s-regular" color="primary" as="span">
+                      {`Closes ${view.closesAt}`}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body-s-regular" color="primary" as="span">
+                      {offer.area}
+                    </Typography>
+                  )}
+                </>
               ) : (
-                <Typography variant="body-s-regular" color="primary" as="span">
-                  {offer.area}
+                <Typography variant="body-s-accent" color="danger-primary" as="span">
+                  Closed
                 </Typography>
               )}
-            </>
-          ) : (
-            <Typography variant="body-s-accent" color="danger-primary" as="span">
-              Closed
-            </Typography>
-          )}
-        </div>
-        <div className="flex min-w-0 flex-wrap items-baseline gap-1">
-          <Typography variant="body-s-regular" color="secondary" as="span">
-            {cuisineLine}
-          </Typography>
-          <Typography variant="body-s-regular" color="tertiary" as="span">
-            ·
-          </Typography>
-          <Typography variant="body-s-regular" color="secondary" as="span">
-            {view.priceRange}
-          </Typography>
-        </div>
+            </div>
+            <div className="flex min-w-0 flex-wrap items-baseline gap-1">
+              <Typography variant="body-s-regular" color="secondary" as="span">
+                {cuisineLine}
+              </Typography>
+              <Typography variant="body-s-regular" color="tertiary" as="span">
+                ·
+              </Typography>
+              <Typography variant="body-s-regular" color="secondary" as="span">
+                {view.priceRange}
+              </Typography>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

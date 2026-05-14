@@ -1,13 +1,20 @@
 import type { ReactNode } from "react"
 import Offer from "@bolteu/kalep-react-icons/dist/Offer"
+import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.data"
 import type { OfferCardCampaign } from "@/features/offers/offers.types"
 import { hasCampaignBadges } from "@/features/offers/utils/mapPlaceCardView"
+import { buildTimedOfferBadgeModels } from "@/features/offers/utils/offerBadgeStack"
 
 export interface OfferCardBadgesProps {
   campaign: OfferCardCampaign
   /**
+   * When set and the merged catalog has timed offers, badges use the Figma
+   * three-row stack (up to two windows + `+N offers`). Otherwise falls back to `campaign`.
+   */
+  restaurantSlug?: string
+  /**
    * `compact` — carousel XS (12px copy). `comfortable` — map-opened card: 14px
-   * semibold pills; second pill top at 40px from image (Figma `_Place / Card / On Map - Opened`).
+   * semibold pills (Figma `_Place / Card / On Map - Opened`).
    */
   density?: "compact" | "comfortable"
 }
@@ -16,16 +23,15 @@ const OFFER_ICON_CLASS =
   "shrink-0 text-[var(--content-action-primary-inverted)]"
 
 /**
- * Figma campaign pills: dark pill, green Offer icon, `-25% · 11:00-14:00`
- * (no vertical rule; time uses `--color-static-content-secondary-light`).
- * Optional second pill `+1 offer` / `+2 offers`.
+ * Figma campaign pills: dark pill, green Offer icon, `-25% · 11:00–14:00`
+ * (time uses `--color-static-content-secondary-light`). Up to three rows when
+ * `restaurantSlug` resolves to timed offers.
  */
 export function OfferCardBadges({
   campaign,
+  restaurantSlug,
   density = "compact",
 }: OfferCardBadgesProps) {
-  const { discountLabel, timeWindow, extraOffers } = campaign
-  if (!hasCampaignBadges(campaign)) return null
   const comfortable = density === "comfortable"
   const textMain = comfortable
     ? "text-sm leading-5 whitespace-nowrap [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"
@@ -37,6 +43,52 @@ export function OfferCardBadges({
     ? "text-sm leading-5 font-normal whitespace-nowrap"
     : "text-xs leading-4 font-normal whitespace-nowrap"
   const offerSize = comfortable ? "sm" : "xs"
+
+  const timedOffers =
+    restaurantSlug ? getRestaurantOffers(restaurantSlug) : []
+  if (restaurantSlug && timedOffers.length > 0) {
+    const rows = buildTimedOfferBadgeModels(timedOffers)
+    const stackClass = comfortable
+      ? "flex max-w-[calc(100%-2.75rem)] flex-col gap-1"
+      : "flex max-w-[min(100%,18rem)] flex-col items-start gap-1"
+
+    return (
+      <div className={stackClass}>
+        {rows.map((row, i) => (
+          <CampaignPill key={i} density={density}>
+            <Offer size={offerSize} className={OFFER_ICON_CLASS} aria-hidden />
+            {row.kind === "offer" ? (
+              <>
+                {row.discountLabel ? (
+                  <span className={textMain}>{row.discountLabel}</span>
+                ) : null}
+                {row.timeWindow ? (
+                  <>
+                    <span className={textDot}>{"\u00a0\u00b7\u00a0"}</span>
+                    <span
+                      className={textTime}
+                      style={{
+                        color: "var(--color-static-content-secondary-light)",
+                      }}
+                    >
+                      {row.timeWindow}
+                    </span>
+                  </>
+                ) : null}
+              </>
+            ) : (
+              <span className={textMain}>
+                {row.count === 1 ? "+1 offer" : `+${row.count} offers`}
+              </span>
+            )}
+          </CampaignPill>
+        ))}
+      </div>
+    )
+  }
+
+  const { discountLabel, timeWindow, extraOffers } = campaign
+  if (!hasCampaignBadges(campaign)) return null
 
   const primaryPill = (
     <CampaignPill density={density}>

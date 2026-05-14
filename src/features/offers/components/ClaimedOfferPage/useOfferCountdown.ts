@@ -4,6 +4,15 @@ function pad2(n: number): string {
   return String(n).padStart(2, "0")
 }
 
+/** `H:MM:SS` (hours unpadded), e.g. `1:05:09` or `23:40:00`. */
+export function formatCountdownHms(ms: number): string {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
+  const h = Math.floor(totalSeconds / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  const s = totalSeconds % 60
+  return `${h}:${pad2(m)}:${pad2(s)}`
+}
+
 /** Hours + minutes only (no seconds), e.g. `1h 05m` or `59m`. */
 export function formatCountdownHoursMinutes(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000))
@@ -42,6 +51,7 @@ function compute(closeIso: string): {
   countdownHm: string
   countdownMmSs: string
   countdownLive: string
+  countdownHms: string
 } {
   const end = new Date(closeIso).getTime()
   if (!Number.isFinite(end)) {
@@ -50,6 +60,7 @@ function compute(closeIso: string): {
       countdownHm: "0m",
       countdownMmSs: "0:00",
       countdownLive: "0:00",
+      countdownHms: "0:00:00",
     }
   }
   const remaining = end - Date.now()
@@ -59,6 +70,7 @@ function compute(closeIso: string): {
     countdownHm: formatCountdownHoursMinutes(remaining),
     countdownMmSs: formatCountdownMmSs(remaining),
     countdownLive: formatOfferCountdownLive(remaining),
+    countdownHms: formatCountdownHms(remaining),
   }
 }
 
@@ -72,6 +84,8 @@ export function useOfferCountdown(closeIso: string): {
   countdownMmSs: string
   /** Prefer in UI: ticks every second when under 1h remaining. */
   countdownLive: string
+  /** `H:MM:SS` for banner-style copy (ticks every second at any duration). */
+  countdownHms: string
 } {
   const [state, setState] = useState(() => compute(closeIso))
 

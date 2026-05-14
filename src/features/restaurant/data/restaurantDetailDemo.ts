@@ -1,9 +1,9 @@
 import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.data"
 import {
-  OFFERS_ALL_RESTAURANTS,
-  OFFERS_DINNER,
-  OFFERS_NEAR_YOU,
-  OFFERS_TODAY,
+  getOffersAllRestaurants,
+  getOffersDinner,
+  getOffersNearYou,
+  getOffersToday,
 } from "@/features/offers/offers.data"
 import type {
   RestaurantSlug,
@@ -14,10 +14,8 @@ import {
   computeOfferCardCampaign,
 } from "@/features/offers/utils/offerCampaign"
 import { getRestaurantLogoCandidates } from "@/features/restaurant/data/restaurantLogos"
-import {
-  DEMO_AMENITIES_BY_SLUG,
-  DEMO_WHAT_WE_SERVE_BY_SLUG,
-} from "@/features/restaurant/data/restaurantAboutDemoContent"
+import { getMergedRestaurantCatalogEntry } from "@/features/restaurants/restaurantCatalogRuntime"
+import { RESTAURANTS_BY_SLUG } from "@/features/restaurants/restaurants.catalog"
 import { RESTAURANT_WEEKLY_OPEN_HOURS } from "@/features/restaurant/data/restaurantFixedOpenHours"
 import type { RestaurantAboutRestaurant } from "@/features/restaurant/components/RestaurantAbout/restaurantAbout.types"
 import type {
@@ -29,68 +27,43 @@ import type {
 import { buildOpenHoursUiState } from "@/features/restaurant/utils/restaurantOpenHoursUi"
 import {
   type SearchResultRigaRow,
-  SEARCH_RESULTS_RIGA,
+  getSearchResultsRiga,
 } from "@/features/search/data/searchResultsRiga"
 import type { DateValue } from "@/features/search/filters.types"
 import { formatDateChipLabel, getDateOptions } from "@/features/search/utils/dateOptions"
 
-/**
- * Display + `tel:` numbers (LV +371) from each venue’s public contact page /
- * reservation line — prototype detail only (verify before production).
- *
- * - 3 Pavāru: 3pavari.lv / MeetRiga (+371 20370537)
- * - Neiburgs: neiburgs.com/contacts (+371 20235504)
- * - Melnā Bite: melnabite.lv / Wellton (+371 67130675)
- * - Kolonāde: kolonade.lv (+371 26608882)
- * - Max Cekot Kitchen: maxcekot.com (+371 20112102)
- * - Rozengrāls: rozengrals.lv/contacts (+371 25769877)
- */
-const DEMO_PHONE_BY_SLUG: Readonly<Record<RestaurantSlug, string>> = {
-  "three-chefs": "+371 20 370 537",
-  neiburgs: "+371 20 235 504",
-  "melna-bite": "+371 67 130 675",
-  kolonade: "+371 26 608 882",
-  "max-cekot": "+371 20 112 102",
-  rozengrals: "+371 25 769 877",
-}
-
-const SLUGS = new Set<string>([
-  "three-chefs",
-  "neiburgs",
-  "melna-bite",
-  "kolonade",
-  "max-cekot",
-  "rozengrals",
-])
+const SLUGS = new Set<string>(Object.keys(RESTAURANTS_BY_SLUG))
 
 function isRestaurantSlug(s: string): s is RestaurantSlug {
   return SLUGS.has(s)
 }
 
-const MERGED_DISCOVER_OFFER_CARDS = [
-  ...OFFERS_TODAY,
-  ...OFFERS_DINNER,
-  ...OFFERS_NEAR_YOU,
-  ...OFFERS_ALL_RESTAURANTS,
-]
+function getMergedDiscoverOfferCards() {
+  return [
+    ...getOffersToday(),
+    ...getOffersDinner(),
+    ...getOffersNearYou(),
+    ...getOffersAllRestaurants(),
+  ]
+}
 
 function restaurantSlugInDiscoverOfferLists(slug: RestaurantSlug): boolean {
-  return MERGED_DISCOVER_OFFER_CARDS.some(
+  return getMergedDiscoverOfferCards().some(
     (o) => (o.restaurantSlug ?? o.id) === slug,
   )
 }
 
 /**
  * Rows removed from the restaurant Offers section because they are not part of
- * {@link getRestaurantOffers} (canonical timed list) or the merged discover
- * offer lists in `offers.data.ts`. Listed for audit / handoff.
+ * {@link getRestaurantOffers} (canonical timed list from merged catalog)
+ * or the merged discover offer lists in `offers.data.ts`. Listed for audit / handoff.
  */
 export const EXCLUDED_FROM_RESTAURANT_DETAIL_OFFERS = [
-  "Synthetic expired banner (15%, 08:00–09:00, fake expiresAt) — UI demo only, not in RESTAURANT_OFFERS.",
+  "Synthetic expired banner (15%, 08:00–09:00, fake expiresAt) — UI demo only, not in catalog timed offers.",
 ] as const
 
 function findRow(slug: string) {
-  return SEARCH_RESULTS_RIGA.find((r) => r.restaurantSlug === slug)
+  return getSearchResultsRiga().find((r) => r.restaurantSlug === slug)
 }
 
 function reviewsLineFromSuffix(suffix: string): string {
@@ -163,7 +136,7 @@ function offerDetailDayPhrase(id: DateValue): string {
 
 /**
  * Offer date tabs: same calendar rows as {@link getDateOptions} (Home date filter) —
- * **Today** plus the **next 7** days (8 tabs). Prototype: real offers only on the
+ * **Today** plus the **next 6** days (7 tabs). Prototype: real offers only on the
  * first **3** days; later days use `no-offer` (decline in UI) and empty offer lists.
  * Tab discount label on offer days follows {@link computeOfferCardCampaign}.
  */
@@ -234,34 +207,9 @@ function restaurantImageForOfferIndex(
   return pool[index % pool.length]!
 }
 
-const DEMO_WEBSITE_BY_SLUG: Readonly<Record<RestaurantSlug, string>> = {
-  "three-chefs": "https://www.3pavari.lv",
-  neiburgs: "https://www.neiburgs.com",
-  "melna-bite": "https://www.melnabite.lv",
-  kolonade: "https://www.kolonade.lv",
-  "max-cekot": "https://www.maxcekot.com",
-  rozengrals: "https://www.rozengrals.lv",
-}
-
-/**
- * Street addresses for detail + About (Google Maps query string).
- * Prototype demo — verify against each venue before production.
- *
- * - 3 Pavāru: 3pavari.lv / Torņa iela (Jēkaba kazarmas)
- * - Neiburgs: neiburgs.com / Jauniela (hotel & restaurant)
- * - Melnā Bite: melnabite.lv / Wellton Centrum (Audēju)
- * - Kolonāde: kolonade.lv / Brīvības bulvāris (Freedom Monument colonnade)
- * - Max Cekot Kitchen: maxcekot.com / contacts
- * - Rozengrāls: rozengrals.lv / kontakti
- */
-const DEMO_ADDRESS_BY_SLUG: Readonly<Record<RestaurantSlug, string>> = {
-  "three-chefs": "Torņa iela 4, Rīga",
-  neiburgs: "Jauniela 27, Rīga",
-  "melna-bite": "Audēju iela 13, Rīga",
-  kolonade: "Brīvības bulvāris 26, Rīga",
-  "max-cekot": "Jelgavas iela 42/8, Rīga",
-  rozengrals: "Rozēna iela 1, Rīga",
-}
+/** Figma RESTAURANT / About (`15886:44839`) — body for flagship demo venue. */
+const ABOUT_DESCRIPTION_THREE_CHEFS =
+  "3 Pāvāru Restorāns is a modern Latvian restaurant in Riga known for its creative, seasonal cuisine and refined tasting menus. The chefs focus on local ingredients and bold flavour combinations, offering an elevated dining experience in an elegant yet welcoming setting."
 
 function buildRestaurantAbout(
   row: SearchResultRigaRow,
@@ -283,7 +231,7 @@ function buildRestaurantAbout(
     row.sideBottom,
     row.primaryImage,
   ]
-  const website = DEMO_WEBSITE_BY_SLUG[slug]
+  const website = getMergedRestaurantCatalogEntry(slug)!.website
 
   return {
     name: row.name,
@@ -297,7 +245,10 @@ function buildRestaurantAbout(
     address: ctx.address,
     phone: ctx.phone,
     website,
-    description: `${row.name} is a well-regarded Riga venue known for its welcoming atmosphere and consistently well-executed plates. Guests return for attentive service and a menu that celebrates local and seasonal ingredients.`,
+    description:
+      slug === "three-chefs" ?
+        ABOUT_DESCRIPTION_THREE_CHEFS
+      : `${row.name} is a well-regarded Riga venue known for its welcoming atmosphere and consistently well-executed plates. Guests return for attentive service and a menu that celebrates local and seasonal ingredients.`,
     serviceTypes: ["Dine-in", "Pickup", "Robot delivery", "DineOut"],
     whatWeServe: ctx.whatWeServe,
     amenities: ctx.amenities,
@@ -386,7 +337,8 @@ export function getRestaurantDetailDemo(slug: string): RestaurantDetailModel {
         : offersForDateTab(key, i, t.id as DateValue, base, row.name)
   }
 
-  const demoAddress = DEMO_ADDRESS_BY_SLUG[key]
+  const catalog = getMergedRestaurantCatalogEntry(key)!
+  const demoAddress = catalog.address
   const hoursUi = buildOpenHoursUiState(new Date(), RESTAURANT_WEEKLY_OPEN_HOURS)
 
   return {
@@ -409,14 +361,14 @@ export function getRestaurantDetailDemo(slug: string): RestaurantDetailModel {
       {
         id: "b1",
         imageUrl: "/images/benefit-discount-badge.png",
-        title: "40% discount for your first 2 orders",
-        subtitle: "when paying with DineOut",
+        title: "40% discount for your first 2 orders.",
+        subtitle: "Valid when paying through DineOut",
       },
       {
         id: "b2",
         imageUrl: "/images/benefit-visa-10eur-badge.png",
-        title: "10€ off from the bill",
-        subtitle: "when paying with VISA card",
+        title: "10€ off from the bill.",
+        subtitle: "Available when paying through DineOut with VISA card.",
       },
     ],
     venueGalleryCycles: [
@@ -430,14 +382,14 @@ export function getRestaurantDetailDemo(slug: string): RestaurantDetailModel {
     menuRowValue: "Restaurant menu",
     menuGalleryImages: [...MENU_GALLERY_IMAGES],
     address: demoAddress,
-    phone: DEMO_PHONE_BY_SLUG[key],
+    phone: catalog.phone,
     about: buildRestaurantAbout(row, key, {
       isOpenNow: hoursUi.isOpenNow,
       openingHours: hoursUi.summaryRangeToday,
       address: demoAddress,
-      phone: DEMO_PHONE_BY_SLUG[key],
-      whatWeServe: [...DEMO_WHAT_WE_SERVE_BY_SLUG[key]],
-      amenities: [...DEMO_AMENITIES_BY_SLUG[key]],
+      phone: catalog.phone,
+      whatWeServe: [...catalog.whatWeServe],
+      amenities: [...catalog.amenities],
     }),
   }
 }

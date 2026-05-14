@@ -1,6 +1,6 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import tipHandsUrl from "@/features/payBill/assets/tip-hands.png"
 import { CustomTipModal } from "@/features/payBill/components/TipScreen/CustomTipModal"
 import { TipPill } from "@/features/payBill/components/TipScreen/TipPill"
@@ -25,7 +25,8 @@ export interface TipScreenProps {
 }
 
 /**
- * Tip selection (Figma `15822:12199` PAY BILL / Add a tip): horizontal tip chips incl. No tip, presets, Other; custom modal; GSAP entrance.
+ * Tip selection (Figma `15822:12199` default, `15767:50968` selected): 3×2 grid;
+ * Continue only after the user picks an option; footer reserves CTA height to avoid layout shift.
  */
 export function TipScreen({
   restaurantName,
@@ -56,7 +57,12 @@ export function TipScreen({
       secondaryLabel: "No tip",
       amount: 0,
     }
-    const presets = tipPercentPresets.map((pct, i) => {
+    const percents = (() => {
+      const p = [...tipPercentPresets]
+      if (!p.includes(5)) p.unshift(5)
+      return [...new Set(p)].sort((a, b) => a - b)
+    })()
+    const presets = percents.map((pct, i) => {
       const eur = percentTipEur(receiptTotalEur, pct)
       return {
         id: `p${i}`,
@@ -65,16 +71,22 @@ export function TipScreen({
         amount: eur,
       }
     })
+    /** Six tiles: 5%…presets, then No tip, then Other (last). */
     return [
-      noneOption,
       ...presets,
+      noneOption,
       { id: "other", label: "Other", amount: null, isCustom: true },
     ]
   }, [receiptTotalEur, tipPercentPresets])
 
-  const [selectedId, setSelectedId] = useState("none")
+  const [selectedId, setSelectedId] = useState("")
   const [customAmount, setCustomAmount] = useState<number | null>(null)
   const [customModal, setCustomModal] = useState(false)
+  const customAmountRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    customAmountRef.current = customAmount
+  }, [customAmount])
 
   const selected = options.find((o) => o.id === selectedId)
   const tipValue: number | null =
@@ -82,6 +94,10 @@ export function TipScreen({
     : selected?.amount != null ?
       selected.amount
     : null
+
+  const canContinue =
+    selectedId !== "" &&
+    (!selected?.isCustom || customAmount != null)
 
   const openOther = useCallback(() => {
     setSelectedId("other")
@@ -100,17 +116,19 @@ export function TipScreen({
   )
 
   const handleDeselect = useCallback(() => {
+    customAmountRef.current = null
     setSelectedId("")
     setCustomAmount(null)
   }, [])
 
   const onContinuePress = useCallback(() => {
+    if (!canContinue) return
     const hasTip = tipValue != null && tipValue > 0
     onContinue({
       tip: hasTip ? tipValue : null,
       snackbarIntent: hasTip ? "tip-added" : "no-tip",
     })
-  }, [onContinue, tipValue])
+  }, [canContinue, onContinue, tipValue])
 
   const initialCustomCents =
     customAmount != null ? Math.round(customAmount * 100) : 0
@@ -186,35 +204,42 @@ export function TipScreen({
 
         <div
           ref={tipRowRef}
-          className="mt-6 flex w-full shrink-0 flex-col items-center gap-6 pb-6"
+          className="mt-6 flex w-full max-w-[min(100%,24rem)] shrink-0 flex-col items-center gap-6 px-6 pb-6"
         >
-          <div className="w-full overflow-x-auto overflow-y-hidden [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex w-max min-w-full flex-nowrap items-stretch gap-2 px-6 pb-0 pt-0">
-              {options.map((opt) => {
-                const isSel = selectedId === opt.id
-                const displayOpt =
-                  opt.isCustom && customAmount != null ?
-                    { ...opt, label: formatEurMajor(customAmount) }
-                  : opt
-                return (
-                  <TipPill
-                    key={opt.id}
-                    option={displayOpt}
-                    isSelected={isSel}
-                    onSelect={() => handleSelect(opt)}
-                    onDeselect={() => {
-                      if (opt.isCustom && isSel) {
-                        setCustomModal(true)
-                        return
-                      }
-                      handleDeselect()
-                    }}
-                  />
-                )
-              })}
-            </div>
+          <div className="grid w-full grid-cols-3 gap-2">
+            {options.map((opt) => {
+              const isSel = selectedId === opt.id
+              const displayOpt =
+                opt.isCustom && customAmount != null ?
+                  { ...opt, label: formatEurMajor(customAmount) }
+                : opt
+              return (
+                <TipPill
+                  key={opt.id}
+                  option={displayOpt}
+                  isSelected={isSel}
+                  onSelect={() => handleSelect(opt)}
+                  onDeselect={() => {
+                    if (opt.isCustom && isSel) {
+                      setCustomModal(true)
+                      return
+                    }
+                    handleDeselect()
+                  }}
+                />
+              )
+            })}
+            {options.length % 3 !== 0 ?
+              Array.from({ length: 3 - (options.length % 3) }, (_, i) => (
+                <span
+                  key={`tip-grid-pad-${i}`}
+                  className="min-h-[60px] min-w-0 shrink-0"
+                  aria-hidden
+                />
+              ))
+            : null}
           </div>
-          <div className="px-6">
+          <div className="w-full px-0">
             <Typography
               variant="body-s-regular"
               color="secondary"
@@ -230,24 +255,47 @@ export function TipScreen({
 
       <div
         ref={footerRef}
-        className="sticky bottom-0 mt-auto flex w-full shrink-0 flex-col gap-4 bg-layer-floor-1 px-6 pb-[max(1rem,var(--safe-area-bottom))] pt-6"
+        className="sticky bottom-0 mt-auto flex w-full shrink-0 flex-col bg-layer-floor-1 px-6 pb-[max(1rem,var(--safe-area-bottom))] pt-6"
       >
-        <Button
-          variant="primary"
-          fullWidth
-          onClick={onContinuePress}
-          overrideClassName="!min-h-14 h-14 rounded-full"
-        >
-          Continue
-        </Button>
+        {/*
+          Reserve primary CTA height so Continue appearing after a choice does not shift layout
+          (Figma `15822:12199` default vs `15767:50968` selected).
+        */}
+        <div className="flex min-h-14 w-full flex-col justify-center gap-4">
+          {canContinue ?
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={onContinuePress}
+              overrideClassName="!min-h-14 h-14 rounded-full"
+            >
+              Continue
+            </Button>
+          : (
+            <span
+              className="block min-h-14 w-full shrink-0"
+              aria-hidden
+            />
+          )}
+        </div>
       </div>
 
       <CustomTipModal
         open={customModal}
-        onOpenChange={setCustomModal}
+        onOpenChange={(open) => {
+          setCustomModal(open)
+          if (!open) {
+            // Modal calls onOpenChange(false) in the same tick as onSave; customAmount state
+            // is not committed yet, so rely on customAmountRef (set synchronously in onSave).
+            setSelectedId((id) =>
+              id === "other" && customAmountRef.current === null ? "" : id,
+            )
+          }
+        }}
         initialCents={initialCustomCents}
         container={portalContainer ?? undefined}
         onSave={(eur) => {
+          customAmountRef.current = eur
           setCustomAmount(eur)
           setSelectedId("other")
         }}

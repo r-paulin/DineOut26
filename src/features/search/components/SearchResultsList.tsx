@@ -66,6 +66,7 @@ export function SearchResultsList({
                       campaign={computeOfferCardCampaignForSlug(
                         row.restaurantSlug,
                       )}
+                      restaurantSlug={row.restaurantSlug}
                     />
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react"
-import { Typography } from "@bolteu/kalep-react"
+import { Button, Typography } from "@bolteu/kalep-react"
 import type {
   ClaimedOffer,
   OfferCardModel,
@@ -32,6 +32,8 @@ export interface BottomSheetScrollContentProps {
   userClaims?: readonly UserClaim[]
   claimedOffersById?: Readonly<Record<string, ClaimedOffer>>
   onHomeClaimedOfferPress?: () => void
+  /** Prototype admin: open merged-catalog editor (localStorage). */
+  onOpenAdminPlaces?: () => void
 }
 
 function offerSlug(o: OfferCardModel) {
@@ -55,6 +57,7 @@ export function BottomSheetScrollContent({
   userClaims = [],
   claimedOffersById = {},
   onHomeClaimedOfferPress,
+  onOpenAdminPlaces,
 }: BottomSheetScrollContentProps) {
   const isFull = snap === "full"
   const isMin = snap === "minimized"
@@ -236,6 +239,23 @@ export function BottomSheetScrollContent({
             onRestaurantPress={onRestaurantPress}
           />
         ) : null}
+        {offersAllRestaurants.length > 0 && onOpenAdminPlaces ?
+          <div className="pt-1 pb-2 shrink-0">
+            <Button
+              type="button"
+              variant="secondary"
+              fullWidth
+              onClick={onOpenAdminPlaces}
+            >
+              Edit places (Admin)
+            </Button>
+            <div className="mt-2 px-0.5">
+              <Typography variant="body-s-regular" color="secondary" as="p">
+                Prototype: edits save to this browser only (localStorage). No auth.
+              </Typography>
+            </div>
+          </div>
+        : null}
       </div>
     </div>
   )

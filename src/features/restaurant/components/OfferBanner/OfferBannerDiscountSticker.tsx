@@ -1,26 +1,9 @@
-import { Typography } from "@bolteu/kalep-react"
-import { useId } from "react"
-
 /**
- * Discount badge — Figma Consumer Dine-out `15931:11816` (Discount) +
- * `15931:11817` (Discount / SVG) + `15931:11818` (Discount / Value).
+ * Discount badge — organic ticket blob (design SVG 68×47) + tabular discount value.
+ * Label uses Body L compact **bold** (Figma); plain `span` so weight is not capped by Typography variants.
  */
-const DISCOUNT_PATH_D =
-  "M9.69878 3.53058C9.66748 5.82002 9.53092 9.03999 9.0188 10.4585C8.17951 12.7791 2 14.5381 2 21.5C2 30.6407 9.03018 29.8152 9.03018 32.9103C9.03018 34.9331 9.02165 36.9644 9.02165 38.9815C9.02165 41.217 10.3645 42 11.457 42H56.9071C58.0594 42 59.7351 41.5574 59.7351 39.7928V32.8564C59.7351 29.9202 66 27.0974 66 21.5C66 12.2032 58.7223 13.1848 58.7223 9.31518C58.7223 7.08248 58.5459 6.21153 58.5459 4.55757C58.5459 1.66385 56.5401 1 55.0578 1H12.4443C10.4243 1 9.71585 2.07805 9.69593 3.53058H9.69878Z"
-
-const DISCOUNT_VALUE_STYLE = {
-  fontSize: "var(--body-m-font-size, 1rem)",
-  lineHeight: "var(--body-m-line-height, 1.5rem)",
-  letterSpacing: "-0.176px",
-  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
-} as const
-
-const FIGMA_SHAPE_BLEED = {
-  top: "-2.44%",
-  right: "-21.88%",
-  bottom: "-46.34%",
-  left: "-3.13%",
-} as const
+const BLOB_PATH_D =
+  "M8.93199 3.03153L26.7613 1.78478C26.7613 1.78478 27.7894 1.42601 28.5605 2.67694C29.3317 3.92787 29.9504 5.6861 32.8451 5.42198C35.7399 5.15787 36.6311 2.79741 36.6311 2.79741C36.6311 2.79741 36.9231 1.02793 38.2086 0.959631C39.4941 0.891331 56.0796 -6.10064e-05 56.0796 -6.10064e-05C56.0796 -6.10064e-05 58.1339 0.180187 59.1569 1.77442C60.1799 3.36865 65.78 12.7711 65.78 12.7711C65.78 12.7711 67.5889 16.3556 67.8922 20.6932C68.1955 25.0307 67.8316 28.2828 64.686 33.2379C61.5403 38.1929 61.2065 41.8748 61.2065 41.8748C61.2065 41.8748 60.9413 43.4542 59.7124 43.5402L39.8114 44.9318C39.8114 44.9318 39.1186 44.7119 38.7515 43.3371C38.3843 41.9622 37.4502 40.8461 35.6366 41.0254C33.823 41.2046 31.7031 42.377 31.8229 44.0899C31.9427 45.8028 30.5319 45.5776 30.5319 45.5776L11.3821 46.7007C11.3821 46.7007 10.0755 46.4682 9.65954 45.0999C9.24359 43.7316 7.09742 39.199 5.17434 37.0199C3.25125 34.8408 0.654802 30.8271 0.0397355 25.114C-0.575331 19.4008 6.11326 5.9679 6.11326 5.9679C6.11326 5.9679 7.08716 3.16053 8.93199 3.03153Z"
 
 export interface OfferBannerDiscountStickerProps {
   tagFill: string
@@ -33,132 +16,32 @@ export function OfferBannerDiscountSticker({
   label,
   labelColor,
 }: OfferBannerDiscountStickerProps) {
-  const filterId = `offerDiscount-${useId().replace(/:/g, "")}`
-
   return (
-    <div className="flex h-12 w-full min-w-0 max-w-[132px] items-center justify-center">
-      {/*
-        Figma: both SVG and value sit in `-rotate-5` stacks; one wrapper keeps them aligned.
-        Inner frame: 64×41 (w-16 h-[41px]).
-      */}
-      <div className="relative h-[41px] w-16 shrink-0 rotate-[-5deg] [transform-origin:center]">
-        <div
-          className="absolute max-w-none overflow-visible"
-          style={FIGMA_SHAPE_BLEED}
+    <div className="flex w-full min-w-0 items-center justify-center">
+      <div className="relative h-[47px] w-[68px] shrink-0 [transform-origin:center]">
+        <svg
+          width={68}
+          height={47}
+          viewBox="0 0 68 47"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="pointer-events-none absolute inset-0 block"
+          aria-hidden
         >
-          <svg
-            viewBox="0 0 80 61"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="block size-full max-w-none overflow-visible"
-            preserveAspectRatio="xMidYMid meet"
-            aria-hidden
-          >
-            <g filter={`url(#${filterId})`}>
-              <path d={DISCOUNT_PATH_D} fill={tagFill} />
-            </g>
-            <defs>
-              <filter
-                id={filterId}
-                x="0"
-                y="0"
-                width="80"
-                height="61"
-                filterUnits="userSpaceOnUse"
-                colorInterpolationFilters="sRGB"
-              >
-                <feFlood floodOpacity="0" result="BackgroundImageFix" />
-                <feColorMatrix
-                  in="SourceAlpha"
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                  result="hardAlpha"
-                />
-                <feOffset dy="1" />
-                <feGaussianBlur stdDeviation="1" />
-                <feColorMatrix
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
-                />
-                <feBlend
-                  mode="normal"
-                  in2="BackgroundImageFix"
-                  result="effect1_dropShadow_0_4"
-                />
-                <feColorMatrix
-                  in="SourceAlpha"
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                  result="hardAlpha"
-                />
-                <feOffset dx="2" dy="3" />
-                <feGaussianBlur stdDeviation="2" />
-                <feColorMatrix
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0"
-                />
-                <feBlend
-                  mode="normal"
-                  in2="effect1_dropShadow_0_4"
-                  result="effect2_dropShadow_0_4"
-                />
-                <feColorMatrix
-                  in="SourceAlpha"
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                  result="hardAlpha"
-                />
-                <feOffset dx="4" dy="7" />
-                <feGaussianBlur stdDeviation="2.5" />
-                <feColorMatrix
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"
-                />
-                <feBlend
-                  mode="normal"
-                  in2="effect2_dropShadow_0_4"
-                  result="effect3_dropShadow_0_4"
-                />
-                <feColorMatrix
-                  in="SourceAlpha"
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                  result="hardAlpha"
-                />
-                <feOffset dx="8" dy="13" />
-                <feGaussianBlur stdDeviation="3" />
-                <feColorMatrix
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0"
-                />
-                <feBlend
-                  mode="normal"
-                  in2="effect3_dropShadow_0_4"
-                  result="effect4_dropShadow_0_4"
-                />
-                <feBlend
-                  mode="normal"
-                  in="SourceGraphic"
-                  in2="effect4_dropShadow_0_4"
-                  result="shape"
-                />
-              </filter>
-            </defs>
-          </svg>
-        </div>
-        <div className="pointer-events-none absolute inset-0 flex flex-col justify-center text-center leading-[0]">
-          <Typography
-            variant="body-m-accent"
-            as="p"
-            align="center"
-            noWrap
-            inlineStyle={{
-              ...DISCOUNT_VALUE_STYLE,
+          <path d={BLOB_PATH_D} fill={tagFill} />
+        </svg>
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-1">
+          <span
+            className="max-w-full whitespace-nowrap text-center font-bold tabular-nums [font-family:var(--font-family)] [font-size:var(--body-l-font-size,18px)] [line-height:var(--body-l-compact-line-height,22px)] [letter-spacing:-0.522px]"
+            style={{
               color: labelColor,
+              fontVariantNumeric: "lining-nums tabular-nums",
+              fontFeatureSettings: "'cv03' 1, 'cv04' 1",
+              fontVariationSettings: "'wght' var(--font-weight-bold)",
             }}
           >
             {label}
-          </Typography>
+          </span>
         </div>
       </div>
     </div>

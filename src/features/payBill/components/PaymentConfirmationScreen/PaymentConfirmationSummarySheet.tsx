@@ -33,7 +33,7 @@ export function PaymentConfirmationSummarySheet({
   onDineOutBenefitInfo,
 }: PaymentConfirmationSummarySheetProps) {
   return (
-    <div className="flex max-h-[min(72vh,calc(var(--app-h)*0.72))] min-h-0 flex-col overflow-y-auto rounded-t-2xl bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-6">
+    <div className="flex max-h-[min(72vh,calc(var(--app-h)*0.72))] min-h-0 flex-col overflow-y-auto rounded-t-[16px] bg-layer-floor-1 px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-6">
       {offer ?
         <div className="shrink-0 pb-4">
           <ClaimedOfferBillInlineNotice
@@ -106,7 +106,7 @@ export function PaymentConfirmationSummarySheet({
         </div>
 
         <div
-          className="my-1 h-px w-full shrink-0 bg-[var(--color-border-separator)]"
+          className="my-1 h-px w-full shrink-0 bg-separator"
           aria-hidden
         />
 

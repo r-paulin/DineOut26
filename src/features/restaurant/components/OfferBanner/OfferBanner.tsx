@@ -1,11 +1,13 @@
 import { Typography } from "@bolteu/kalep-react"
 import CheckCircle from "@bolteu/kalep-react-icons/dist/CheckCircle"
+import ChevronRight from "@bolteu/kalep-react-icons/dist/ChevronRight"
 import { useCallback, useEffect, useState } from "react"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { useOfferCountdown } from "@/features/offers/components/ClaimedOfferPage/useOfferCountdown"
 import { OfferBannerDiscountSticker } from "@/features/restaurant/components/OfferBanner/OfferBannerDiscountSticker"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { formatOfferScarcityLabel } from "@/features/restaurant/utils/formatOfferScarcityLabel"
+import { formatOfferBannerValidityTime } from "@/features/restaurant/utils/formatOfferBannerValidityTime"
 import {
   getOfferBannerState,
   shouldShowOfferBanner,
@@ -18,18 +20,14 @@ const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
-/** Solid sticker fills — available: primary green; claimed / expired: white. */
-const FILL_AVAILABLE_TAG = "var(--color-bg-action-primary)"
-const FILL_CLAIMED_OR_EXPIRED_TAG = "var(--color-static-bg-key-light)"
-const DISCOUNT_TEXT_ON_GREEN = "var(--color-static-content-key-light)"
-const DISCOUNT_TEXT_ON_WHITE = "var(--color-content-action-primary)"
+const FILL_TICKET_ACTIVE =
+  "var(--content-action-primary-inverted, #74EFAA)"
+const FILL_TICKET_EXPIRED = "var(--color-static-bg-key-light)"
+const LABEL_ON_GREEN = "var(--color-static-content-key-dark, #191f1c)"
+const LABEL_EXPIRED = "var(--color-content-secondary)"
 
 const OFFER_BANNER_CLOCK_TICK_MS = 30_000
 
-/**
- * When an offer has a local schedule, re-derive banner state periodically so
- * passing the window (e.g. 11:00–14:00) flips to expired without navigation.
- */
 function useOfferBannerNowMs(offer: RestaurantOfferCardModel): number {
   const scheduleAware = Boolean(
     offer.offerScheduleDate && offer.offerEnd,
@@ -52,15 +50,14 @@ export interface OfferBannerProps {
   offer: RestaurantOfferCardModel
   userClaims: readonly UserClaim[]
   claimedOffersById: Readonly<Record<string, ClaimedOffer>>
-  /** Overrides `offer.discountPercent` for the discount tag only. */
   discountValue?: number
   onAvailablePress?: () => void
   onClaimedPress?: () => void
 }
 
 /**
- * Horizontally split restaurant offer card. Visibility uses tags; interaction
- * state uses {@link getOfferBannerState} (see `docs/offer-banner-logic.md`).
+ * Restaurant offer card — Figma `16005:12046` (claimed / available / expired).
+ * State from {@link getOfferBannerState}; schedule-aware clock in {@link useOfferBannerNowMs}.
  */
 export function OfferBanner(props: OfferBannerProps) {
   if (!shouldShowOfferBanner(props.offer.tags)) return null
@@ -82,23 +79,8 @@ function OfferBannerVisible({
     nowMs,
   )
   const claim = claimedOffersById[offer.id]
-  /**
-   * Sticker uses claim `discountPercent` when present (Home banner vs stale card).
-   * Headline: **claimed** → `10% discount` (no “Claim”); otherwise `offer.title`
-   * (typically “Claim …”).
-   */
   const displayDiscount =
     discountValue ?? claim?.discountPercent ?? offer.discountPercent ?? 30
-  const bannerTitle =
-    state === "claimed" ?
-      `${claim?.discountPercent ?? offer.discountPercent ?? 30}% discount`
-    : offer.title
-
-  const metaLine = `${offer.date} · ${offer.timeWindow}`
-
-  const surfaceClass =
-    state === "claimed" ? "bg-action-secondary" : "bg-neutral-secondary"
-  const radiusClass = state === "claimed" ? "rounded-[12px]" : "rounded-[8px]"
 
   const onActivate = useCallback(() => {
     if (state === "available") {
@@ -111,97 +93,82 @@ function OfferBannerVisible({
     }
   }, [onAvailablePress, onClaimedPress, state])
 
-  const tagFill =
-    state === "available" ? FILL_AVAILABLE_TAG : FILL_CLAIMED_OR_EXPIRED_TAG
-  const discountLabelColor =
-    state === "available" ? DISCOUNT_TEXT_ON_GREEN : DISCOUNT_TEXT_ON_WHITE
+  const surfaceClass =
+    state === "claimed" ? "bg-action-secondary" : "bg-neutral-secondary"
+  const ticketFill =
+    state === "expired" ? FILL_TICKET_EXPIRED : FILL_TICKET_ACTIVE
+  const ticketLabelColor =
+    state === "expired" ? LABEL_EXPIRED : LABEL_ON_GREEN
+
+  const primaryLine =
+    state === "claimed" && claim ?
+      `${claim.arrivalDate} · ${claim.arrivalTime}`
+    : offer.title
+
+  const validityTime = formatOfferBannerValidityTime(offer.timeWindow)
+  const secondaryContent =
+    state === "claimed" && claim ?
+      <OfferBannerClaimedCountdown claim={claim} />
+    : `Valid: ${offer.date} · ${validityTime}`
 
   return (
     <button
       type="button"
       disabled={state === "expired"}
-      className={`relative flex w-full min-w-0 overflow-visible py-2 pl-3 pr-2 text-left ${radiusClass} ${surfaceClass} ${state === "expired" ? "cursor-not-allowed opacity-[0.85]" : "cursor-pointer"}`}
-      aria-label={bannerTitle}
+      className={`relative flex w-full min-w-0 items-stretch overflow-hidden rounded-lg p-3 text-left ${surfaceClass} ${state === "expired" ? "cursor-not-allowed opacity-[0.92]" : "cursor-pointer"}`}
+      aria-label={primaryLine}
       onClick={onActivate}
     >
-      <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-6 self-stretch">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
-          <OfferBannerStatusPill offer={offer} state={state} />
-          <Typography
-            variant="heading-xs-accent"
-            color={state === "expired" ? "secondary" : "primary"}
-            as="h3"
-            lines={2}
-            inlineStyle={SEMIBOLD}
-          >
-            {bannerTitle}
-          </Typography>
-          <div
-            className={`mt-auto flex min-w-0 flex-col ${state === "expired" ? "gap-2" : "gap-1"}`}
-          >
-            {state === "claimed" && claim ? (
-              <OfferBannerClaimedLines claim={claim} />
-            ) : state === "claimed" ? (
-              <Typography variant="body-xs-regular" color="secondary" as="p">
-                {metaLine}
-              </Typography>
-            ) : (
-              <Typography
-                variant="body-xs-regular"
-                color={state === "expired" ? "secondary" : "primary"}
-                as="p"
-              >
-                {metaLine}
-              </Typography>
-            )}
-          </div>
-        </div>
-        <div className="flex shrink-0 flex-col items-center justify-center self-stretch">
-          <div
-            className={`relative h-[132px] w-[100px] shrink-0 overflow-hidden rounded-[10px] ${state === "claimed" ? "bg-action-secondary" : "bg-neutral-secondary"}`}
-          >
-            <img
-              src={offer.restaurantImage}
-              alt=""
-              className={`absolute inset-0 size-full max-w-none rounded-[10px] object-cover ${state === "expired" ? "opacity-[0.72] saturate-[0.85]" : ""}`}
-            />
-          </div>
+      <div className="flex w-[72px] shrink-0 flex-col items-center justify-center self-stretch overflow-visible">
+        <div className="-rotate-1 flex origin-center items-center justify-center">
+          <OfferBannerDiscountSticker
+            tagFill={ticketFill}
+            label={`-${displayDiscount}%`}
+            labelColor={ticketLabelColor}
+          />
         </div>
       </div>
-      <DiscountTagOverlay
-        displayDiscount={displayDiscount}
-        tagFill={tagFill}
-        labelColor={discountLabelColor}
-      />
+
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 pl-3 pr-2">
+        <OfferBannerBadge offer={offer} state={state} />
+        <Typography
+          variant="body-m-accent"
+          color={state === "expired" ? "secondary" : "primary"}
+          as="p"
+          lines={2}
+          inlineStyle={SEMIBOLD}
+        >
+          {primaryLine}
+        </Typography>
+        <Typography
+          variant="body-xs-regular"
+          color="secondary"
+          as="p"
+          noWrap={state !== "claimed"}
+        >
+          {secondaryContent}
+        </Typography>
+      </div>
+
+      <div className="flex w-8 shrink-0 items-center justify-center self-center">
+        <ChevronRight
+          size="sm"
+          className={
+            state === "expired" ? "text-tertiary" : "text-secondary"
+          }
+          aria-hidden
+        />
+      </div>
     </button>
   )
 }
 
-/** Claimed row: arrival from claim payload + live countdown to offer window end. */
-function OfferBannerClaimedLines({ claim }: { claim: ClaimedOffer }) {
-  const { expired, countdownLive } = useOfferCountdown(claim.offerWindowCloses)
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <Typography
-        variant="body-xs-accent"
-        color="primary"
-        as="p"
-        inlineStyle={SEMIBOLD}
-      >
-        {`${claim.arrivalDate} · ${claim.arrivalTime}`}
-      </Typography>
-      <Typography
-        variant="body-xs-regular"
-        color={expired ? "danger-primary" : "secondary"}
-        as="p"
-      >
-        {expired ? "Offer ended" : `Offer ends in ${countdownLive}`}
-      </Typography>
-    </div>
-  )
+function OfferBannerClaimedCountdown({ claim }: { claim: ClaimedOffer }) {
+  const { expired, countdownHms } = useOfferCountdown(claim.offerWindowCloses)
+  return <>{expired ? "Offer ended" : `Offer ends in ${countdownHms}`}</>
 }
 
-function OfferBannerStatusPill({
+function OfferBannerBadge({
   offer,
   state,
 }: {
@@ -210,10 +177,9 @@ function OfferBannerStatusPill({
 }) {
   if (state === "claimed") {
     return (
-      <span className="inline-flex max-w-fit items-center gap-[4px] rounded-[4px] px-[6px] py-[4px] bg-special-brand text-primary-inverted">
+      <span className="inline-flex h-5 max-w-fit items-center justify-center gap-0.5 rounded-[4px] bg-special-brand-alt px-1 py-0.5">
         <CheckCircle
-          size="sm"
-          className="size-4 shrink-0 text-primary-inverted"
+          className="size-[14px] shrink-0 text-action-primary-inverted"
           aria-hidden
         />
         <Typography
@@ -222,7 +188,7 @@ function OfferBannerStatusPill({
           as="span"
           inlineStyle={SEMIBOLD}
         >
-          Claimed
+          Offer claimed
         </Typography>
       </span>
     )
@@ -232,30 +198,27 @@ function OfferBannerStatusPill({
     offer.remainingCount != null &&
     offer.remainingCount > 0
   ) {
-    const scarcityLabel = formatOfferScarcityLabel(offer.remainingCount)
     return (
-      <span className="inline-flex max-w-fit items-center rounded-[4px] px-[6px] py-[4px] bg-neutral-primary text-primary-inverted">
+      <span className="inline-flex max-w-fit items-center rounded px-1 py-0.5 bg-neutral-secondary">
         <Typography
           variant="body-xs-accent"
-          color="primary-inverted"
+          color="primary"
           as="span"
           inlineStyle={SEMIBOLD}
         >
-          {scarcityLabel}
+          Limited offer: {formatOfferScarcityLabel(offer.remainingCount)}
         </Typography>
       </span>
     )
   }
   if (state === "expired") {
     return (
-      <span className="inline-flex max-w-fit items-center rounded-[4px] bg-neutral-secondary px-[6px] py-[4px]">
+      <span className="inline-flex max-w-fit items-center rounded px-1 py-0.5 bg-neutral-secondary">
         <Typography
           variant="body-xs-accent"
+          color="primary"
           as="span"
-          inlineStyle={{
-            ...SEMIBOLD,
-            color: "var(--color-static-content-key-dark, black)",
-          }}
+          inlineStyle={SEMIBOLD}
         >
           Expired
         </Typography>
@@ -263,32 +226,4 @@ function OfferBannerStatusPill({
     )
   }
   return null
-}
-
-function DiscountTagOverlay({
-  displayDiscount,
-  tagFill,
-  labelColor,
-}: {
-  displayDiscount: number
-  tagFill: string
-  labelColor: string
-}) {
-  return (
-    <div
-      className="pointer-events-none absolute z-[2]"
-      style={{
-        left: "58.84%",
-        right: "21.64%",
-        top: "80px",
-      }}
-      aria-hidden
-    >
-      <OfferBannerDiscountSticker
-        tagFill={tagFill}
-        label={`-${displayDiscount}%`}
-        labelColor={labelColor}
-      />
-    </div>
-  )
 }

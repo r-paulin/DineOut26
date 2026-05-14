@@ -23,6 +23,7 @@ import { RestaurantDetailVenueSection } from "./RestaurantDetailVenueSection"
 import { RestaurantMenuGalleryModal } from "./RestaurantMenuGalleryModal"
 import { RestaurantOpenHoursSheet } from "./RestaurantOpenHoursSheet"
 import { RestaurantRatingSheet } from "./RestaurantRatingSheet"
+import { RestaurantReportProblemSheet } from "./RestaurantReportProblemSheet"
 
 /**
  * Same cubic family as {@link BottomSheet} height (`0.32, 0.72, 0, 1`) so
@@ -79,6 +80,7 @@ export function RestaurantDetailScreen({
   onOfferClaimedPress,
   userClaims,
   claimedOffersById,
+  onReportProblem,
 }: RestaurantDetailScreenProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const aboutScrollRef = useRef<HTMLDivElement>(null)
@@ -106,6 +108,7 @@ export function RestaurantDetailScreen({
   const [benefitPromoVariant, setBenefitPromoVariant] = useState<
     "dineout40" | "visa10"
   >("dineout40")
+  const [reportProblemOpen, setReportProblemOpen] = useState(false)
   const { titleOpacity, onScroll } = useRestaurantDetailHeaderTitle()
   const {
     titleOpacity: aboutTitleOpacity,
@@ -358,7 +361,7 @@ export function RestaurantDetailScreen({
               cuisineTags={model.cuisineTags}
               venueGalleryCycles={model.venueGalleryCycles}
               openHoursSummary={model.openHoursSummary}
-              menuRowValue={model.menuRowValue}
+              isOpen={model.isOpen}
               address={model.address}
               phone={model.phone}
               onOpenHours={handleOpenHours}
@@ -366,6 +369,9 @@ export function RestaurantDetailScreen({
               onOpenMaps={onOpenMaps}
               onCall={onCall}
               onMoreAboutVenue={openAbout}
+              onOpenReportProblem={() => {
+                setReportProblemOpen(true)
+              }}
             />
           </div>
           {aboutOpen ? (
@@ -461,6 +467,14 @@ export function RestaurantDetailScreen({
         onOpenChange={setBenefitPromoOpen}
         variant={benefitPromoVariant}
         container={portalRoot}
+      />
+      <RestaurantReportProblemSheet
+        isOpen={reportProblemOpen}
+        onOpenChange={setReportProblemOpen}
+        container={portalRoot}
+        onReport={(reasonId) => {
+          onReportProblem?.(reasonId)
+        }}
       />
     </div>
   )

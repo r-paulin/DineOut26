@@ -30,10 +30,10 @@ export {
   DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT,
 } from "./constants/dineOutStackablePromo"
 export {
-  OFFERS_ALL_RESTAURANTS,
-  OFFERS_DINNER,
-  OFFERS_NEAR_YOU,
-  OFFERS_TODAY,
+  getOffersAllRestaurants,
+  getOffersDinner,
+  getOffersNearYou,
+  getOffersToday,
 } from "./offers.data"
 export {
   getRestaurantTagProfile,

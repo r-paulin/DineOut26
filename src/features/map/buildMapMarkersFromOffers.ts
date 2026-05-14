@@ -1,3 +1,4 @@
+import { restaurantTimedOfferActiveNow } from "@/features/discover/utils/filterDiscoverOffers"
 import type { OfferCardModel } from "@/features/offers/offers.types"
 import { hasCampaignBadges } from "@/features/offers/utils/mapPlaceCardView"
 import type { MapMarkerData } from "./map.types"
@@ -49,6 +50,7 @@ function dedupeRestaurants(offers: OfferCardModel[]): OfferCardModel[] {
 export function buildMapMarkersFromOffers(offers: OfferCardModel[]): MapMarkerData[] {
   const unique = dedupeRestaurants(offers)
   const n = unique.length
+  const now = new Date()
   return unique.map((o, index) => {
     const restaurantKey = o.restaurantSlug ?? o.id
     const { lat, lng } = ringLatLng(index, n, restaurantKey)
@@ -61,6 +63,7 @@ export function buildMapMarkersFromOffers(offers: OfferCardModel[]): MapMarkerDa
       label: o.name,
       discountText: hasCampaignBadges(c) ? c.discountLabel : undefined,
       restaurantId: restaurantKey,
+      timedOfferActiveNow: restaurantTimedOfferActiveNow(restaurantKey, now),
     } satisfies MapMarkerData
   })
 }

@@ -1,4 +1,5 @@
 import type { RestaurantSlug } from "@/features/offers/data/restaurantOffers.types"
+import { getMergedRestaurantCatalogEntry } from "@/features/restaurants/restaurantCatalogRuntime"
 import { restaurantImageUrl } from "@/shared/utils/publicImageUrls"
 
 function u(filename: string): string {
@@ -18,26 +19,11 @@ function unique(urls: string[]): string[] {
  * differences and legacy filenames.
  */
 export function getRestaurantLogoCandidates(slug: RestaurantSlug): string[] {
-  switch (slug) {
-    case "neiburgs":
-      return unique([u("Neiburgs-logo.png"), u("neiburgs-logo.png")])
-    case "melna-bite":
-      return unique([
-        u("Melna Bite logo.png"),
-        u("Melna-Bite-logo.png"),
-        u("melna-bite-logo.png"),
-      ])
-    case "three-chefs":
-      return unique([u("3pavarurestorans-logo.png"), u("three-chefs-logo.png")])
-    case "kolonade":
-      return unique([u("Kolonade-logo.png"), u("kolonade-logo.png")])
-    case "max-cekot":
-      return unique([u("max-cekot-logo.png"), u("Max-cekot-logo.png")])
-    case "rozengrals":
-      return unique([u("Rozengrals-logo.png"), u("rozengrals-logo.png")])
-    default:
-      return unique([u(`${slug}-logo.png`)])
+  const entry = getMergedRestaurantCatalogEntry(slug)
+  if (entry) {
+    return unique(entry.logoFilenames.map(u))
   }
+  return unique([u(`${slug}-logo.png`)])
 }
 
 /** First candidate URL (e.g. for links); prefer `getRestaurantLogoCandidates` in UI. */

@@ -1,7 +1,8 @@
 import { useMemo } from "react"
 import { SheetVerticalOfferSection } from "@/features/offers"
 import { restaurantSlugVisibleForPreset } from "@/features/offers/utils/offerCampaign"
-import { SEARCH_RESULTS_RIGA } from "@/features/search/data/searchResultsRiga"
+import { useRestaurantCatalogSnapshot } from "@/features/restaurants/restaurantCatalogRuntime"
+import { getSearchResultsRiga } from "@/features/search/data/searchResultsRiga"
 import { searchResultRigaToOfferCard } from "@/features/search/utils/searchResultRigaToOfferCard"
 
 export interface SearchResultsStaticProps {
@@ -22,12 +23,13 @@ export function SearchResultsStatic({
   headingOverride,
   onRestaurantPress,
 }: SearchResultsStaticProps) {
+  const catalogSnapshot = useRestaurantCatalogSnapshot()
   const offers = useMemo(() => {
-    const rows = SEARCH_RESULTS_RIGA.filter((r) =>
+    const rows = getSearchResultsRiga().filter((r) =>
       restaurantSlugVisibleForPreset(r.restaurantSlug, "any"),
     )
     return rows.map(searchResultRigaToOfferCard)
-  }, [])
+  }, [catalogSnapshot])
 
   const countTitle =
     offers.length === 1 ? "1 restaurant" : `${offers.length} restaurants`

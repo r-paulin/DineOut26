@@ -16,4 +16,9 @@ export type MapMarkerData = {
   sublabel?: string
   discountText?: string
   restaurantId?: string
+  /**
+   * Discovery pins: any timed-offer window contains “now” (same as discover open-now).
+   * Omitted on non-`map_pin` markers — treat as active for icon color.
+   */
+  timedOfferActiveNow?: boolean
 }

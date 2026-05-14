@@ -14,11 +14,15 @@ export interface OfferCardProps {
 
 const R12 = "rounded-[12px]"
 
+/** Figma `_Place / Card / XS` (15767:53166): 224px wide; image height keeps 188:158 aspect. */
+const CAROUSEL_CARD_W_CLASS = "w-[224px]"
+const CAROUSEL_IMAGE_H_CLASS = "h-[188px]"
+
 const IMAGE_GRAD =
   "linear-gradient(180deg, rgba(0,0,0,0) 53.5%, rgba(0,0,0,0.5) 100%)"
 
 /**
- * Figma `_Place / Card / XS` (carousel) or `_Place / Card / XL` (list row).
+ * Figma `_Place / Card / XS` carousel 15767:53166 (224px) or `_Place / Card / XL` (list row).
  * Image corners: 12px ([Figma XL](https://www.figma.com/design/jPi3dvsMn6oKCqkvNDhyhe/Consumer---Dine-out?node-id=15735-22235)).
  */
 export function OfferCard({ offer, dimmed, onClick }: OfferCardProps) {
@@ -48,13 +52,13 @@ function OfferCardCarousel({
 }) {
   return (
     <article
-      className="w-[188px] flex-none relative"
+      className={`${CAROUSEL_CARD_W_CLASS} flex-none relative`}
       style={{ opacity: dimmed ? 0.45 : 1 }}
     >
       <button
         type="button"
         aria-label={offerCardCarouselAriaLabel(offer)}
-        className={`relative w-[188px] h-[158px] ${R12} overflow-hidden border-none p-0 cursor-pointer`}
+        className={`relative ${CAROUSEL_CARD_W_CLASS} ${CAROUSEL_IMAGE_H_CLASS} ${R12} overflow-hidden border-none p-0 cursor-pointer`}
         onClick={onClick}
       >
         <img
@@ -68,7 +72,10 @@ function OfferCardCarousel({
           style={{ background: IMAGE_GRAD }}
         />
         <div className="absolute left-0 top-0 p-2 flex flex-col items-start">
-          <OfferCardBadges campaign={offer.campaign} />
+          <OfferCardBadges
+            campaign={offer.campaign}
+            restaurantSlug={offer.restaurantSlug ?? offer.id}
+          />
         </div>
         <OfferCardImageRatingBadge rating={offer.rating} />
       </button>
@@ -148,7 +155,11 @@ function OfferCardList({
         (`BottomSheetScrollContent`). Figma `_Place / Card / XL` (15735:22235):
         8px gap gallery→copy; 24px pb.
       */}
-      <OfferCardListGallery photos={slides} campaign={offer.campaign} />
+      <OfferCardListGallery
+        photos={slides}
+        campaign={offer.campaign}
+        restaurantSlug={offer.restaurantSlug ?? offer.id}
+      />
       <div className="flex min-w-0 w-full flex-col gap-0.5">
         <Typography
           variant="heading-s-accent"

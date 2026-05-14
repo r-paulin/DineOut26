@@ -1,5 +1,20 @@
 import { describe, expect, it } from "vitest"
-import { formatOfferCountdownLive } from "./useOfferCountdown"
+import {
+  formatCountdownHms,
+  formatOfferCountdownLive,
+} from "./useOfferCountdown"
+
+describe("formatCountdownHms", () => {
+  it("formats as H:MM:SS with unpadded hours", () => {
+    expect(formatCountdownHms(0)).toBe("0:00:00")
+    expect(formatCountdownHms(59 * 1000)).toBe("0:00:59")
+    expect(formatCountdownHms((59 * 60 + 20) * 1000)).toBe("0:59:20")
+    expect(formatCountdownHms((60 * 60 + 59 * 60 + 20) * 1000)).toBe("1:59:20")
+    expect(formatCountdownHms((23 * 3600 + 40 * 60 + 5) * 1000)).toBe(
+      "23:40:05",
+    )
+  })
+})
 
 describe("formatOfferCountdownLive", () => {
   it("uses Hh Mm when at least 60 full minutes remain", () => {

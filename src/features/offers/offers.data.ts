@@ -1,283 +1,149 @@
+import type { RestaurantSlug } from "@/features/offers/data/restaurantOffers.types"
+import { getMergedRestaurantCatalogEntry } from "@/features/restaurants/restaurantCatalogRuntime"
+import type { RestaurantCatalogEntry } from "@/features/restaurants/restaurants.catalog"
 import { restaurantImageUrl } from "@/shared/utils/publicImageUrls"
 import { withRestaurantTags } from "./data/restaurantTagProfiles"
 import type { OfferCardModel } from "./offers.types"
 import { computeOfferCardCampaignForSlug } from "./utils/offerCampaign"
 
+function u(filename: string): string {
+  return restaurantImageUrl(filename)
+}
+
+type ImgSlot = keyof RestaurantCatalogEntry["images"]
+
+function slotUrl(slug: RestaurantSlug, slot: ImgSlot): string {
+  const r = getMergedRestaurantCatalogEntry(slug)
+  if (!r) return u("")
+  return u(r.images[slot])
+}
+
 function campaignFor(slug: string) {
   return computeOfferCardCampaignForSlug(slug)
 }
 
-export const OFFERS_TODAY: OfferCardModel[] = [
-  {
-    id: "neiburgs",
-    restaurantSlug: "neiburgs",
-    name: "Neiburgs",
-    priceRange: "20–50 €",
-    area: "Vecrīga",
-    cuisine: "Latvian, European",
-    rating: "4.6",
-    image: restaurantImageUrl("Neiburgs-1.jpg"),
-    campaign: campaignFor("neiburgs"),
-  },
-  {
-    id: "three-chefs",
-    restaurantSlug: "three-chefs",
-    name: "3 Pavāru Restorāns",
-    priceRange: "30–70 €",
-    area: "Vecrīga",
-    cuisine: "Modern Latvian",
-    rating: "4.7",
-    image: restaurantImageUrl("3pavarurestorans1.jpg"),
-    campaign: campaignFor("three-chefs"),
-  },
-  {
-    id: "melna-bite",
-    restaurantSlug: "melna-bite",
-    name: "Melna Bite",
-    priceRange: "15–35 €",
-    area: "Vecrīga",
-    cuisine: "Burgers, comfort food",
-    rating: "4.5",
-    image: restaurantImageUrl("Melna Bite 1.jpg"),
-    campaign: campaignFor("melna-bite"),
-  },
-  {
-    id: "kolonade-today",
-    restaurantSlug: "kolonade",
-    name: "Kolonāde",
-    priceRange: "30–50 €",
-    area: "Vērmanes Garden",
-    cuisine: "Seasonal Latvian",
-    rating: "4.7",
-    image: restaurantImageUrl("kolonade-1.jpg"),
-    campaign: campaignFor("kolonade"),
-  },
-].map(withRestaurantTags)
+function discoverRow(
+  id: string,
+  slug: RestaurantSlug,
+  imageSlot: ImgSlot,
+): OfferCardModel {
+  const r = getMergedRestaurantCatalogEntry(slug)!
+  return {
+    id,
+    restaurantSlug: slug,
+    name: r.name,
+    priceRange: r.displayPrice,
+    area: r.area,
+    cuisine: "",
+    rating: r.rating,
+    image: slotUrl(slug, imageSlot),
+    campaign: campaignFor(slug),
+  }
+}
 
-export const OFFERS_DINNER: OfferCardModel[] = [
-  {
-    id: "rozengrals",
-    restaurantSlug: "rozengrals",
-    name: "Rozengrals",
-    priceRange: "25–55 €",
-    area: "Vecrīga",
-    cuisine: "Medieval, Latvian",
-    rating: "4.8",
-    image: restaurantImageUrl("Rozengrals-1.jpg"),
-    campaign: campaignFor("rozengrals"),
-  },
-  {
-    id: "neiburgs-dinner",
-    restaurantSlug: "neiburgs",
-    name: "Neiburgs",
-    priceRange: "20–50 €",
-    area: "Vecrīga",
-    cuisine: "Latvian, European",
-    rating: "4.6",
-    image: restaurantImageUrl("Neiburgs-2.jpg"),
-    campaign: campaignFor("neiburgs"),
-  },
-  {
-    id: "melna-bite-dinner",
-    restaurantSlug: "melna-bite",
-    name: "Melna Bite",
-    priceRange: "15–35 €",
-    area: "Vecrīga",
-    cuisine: "Burgers, comfort food",
-    rating: "4.5",
-    image: restaurantImageUrl("Melna Bite 2.jpg"),
-    campaign: campaignFor("melna-bite"),
-  },
-  {
-    id: "max-cekot",
-    restaurantSlug: "max-cekot",
-    name: "Max Cekot Kitchen",
-    priceRange: "20–45 €",
-    area: "Vecrīga",
-    cuisine: "Grill, casual",
-    rating: "4.6",
-    image: restaurantImageUrl("max-cekot-1.jpg"),
-    campaign: campaignFor("max-cekot"),
-  },
-  {
-    id: "kolonade-dinner",
-    restaurantSlug: "kolonade",
-    name: "Kolonāde",
-    priceRange: "30–50 €",
-    area: "Vērmanes Garden",
-    cuisine: "Seasonal Latvian",
-    rating: "4.7",
-    image: restaurantImageUrl("kolonade-2.jpg"),
-    campaign: campaignFor("kolonade"),
-  },
-].map(withRestaurantTags)
+export function getOffersToday(): OfferCardModel[] {
+  return [
+    discoverRow("neiburgs", "neiburgs", "primary"),
+    discoverRow("three-chefs", "three-chefs", "primary"),
+    discoverRow("melna-bite", "melna-bite", "primary"),
+    discoverRow("kolonade-today", "kolonade", "primary"),
+  ].map(withRestaurantTags)
+}
+
+export function getOffersDinner(): OfferCardModel[] {
+  return [
+    discoverRow("rozengrals", "rozengrals", "primary"),
+    discoverRow("neiburgs-dinner", "neiburgs", "sideTop"),
+    discoverRow("melna-bite-dinner", "melna-bite", "sideTop"),
+    discoverRow("max-cekot", "max-cekot", "primary"),
+    discoverRow("kolonade-dinner", "kolonade", "sideTop"),
+  ].map(withRestaurantTags)
+}
 
 /** Horizontal carousel under “Near you”. */
-export const OFFERS_NEAR_YOU: OfferCardModel[] = [
-  {
-    id: "near-melna",
-    restaurantSlug: "melna-bite",
-    name: "Melna Bite",
-    priceRange: "15–35 €",
-    area: "Vecrīga",
-    cuisine: "Burgers, comfort food",
-    rating: "4.5",
-    image: restaurantImageUrl("Melna Bite 1.jpg"),
-    campaign: campaignFor("melna-bite"),
-  },
-  {
-    id: "near-chefs",
-    restaurantSlug: "three-chefs",
-    name: "3 Pavāru Restorāns",
-    priceRange: "30–70 €",
-    area: "Vecrīga",
-    cuisine: "Modern Latvian",
-    rating: "4.7",
-    image: restaurantImageUrl("3pavarurestorans1.jpg"),
-    campaign: campaignFor("three-chefs"),
-  },
-  {
-    id: "near-max",
-    restaurantSlug: "max-cekot",
-    name: "Max Cekot Kitchen",
-    priceRange: "20–45 €",
-    area: "Vecrīga",
-    cuisine: "Grill, casual",
-    rating: "4.6",
-    image: restaurantImageUrl("max-cekot-1.jpg"),
-    campaign: campaignFor("max-cekot"),
-  },
-  {
-    id: "near-kolonade",
-    restaurantSlug: "kolonade",
-    name: "Kolonāde",
-    priceRange: "30–50 €",
-    area: "Vērmanes Garden",
-    cuisine: "Seasonal Latvian",
-    rating: "4.7",
-    image: restaurantImageUrl("kolonade-3.jpg"),
-    campaign: campaignFor("kolonade"),
-  },
-].map(withRestaurantTags)
+export function getOffersNearYou(): OfferCardModel[] {
+  return [
+    discoverRow("near-melna", "melna-bite", "primary"),
+    discoverRow("near-chefs", "three-chefs", "primary"),
+    discoverRow("near-max", "max-cekot", "primary"),
+    discoverRow("near-kolonade", "kolonade", "sideBottom"),
+  ].map(withRestaurantTags)
+}
+
+function xlRow(
+  id: string,
+  slug: RestaurantSlug,
+  galleryFiles: string[],
+  extra?: Partial<Pick<OfferCardModel, "closesAt" | "isOpen">>,
+): OfferCardModel {
+  const r = getMergedRestaurantCatalogEntry(slug)!
+  return {
+    id,
+    restaurantSlug: slug,
+    name: r.name,
+    priceRange: r.displayPrice,
+    area: r.area,
+    cuisine: "",
+    rating: r.rating,
+    image: slotUrl(slug, "primary"),
+    galleryImages: galleryFiles.map(u),
+    reviewCount: r.reviewSuffix,
+    layout: "list",
+    ...extra,
+    campaign: campaignFor(slug),
+  }
+}
 
 /** Vertical list under “All restaurants” (XL layout). */
-export const OFFERS_ALL_RESTAURANTS: OfferCardModel[] = (
-  [
-  {
-    id: "xl-neiburgs",
-    restaurantSlug: "neiburgs",
-    name: "Neiburgs",
-    priceRange: "20–50 €",
-    area: "Vecrīga",
-    cuisine: "European, Drinks",
-    rating: "4.6",
-    image: restaurantImageUrl("Neiburgs-1.jpg"),
-    galleryImages: [
-      restaurantImageUrl("Neiburgs-1.jpg"),
-      restaurantImageUrl("Neiburgs-2.jpg"),
-      restaurantImageUrl("Rozengrals-1.jpg"),
-      restaurantImageUrl("Melna Bite 1.jpg"),
-    ],
-    reviewCount: "(200+)",
-    layout: "list",
-    closesAt: "21:00",
-    campaign: campaignFor("neiburgs"),
-  },
-  {
-    id: "xl-rozengrals",
-    restaurantSlug: "rozengrals",
-    name: "Rozengrals",
-    priceRange: "25–55 €",
-    area: "Vecrīga",
-    cuisine: "Medieval, Latvian",
-    rating: "4.8",
-    image: restaurantImageUrl("Rozengrals-1.jpg"),
-    galleryImages: [
-      restaurantImageUrl("Rozengrals-1.jpg"),
-      restaurantImageUrl("Neiburgs-1.jpg"),
-      restaurantImageUrl("Neiburgs-2.jpg"),
-      restaurantImageUrl("Melna Bite 2.jpg"),
-    ],
-    reviewCount: "(180+)",
-    layout: "list",
-    campaign: campaignFor("rozengrals"),
-  },
-  {
-    id: "xl-melna",
-    restaurantSlug: "melna-bite",
-    name: "Melna Bite",
-    priceRange: "15–35 €",
-    area: "Vecrīga",
-    cuisine: "Burgers, comfort food",
-    rating: "4.5",
-    image: restaurantImageUrl("Melna Bite 1.jpg"),
-    galleryImages: [
-      restaurantImageUrl("Melna Bite 1.jpg"),
-      restaurantImageUrl("Melna Bite 2.jpg"),
-      restaurantImageUrl("max-cekot-1.jpg"),
-      restaurantImageUrl("Neiburgs-2.jpg"),
-    ],
-    reviewCount: "(95+)",
-    layout: "list",
-    isOpen: false,
-    campaign: campaignFor("melna-bite"),
-  },
-  {
-    id: "xl-chefs",
-    restaurantSlug: "three-chefs",
-    name: "3 Pavāru Restorāns",
-    priceRange: "30–70 €",
-    area: "Vecrīga",
-    cuisine: "Modern Latvian",
-    rating: "4.7",
-    image: restaurantImageUrl("3pavarurestorans1.jpg"),
-    galleryImages: [
-      restaurantImageUrl("3pavarurestorans1.jpg"),
-      restaurantImageUrl("Neiburgs-2.jpg"),
-      restaurantImageUrl("Melna Bite 1.jpg"),
-      restaurantImageUrl("Rozengrals-1.jpg"),
-    ],
-    reviewCount: "(120+)",
-    layout: "list",
-    campaign: campaignFor("three-chefs"),
-  },
-  {
-    id: "xl-kolonade",
-    restaurantSlug: "kolonade",
-    name: "Kolonāde",
-    priceRange: "30–50 €",
-    area: "Vērmanes Garden",
-    cuisine: "Seasonal Latvian",
-    rating: "4.7",
-    image: restaurantImageUrl("kolonade-1.jpg"),
-    galleryImages: [
-      restaurantImageUrl("kolonade-1.jpg"),
-      restaurantImageUrl("kolonade-2.jpg"),
-      restaurantImageUrl("kolonade-3.jpg"),
-      restaurantImageUrl("Neiburgs-1.jpg"),
-    ],
-    reviewCount: "(180+)",
-    layout: "list",
-    campaign: campaignFor("kolonade"),
-  },
-  {
-    id: "xl-max-cekot",
-    restaurantSlug: "max-cekot",
-    name: "Max Cekot Kitchen",
-    priceRange: "20–45 €",
-    area: "Vecrīga",
-    cuisine: "Grill, casual",
-    rating: "4.6",
-    image: restaurantImageUrl("max-cekot-1.jpg"),
-    galleryImages: [
-      restaurantImageUrl("max-cekot-1.jpg"),
-      restaurantImageUrl("Melna Bite 2.jpg"),
-      restaurantImageUrl("Neiburgs-2.jpg"),
-      restaurantImageUrl("Rozengrals-1.jpg"),
-    ],
-    reviewCount: "(80+)",
-    layout: "list",
-    campaign: campaignFor("max-cekot"),
-  },
-] satisfies OfferCardModel[]
-).map(withRestaurantTags)
+export function getOffersAllRestaurants(): OfferCardModel[] {
+  return (
+    [
+      xlRow(
+        "xl-neiburgs",
+        "neiburgs",
+        [
+          "Neiburgs-1.jpg",
+          "Neiburgs-2.jpg",
+          "Rozengrals-1.jpg",
+          "Melna Bite 1.jpg",
+        ],
+        { closesAt: "21:00" },
+      ),
+      xlRow("xl-rozengrals", "rozengrals", [
+        "Rozengrals-1.jpg",
+        "Neiburgs-1.jpg",
+        "Neiburgs-2.jpg",
+        "Melna Bite 2.jpg",
+      ]),
+      xlRow(
+        "xl-melna",
+        "melna-bite",
+        [
+          "Melna Bite 1.jpg",
+          "Melna Bite 2.jpg",
+          "max-cekot-1.jpg",
+          "Neiburgs-2.jpg",
+        ],
+        { isOpen: false },
+      ),
+      xlRow("xl-chefs", "three-chefs", [
+        "3pavarurestorans1.jpg",
+        "Neiburgs-2.jpg",
+        "Melna Bite 1.jpg",
+        "Rozengrals-1.jpg",
+      ]),
+      xlRow("xl-kolonade", "kolonade", [
+        "kolonade-1.jpg",
+        "kolonade-2.jpg",
+        "kolonade-3.jpg",
+        "Neiburgs-1.jpg",
+      ]),
+      xlRow("xl-max-cekot", "max-cekot", [
+        "max-cekot-1.jpg",
+        "Melna Bite 2.jpg",
+        "Neiburgs-2.jpg",
+        "Rozengrals-1.jpg",
+      ]),
+    ] satisfies OfferCardModel[]
+  ).map(withRestaurantTags)
+}

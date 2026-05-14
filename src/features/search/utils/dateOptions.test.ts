@@ -13,10 +13,10 @@ describe("dateOptions", () => {
     const now = new Date(2026, 0, 1, 23, 30, 0, 0)
     const rows = getDateOptions(now)
 
-    expect(rows).toHaveLength(8)
+    expect(rows).toHaveLength(7)
     expect(rows[0]).toEqual({ id: "today", label: "Today" })
 
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 6; i++) {
       const expected = new Date(now)
       expected.setDate(expected.getDate() + i)
       expect(rows[i].id).toBe(localDateId(expected))

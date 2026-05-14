@@ -12,7 +12,7 @@ export interface ClaimOfferInput extends ClaimData {
   workingHoursEnd: string
   offerEnd: string
   cashbackAmount?: number
-  /** Percentages (e.g. 10, 15, 20) for pay-bill tip chips; defaults in {@link claimOffer}. */
+  /** Percentages (e.g. 5, 10, 15, 20) for pay-bill tip chips; defaults in {@link claimOffer}. */
   tipPresetAmounts?: number[]
   discountAddPercent?: number
   /** Local calendar day for offer-window end; defaults to today at call time. */
@@ -81,7 +81,7 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
     offerId: input.offerId,
     claimedAt,
     cashbackAmount: input.cashbackAmount ?? 2.5,
-    tipPresetAmounts: input.tipPresetAmounts ?? [10, 15, 20],
+    tipPresetAmounts: input.tipPresetAmounts ?? [5, 10, 15, 20],
     discountAddPercent,
   }
 }

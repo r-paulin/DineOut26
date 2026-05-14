@@ -17,7 +17,8 @@ function toLocalDateId(value: Date): string {
 }
 
 /**
- * Returns Today plus the next 7 calendar days (8 rows total), labels from the device locale.
+ * Returns Today plus the next 6 calendar days (7 rows total, i.e. 7 days including today),
+ * labels from the device locale.
  */
 export function getDateOptions(now: Date): DateOptionRow[] {
   const longFormatter = new Intl.DateTimeFormat(undefined, {
@@ -31,7 +32,7 @@ export function getDateOptions(now: Date): DateOptionRow[] {
   const base = new Date(now)
   base.setHours(12, 0, 0, 0)
 
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 1; i <= 6; i++) {
     const d = new Date(base)
     d.setDate(d.getDate() + i)
     rows.push({

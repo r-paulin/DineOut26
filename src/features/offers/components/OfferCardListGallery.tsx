@@ -6,6 +6,8 @@ export interface OfferCardListGalleryProps {
   /** Up to 6 photos; order matches Figma `_Place / Card / XL` → `Place / Gallery`. */
   photos: string[]
   campaign: OfferCardCampaign
+  /** When set, hero badges use timed-offer stack (up to three rows). */
+  restaurantSlug?: string
 }
 
 const R12 = "rounded-[12px]"
@@ -37,6 +39,7 @@ const SHEET_CAROUSEL_SCROLL_ROW =
 export function OfferCardListGallery({
   photos,
   campaign,
+  restaurantSlug,
 }: OfferCardListGalleryProps) {
   const list = photos.slice(0, MAX_PHOTOS)
   const src = (i: number) => list[i]
@@ -70,7 +73,7 @@ export function OfferCardListGallery({
           style={{ background: IMAGE_GRAD }}
         />
         <div className="absolute left-3 top-3 flex max-w-[90%] flex-col items-start">
-          <OfferCardBadges campaign={campaign} />
+          <OfferCardBadges campaign={campaign} restaurantSlug={restaurantSlug} />
         </div>
       </div>
 

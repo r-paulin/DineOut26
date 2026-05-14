@@ -15,7 +15,7 @@ export function PaymentConfirmationNavbar({
   onDismiss,
 }: PaymentConfirmationNavbarProps) {
   return (
-    <header className="flex shrink-0 items-center gap-2.5 px-3.5 pb-3 pt-[max(1.5rem,var(--safe-area-top))]">
+    <header className="flex shrink-0 items-center gap-4 px-6 pb-3 pt-[max(1.5rem,var(--safe-area-top))]">
       <button
         type="button"
         aria-label="Close"

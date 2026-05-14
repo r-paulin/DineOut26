@@ -73,26 +73,26 @@ export function ListItem({
 
   const body = (
     <>
-      <div className="flex w-full items-start gap-3 pt-[10px] pb-[9px]">
+      <div className="flex w-full items-center gap-3 pt-[10px] pb-[9px]">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           {icon != null ? (
             <div className="flex shrink-0 items-center text-action-primary">
               {icon}
             </div>
           ) : null}
-          <div className="flex min-w-0 flex-1 flex-col gap-0 overflow-hidden">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5 overflow-hidden">
             {textLines}
           </div>
         </div>
         {showChevron ? (
           <div className="flex min-w-6 shrink-0 self-stretch items-center justify-end">
-            <ChevronRight size="lg" className="text-tertiary" aria-hidden />
+            <ChevronRight size="sm" className="text-tertiary" aria-hidden />
           </div>
         ) : null}
       </div>
       {showSeparator ? (
         <div className="box-border w-full shrink-0 px-6" aria-hidden>
-          <div className="h-px w-full bg-[var(--color-border-separator)]" />
+          <div className="h-px w-full bg-separator" />
         </div>
       ) : null}
     </>

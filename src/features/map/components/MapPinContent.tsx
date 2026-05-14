@@ -17,7 +17,7 @@ export interface MapPinContentProps {
  * color (red / gray / dark / green).
  */
 export function MapPinContent({ marker, selected }: MapPinContentProps) {
-  const { variant, label, sublabel, discountText } = marker
+  const { variant, label, sublabel, discountText, timedOfferActiveNow } = marker
 
   if (variant === "map_pin") {
     const pillClass = selected
@@ -25,7 +25,9 @@ export function MapPinContent({ marker, selected }: MapPinContentProps) {
       : "bg-layer-floor-1"
     const iconClass = selected
       ? "shrink-0 text-static-key-light"
-      : "shrink-0 text-action-primary"
+      : timedOfferActiveNow === false
+        ? "shrink-0 text-tertiary"
+        : "shrink-0 text-action-primary"
     const discountClass = selected
       ? "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"
       : "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-primary"

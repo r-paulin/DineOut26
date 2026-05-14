@@ -157,6 +157,8 @@ export interface RestaurantDetailScreenProps {
   onOpenPriceInfo?: (() => void) | null
   onPayBill?: () => void
   onMoreAboutVenue?: () => void
+  /** Fires after the user submits a venue problem report (prototype + future telemetry). */
+  onReportProblem?: (reasonId: string) => void
   onShare?: () => void
   /** Fires when the user taps an offer in the `available` state. */
   onOfferAvailablePress?: (offerId: string) => void

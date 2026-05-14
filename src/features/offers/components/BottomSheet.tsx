@@ -36,6 +36,8 @@ export interface BottomSheetProps {
   userClaims?: readonly UserClaim[]
   claimedOffersById?: Readonly<Record<string, ClaimedOffer>>
   onHomeClaimedOfferPress?: () => void
+  /** Prototype admin catalog editor (persists to localStorage). */
+  onOpenAdminPlaces?: () => void
   /** When true, sheet is `relative` inside a parent fixed bottom dock (HomeScreen). */
   docked?: boolean
   /** Bumps when discover search stack height is measured so sheet heights match layout. */
@@ -66,6 +68,7 @@ export function BottomSheet({
   userClaims = [],
   claimedOffersById = {},
   onHomeClaimedOfferPress,
+  onOpenAdminPlaces,
   docked = false,
   discoverLayoutEpoch = 0,
 }: BottomSheetProps) {
@@ -172,6 +175,7 @@ export function BottomSheet({
         userClaims={userClaims}
         claimedOffersById={claimedOffersById}
         onHomeClaimedOfferPress={onHomeClaimedOfferPress}
+        onOpenAdminPlaces={onOpenAdminPlaces}
       />
     </div>
   )

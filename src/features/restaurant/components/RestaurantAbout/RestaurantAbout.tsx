@@ -10,10 +10,10 @@ import { useRestaurantAbout } from "./useRestaurantAbout"
 import { VenueInfoRows } from "./VenueInfoRow"
 
 const DISCLAIMER_P1 =
-  "Information about this venue is provided by the restaurant and third parties. We do not guarantee accuracy, completeness, or availability."
+  "The partner commits to only offer products that comply with the applicable rules of European Union law. All partners on the DineOut platform shall be considered traders within the meaning of Directive (EU) 2005/29."
 
 const DISCLAIMER_P2 =
-  "Offers, menus, and opening hours may change without notice. Always confirm details with the venue before visiting."
+  "Partners are responsible for the sale of goods and services at the venue. DineOut is a provider of information society services (the DineOut app) only."
 
 /**
  * Full “About” stack (Figma Consumer Dine-out `15886:44839`): name + meta in body,
@@ -215,8 +215,8 @@ export function RestaurantAbout({
           <Typography variant="body-s-regular" color="secondary" as="p">
             {DISCLAIMER_P2}
           </Typography>
-          <Typography variant="body-s-regular" color="secondary" as="div">
-            See our{" "}
+          <Typography variant="body-s-regular" color="secondary" as="p">
+            Further details can be found in our{" "}
             <button
               type="button"
               className="inline cursor-pointer border-0 bg-transparent p-0 underline decoration-solid text-action-primary"

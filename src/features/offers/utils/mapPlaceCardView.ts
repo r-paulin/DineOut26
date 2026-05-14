@@ -1,4 +1,6 @@
 import type { OfferCardCampaign, OfferCardModel, RestaurantCardView } from "../offers.types"
+import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.data"
+import { restaurantTimedOfferActiveNow } from "@/features/discover/utils/filterDiscoverOffers"
 
 /** True when the map-opened / pin UI should show campaign pills (has a primary line). */
 export function hasCampaignBadges(c: OfferCardCampaign): boolean {
@@ -20,6 +22,10 @@ function reviewCountDisplay(offer: OfferCardModel): string {
 /**
  * Spec-shaped view model for `_Place / Card / On Map - Opened` (documentation +
  * tests). {@link MapPlaceCardOpened} still accepts {@link OfferCardModel} at the boundary.
+ *
+ * `isOpen` follows timed-offer activity vs the device clock when the merged catalog
+ * lists timed offers for the slug (same rule as discover “open now”); otherwise
+ * it falls back to {@link OfferCardModel.isOpen}.
  */
 export function mapOfferToRestaurantCardView(offer: OfferCardModel): RestaurantCardView {
   const c = offer.campaign
@@ -31,10 +37,18 @@ export function mapOfferToRestaurantCardView(offer: OfferCardModel): RestaurantC
     : null
   const extra = c.extraOffers ?? 0
   const ratingNum = Number.parseFloat(offer.rating.replace(",", "."))
+  const slug = offer.restaurantSlug ?? offer.id
+  const timed = getRestaurantOffers(slug)
+  /** Match discover “open now”: timed-offer windows vs clock when catalog has offers; else card flags. */
+  const isOpen =
+    timed.length > 0 ?
+      restaurantTimedOfferActiveNow(slug, new Date())
+    : offer.isOpen !== false
+
   return {
     image: offer.image,
     name: offer.name,
-    isOpen: offer.isOpen !== false,
+    isOpen,
     closesAt: offer.closesAt,
     cuisineTags: cuisineTagsFromOffer(offer),
     priceRange: offer.priceRange,

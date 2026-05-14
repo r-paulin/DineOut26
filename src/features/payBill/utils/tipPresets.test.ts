@@ -8,7 +8,11 @@ describe("tipPresets", () => {
     expect(percentTipEur(50, 20)).toBe(10)
   })
 
+  it("computes 5% tip", () => {
+    expect(percentTipEur(100, 5)).toBe(5)
+  })
+
   it("exports default presets matching Figma", () => {
-    expect(DEFAULT_TIP_PERCENT_PRESETS).toEqual([10, 15, 20])
+    expect(DEFAULT_TIP_PERCENT_PRESETS).toEqual([5, 10, 15, 20])
   })
 })

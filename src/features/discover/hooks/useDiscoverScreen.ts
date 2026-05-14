@@ -26,6 +26,7 @@ export function useDiscoverScreen() {
   const [restaurantDetailSlug, setRestaurantDetailSlug] = useState<
     string | null
   >(null)
+  const [adminPlacesOpen, setAdminPlacesOpen] = useState(false)
   /**
    * Monotonic counter that bumps each time the bottom sheet should jump back to
    * its scroll origin (e.g. when the user taps "View map"). The scroll content
@@ -82,6 +83,7 @@ export function useDiscoverScreen() {
 
   const openSectionList = useCallback((payload: DiscoverSectionListState) => {
     setSearchOpen(false)
+    setAdminPlacesOpen(false)
     setSectionList(payload)
   }, [])
 
@@ -90,12 +92,24 @@ export function useDiscoverScreen() {
   const openRestaurantDetail = useCallback((slug: string) => {
     setSearchOpen(false)
     setSectionList(null)
+    setAdminPlacesOpen(false)
     setRestaurantDetailSlug(slug)
   }, [])
 
   const closeRestaurantDetail = useCallback(() => {
     setRestaurantDetailSlug(null)
     setSheetSnap("peek")
+  }, [])
+
+  const openAdminPlaces = useCallback(() => {
+    setSearchOpen(false)
+    setSectionList(null)
+    setRestaurantDetailSlug(null)
+    setAdminPlacesOpen(true)
+  }, [])
+
+  const closeAdminPlaces = useCallback(() => {
+    setAdminPlacesOpen(false)
   }, [])
 
   return {
@@ -119,5 +133,8 @@ export function useDiscoverScreen() {
     restaurantDetailSlug,
     openRestaurantDetail,
     closeRestaurantDetail,
+    adminPlacesOpen,
+    openAdminPlaces,
+    closeAdminPlaces,
   }
 }

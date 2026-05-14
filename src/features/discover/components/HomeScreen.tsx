@@ -1,4 +1,13 @@
-import { lazy, Suspense, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useSnackbar } from "@/shared/snackbar"
 import { BottomNav } from "@/shared/components/BottomNav"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
@@ -7,18 +16,19 @@ import {
   ClaimOfferModal,
   ClaimedOfferPage,
   MapPlaceCardOpened,
-  OFFERS_ALL_RESTAURANTS,
-  OFFERS_DINNER,
-  OFFERS_NEAR_YOU,
-  OFFERS_TODAY,
   SectionOffersListScreen,
   claimOffer,
   findOfferCardById,
+  getOffersAllRestaurants,
+  getOffersDinner,
+  getOffersNearYou,
+  getOffersToday,
   getTimePickerConfig,
   mapOfferCardToClaimModalOffer,
 } from "@/features/offers"
 import { buildMapMarkersFromOffers, MapViewFab } from "@/features/map"
 import { filterOffersByTimePreset } from "@/features/offers/utils/offerCampaign"
+import { filterOfferCardsForDiscover } from "@/features/discover/utils/filterDiscoverOffers"
 import { offerWindowBaseDateFromSchedule } from "@/features/offers/utils/offerScheduleLocal"
 import {
   FilterSheet,
@@ -27,6 +37,8 @@ import {
 } from "@/features/search"
 import { useDiscoverDockLayout } from "@/features/discover/hooks/useDiscoverDockLayout"
 import { useDiscoverScreen } from "@/features/discover/hooks/useDiscoverScreen"
+import { AdminPlacesScreen } from "@/features/restaurants/components/AdminPlacesScreen"
+import { useRestaurantCatalogSnapshot } from "@/features/restaurants/restaurantCatalogRuntime"
 import { findOfferByRestaurantId } from "@/features/offers/utils/findOfferByRestaurantId"
 import { PayBillFlow } from "@/features/payBill"
 import type { PayBillFlowEntry } from "@/features/payBill/payBill.types"
@@ -83,23 +95,52 @@ export function HomeScreen() {
     restaurantDetailSlug,
     openRestaurantDetail,
     closeRestaurantDetail,
+    adminPlacesOpen,
+    openAdminPlaces,
+    closeAdminPlaces,
   } = useDiscoverScreen()
 
+  const catalogSnapshot = useRestaurantCatalogSnapshot()
+  const discoverNow = useMemo(
+    () => new Date(),
+    [filterState, catalogSnapshot],
+  )
+
   const offersToday = useMemo(
-    () => filterOffersByTimePreset(OFFERS_TODAY, "any"),
-    [],
+    () =>
+      filterOfferCardsForDiscover(
+        filterOffersByTimePreset(getOffersToday(), "any"),
+        filterState,
+        discoverNow,
+      ),
+    [catalogSnapshot, filterState, discoverNow],
   )
   const offersDinner = useMemo(
-    () => filterOffersByTimePreset(OFFERS_DINNER, "any"),
-    [],
+    () =>
+      filterOfferCardsForDiscover(
+        filterOffersByTimePreset(getOffersDinner(), "any"),
+        filterState,
+        discoverNow,
+      ),
+    [catalogSnapshot, filterState, discoverNow],
   )
   const offersNearYou = useMemo(
-    () => filterOffersByTimePreset(OFFERS_NEAR_YOU, "any"),
-    [],
+    () =>
+      filterOfferCardsForDiscover(
+        filterOffersByTimePreset(getOffersNearYou(), "any"),
+        filterState,
+        discoverNow,
+      ),
+    [catalogSnapshot, filterState, discoverNow],
   )
   const offersAllRestaurants = useMemo(
-    () => filterOffersByTimePreset(OFFERS_ALL_RESTAURANTS, "any"),
-    [],
+    () =>
+      filterOfferCardsForDiscover(
+        filterOffersByTimePreset(getOffersAllRestaurants(), "any"),
+        filterState,
+        discoverNow,
+      ),
+    [catalogSnapshot, filterState, discoverNow],
   )
   const mergedDiscoverOffers = useMemo(
     () => [
@@ -119,6 +160,46 @@ export function HomeScreen() {
     [mergedDiscoverOffers, focusRestaurantId],
   )
   const mapPlaceOpen = Boolean(focusRestaurantId && focusedOffer)
+  const [mapPlaceCardFilterPending, setMapPlaceCardFilterPending] =
+    useState(false)
+
+  const runWithMapPlaceCardFilterSkeleton = useCallback((work: () => void) => {
+    setMapPlaceCardFilterPending(true)
+    work()
+    queueMicrotask(() => {
+      window.setTimeout(() => setMapPlaceCardFilterPending(false), 320)
+    })
+  }, [])
+
+  const applySheetValueWithSkeleton = useCallback(
+    (...args: Parameters<typeof applySheetValue>) => {
+      runWithMapPlaceCardFilterSkeleton(() => applySheetValue(...args))
+    },
+    [applySheetValue, runWithMapPlaceCardFilterSkeleton],
+  )
+
+  const toggleOpenNowTodayWithSkeleton = useCallback(() => {
+    runWithMapPlaceCardFilterSkeleton(() => toggleOpenNowToday())
+  }, [runWithMapPlaceCardFilterSkeleton, toggleOpenNowToday])
+
+  const clearOpenNowFilterWithSkeleton = useCallback(() => {
+    runWithMapPlaceCardFilterSkeleton(() => clearOpenNowFilter())
+  }, [clearOpenNowFilter, runWithMapPlaceCardFilterSkeleton])
+
+  const setOpenAtTimeWithSkeleton = useCallback(
+    (time: Parameters<typeof setOpenAtTime>[0]) => {
+      runWithMapPlaceCardFilterSkeleton(() => setOpenAtTime(time))
+    },
+    [runWithMapPlaceCardFilterSkeleton, setOpenAtTime],
+  )
+
+  useEffect(() => {
+    if (!focusRestaurantId) return
+    if (!findOfferByRestaurantId(mergedDiscoverOffers, focusRestaurantId)) {
+      onClearFocus()
+    }
+  }, [focusRestaurantId, mergedDiscoverOffers, onClearFocus])
+
   const mapCardOverlayRef = useRef<HTMLDivElement>(null)
   const [measuredMapFloatingOverlayPx, setMeasuredMapFloatingOverlayPx] =
     useState(0)
@@ -141,7 +222,7 @@ export function HomeScreen() {
       restaurantDetailSlug ?
         getRestaurantDetailDemo(restaurantDetailSlug)
       : null,
-    [restaurantDetailSlug],
+    [restaurantDetailSlug, catalogSnapshot],
   )
 
   const restaurantDetailModel = baseRestaurantDetail
@@ -165,7 +246,7 @@ export function HomeScreen() {
     if (!latestClaimedOfferForHome) return null
     const model = getRestaurantDetailDemo(latestClaimedOfferForHome.restaurantSlug)
     return findOfferCardById(model, latestClaimedOfferForHome.offerId) ?? null
-  }, [latestClaimedOfferForHome])
+  }, [latestClaimedOfferForHome, catalogSnapshot])
 
   const handleHomeClaimedOfferPress = useCallback(() => {
     if (!latestClaimedOfferForHome) return
@@ -176,7 +257,7 @@ export function HomeScreen() {
     if (!claimedView) return null
     const d = getRestaurantDetailDemo(claimedView.restaurantSlug)
     return { name: d.name, address: d.address, phone: d.phone }
-  }, [claimedView])
+  }, [claimedView, catalogSnapshot])
 
   useLayoutEffect(() => {
     if (!mapPlaceOpen) return
@@ -365,16 +446,17 @@ export function HomeScreen() {
     isChipLocked,
     openNowTrailing,
     openSheet,
-    toggleOpenNowToday,
-    clearOpenNowFilter,
-    setOpenAtTime,
+    toggleOpenNowToday: toggleOpenNowTodayWithSkeleton,
+    clearOpenNowFilter: clearOpenNowFilterWithSkeleton,
+    setOpenAtTime: setOpenAtTimeWithSkeleton,
     filterState,
   }
 
   const mapSurface = sheetSnap === "full" ? "flat" : "floating"
   const showBottomNav =
-    !searchOpen && !sectionList && !restaurantDetailSlug
-  const showBottomSheet = !mapPlaceOpen && !restaurantDetailSlug
+    !searchOpen && !sectionList && !restaurantDetailSlug && !adminPlacesOpen
+  const showBottomSheet =
+    !mapPlaceOpen && !restaurantDetailSlug && !adminPlacesOpen
   const discoverDockActive = showBottomNav && showBottomSheet
 
   const { discoverLayoutEpoch, discoverDockBottomInsetPx } = useDiscoverDockLayout({
@@ -401,6 +483,7 @@ export function HomeScreen() {
     claimedOffersById: claimedByOfferId,
     onHomeClaimedOfferPress: handleHomeClaimedOfferPress,
     discoverLayoutEpoch,
+    onOpenAdminPlaces: openAdminPlaces,
   }
 
   const mapFallback = (
@@ -436,13 +519,16 @@ export function HomeScreen() {
             {mapPlaceOpen && focusedOffer ? (
               <div
                 ref={mapCardOverlayRef}
-                className="pointer-events-none absolute bottom-[var(--nav-layout-offset)] left-0 right-0 z-[15] px-3 pb-3"
+                className="pointer-events-none absolute bottom-[var(--nav-layout-offset)] left-0 right-0 z-[15] px-2 pb-3"
                 role="region"
                 aria-label="Restaurant on map"
               >
                 <div className="pointer-events-auto">
                   <MapPlaceCardOpened
                     offer={focusedOffer}
+                    filterPending={
+                      mapPlaceCardFilterPending && mapPlaceOpen
+                    }
                     onClose={onClearFocus}
                     onRestaurantPress={openRestaurantDetail}
                   />
@@ -456,6 +542,7 @@ export function HomeScreen() {
         ref={searchPanelRef}
         onOpenSearch={() => {
           closeSectionList()
+          closeAdminPlaces()
           setSearchOpen(true)
         }}
         sheetExpanded={sheetSnap === "full"}
@@ -477,7 +564,8 @@ export function HomeScreen() {
       {sheetSnap === "full" &&
       !searchOpen &&
       !sectionList &&
-      !restaurantDetailSlug ? (
+      !restaurantDetailSlug &&
+      !adminPlacesOpen ? (
         <MapViewFab onClick={onViewMapFab} />
       ) : null}
       {showBottomNav && !discoverDockActive ? (
@@ -503,6 +591,9 @@ export function HomeScreen() {
           onRestaurantPress={openRestaurantDetail}
           {...filterBarProps}
         />
+      ) : null}
+      {adminPlacesOpen ? (
+        <AdminPlacesScreen onClose={closeAdminPlaces} />
       ) : null}
       {restaurantDetailSlug && restaurantDetailModel ? (
         <RestaurantDetailScreen
@@ -576,7 +667,7 @@ export function HomeScreen() {
         filterState={filterState}
         dateOptionRows={dateOptionRows}
         onClose={closeSheet}
-        onApply={applySheetValue}
+        onApply={applySheetValueWithSkeleton}
       />
     </div>
   )

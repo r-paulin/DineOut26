@@ -39,7 +39,7 @@ const euroSuffixStyle: CSSProperties = {
 }
 
 /**
- * Bill amount field — pill surface, [0][cursor][€] centered; native keyboard via transparent input.
+ * Bill amount field — centered [0][cursor][€]; native keyboard via transparent input (no pill fill).
  */
 export function ReceiptAmountBlock({
   errorMessage,
@@ -60,7 +60,7 @@ export function ReceiptAmountBlock({
   return (
     <div className="flex w-full max-w-[min(100%,22rem)] flex-col items-center px-6">
       <div
-        className="relative flex min-h-[72px] w-full cursor-text items-center justify-center gap-0.5 rounded-full border border-solid border-separator bg-neutral-secondary px-6 outline-none transition-colors focus-within:border-action-primary focus-within:bg-layer-floor-1 focus-within:ring-2 focus-within:ring-action-primary"
+        className="relative flex min-h-[72px] w-full cursor-text items-center justify-center gap-0.5 rounded-full border border-solid border-separator bg-transparent px-6 outline-none transition-colors"
         onClick={onTapAmount}
       >
         <input
@@ -84,7 +84,7 @@ export function ReceiptAmountBlock({
           onFocus={(ev) => {
             window.setTimeout(() => ev.target.select(), 0)
           }}
-          className="absolute inset-0 z-[1] min-h-[72px] w-full cursor-text rounded-full border-none bg-transparent p-0 text-left text-base leading-normal text-transparent outline-none ring-0 [caret-color:transparent] focus-visible:ring-0"
+          className="absolute inset-0 z-[1] min-h-[72px] w-full cursor-text rounded-full border-none bg-transparent p-0 text-left text-base leading-normal text-transparent shadow-none outline-none outline-offset-0 ring-0 [caret-color:transparent] focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
         />
         <span
           ref={scaleWrapRef}

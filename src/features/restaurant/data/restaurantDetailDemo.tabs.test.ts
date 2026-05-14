@@ -3,9 +3,9 @@ import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.dat
 import { getRestaurantDetailDemo } from "./restaurantDetailDemo"
 
 describe("getRestaurantDetailDemo offer date tabs", () => {
-  it("shows today plus 7 days ahead (same length as getDateOptions)", () => {
+  it("shows today plus 6 days ahead (same length as getDateOptions)", () => {
     const model = getRestaurantDetailDemo("neiburgs")
-    expect(model.offerDateTabs).toHaveLength(8)
+    expect(model.offerDateTabs).toHaveLength(7)
     expect(model.offerDateTabs[0]?.id).toBe("today")
   })
 
@@ -17,7 +17,7 @@ describe("getRestaurantDetailDemo offer date tabs", () => {
     expect(withCards).toHaveLength(3)
 
     const noOfferTabs = model.offerDateTabs.filter((t) => t.state === "no-offer")
-    expect(noOfferTabs).toHaveLength(5)
+    expect(noOfferTabs).toHaveLength(4)
     for (const t of noOfferTabs) {
       expect(model.offersByTabId[t.id] ?? []).toEqual([])
     }

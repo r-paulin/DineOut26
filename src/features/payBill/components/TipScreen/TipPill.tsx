@@ -18,8 +18,6 @@ export function TipPill({
   onDeselect,
 }: TipPillProps) {
   const twoLine = Boolean(option.secondaryLabel)
-  /** Preset tiles share a min width; single-line (e.g. “Other”) must grow — 68px minus p-3 clips text. */
-  const widthClass = twoLine ? "min-w-[68px]" : "min-w-max"
   return (
     <button
       type="button"
@@ -27,7 +25,7 @@ export function TipPill({
         if (isSelected) onDeselect()
         else onSelect()
       }}
-      className={`inline-flex min-h-[60px] ${widthClass} w-auto max-w-none shrink-0 flex-col items-center justify-center !rounded-[8px] p-3 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary ${
+      className={`flex min-h-[60px] w-full min-w-0 shrink-0 flex-col items-center justify-center !rounded-[8px] p-3 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary ${
         isSelected ?
           "bg-action-primary text-static-key-light hover:opacity-95 active:opacity-90"
         : "bg-neutral-secondary text-primary hover:bg-active-neutral-secondary active:opacity-90"
