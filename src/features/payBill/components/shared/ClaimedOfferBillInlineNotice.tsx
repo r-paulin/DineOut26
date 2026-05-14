@@ -1,17 +1,9 @@
 import { Typography } from "@bolteu/kalep-react"
 import InfoCircle from "@bolteu/kalep-react-icons/dist/InfoCircle"
+import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
 
 const FONT_FEAT =
   "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
-
-/** Same rounding as bill-offer badges; copy uses `N%` without “off”. */
-function formatPercentForClaimNotice(percent: number): string {
-  if (!Number.isFinite(percent) || percent < 0) return "0"
-  const rounded = Math.round(percent * 100) / 100
-  return Number.isInteger(rounded) ?
-      String(rounded)
-    : String(parseFloat(rounded.toFixed(2)))
-}
 
 export interface ClaimedOfferBillInlineNoticeProps {
   discountPercent: number
@@ -20,6 +12,8 @@ export interface ClaimedOfferBillInlineNoticeProps {
    * (pay / confirmation screens).
    */
   remindToEnterDiscountedTotal?: boolean
+  /** When the parent already applies horizontal padding (e.g. confirmation sheet). */
+  flushHorizontal?: boolean
 }
 
 /**
@@ -28,10 +22,13 @@ export interface ClaimedOfferBillInlineNoticeProps {
 export function ClaimedOfferBillInlineNotice({
   discountPercent,
   remindToEnterDiscountedTotal = false,
+  flushHorizontal = false,
 }: ClaimedOfferBillInlineNoticeProps) {
-  const pct = formatPercentForClaimNotice(discountPercent)
+  const pct = formatDiscountPercent(discountPercent)
+  const outer =
+    flushHorizontal ? "shrink-0 px-0 pb-4 pt-0" : "shrink-0 px-6 pb-3 pt-[12px]"
   return (
-    <div className="shrink-0 px-6 pb-3 pt-[12px]">
+    <div className={outer}>
       <div
         className="flex min-h-12 gap-4 rounded-xl bg-neutral-secondary px-4 py-3"
         role="status"

@@ -25,11 +25,11 @@ import {
   SearchFullscreen,
   SearchPanel,
 } from "@/features/search"
+import { useDiscoverDockLayout } from "@/features/discover/hooks/useDiscoverDockLayout"
 import { useDiscoverScreen } from "@/features/discover/hooks/useDiscoverScreen"
 import { findOfferByRestaurantId } from "@/features/offers/utils/findOfferByRestaurantId"
 import { PayBillFlow } from "@/features/payBill"
 import type { PayBillFlowEntry } from "@/features/payBill/payBill.types"
-import { buildPayBillAmountBadges } from "@/features/payBill/utils/payBillAmountBadges"
 import {
   getRestaurantDetailDemo,
   RestaurantDetailScreen,
@@ -194,42 +194,6 @@ export function HomeScreen() {
 
   const searchPanelRef = useRef<HTMLDivElement>(null)
   const discoverDockRef = useRef<HTMLDivElement>(null)
-  const [discoverLayoutEpoch, setDiscoverLayoutEpoch] = useState(0)
-  const [discoverDockBottomInsetPx, setDiscoverDockBottomInsetPx] = useState<
-    number | null
-  >(null)
-  const lastSearchStackHeightRef = useRef(0)
-  const lastDockInsetRef = useRef(0)
-  const lastFullGapAppliedPxRef = useRef(0)
-
-  useLayoutEffect(() => {
-    const el = searchPanelRef.current
-    if (!el || typeof ResizeObserver === "undefined") return
-
-    const apply = () => {
-      const h = Math.ceil(el.getBoundingClientRect().height)
-      if (h <= 0) return
-      if (h === lastSearchStackHeightRef.current) return
-      lastSearchStackHeightRef.current = h
-      document.documentElement.style.setProperty("--search-stack-height", `${h}px`)
-      setDiscoverLayoutEpoch((n) => n + 1)
-    }
-
-    const ro = new ResizeObserver(apply)
-    ro.observe(el)
-    apply()
-    return () => {
-      ro.disconnect()
-      lastSearchStackHeightRef.current = 0
-      document.documentElement.style.removeProperty("--search-stack-height")
-    }
-  }, [])
-
-  useLayoutEffect(() => {
-    return () => {
-      document.documentElement.style.removeProperty("--discover-full-sheet-gap")
-    }
-  }, [])
 
   const handleInfoContinue = useCallback(() => {
     const id = offerClaimModalOfferId
@@ -355,7 +319,6 @@ export function HomeScreen() {
       restaurantName: detail.name,
       restaurantSlug: claimedView.restaurantSlug,
       offer: claimedView,
-      billAmountBadges: buildPayBillAmountBadges(detail),
     })
     setClaimedView(null)
   }, [claimedView])
@@ -371,7 +334,6 @@ export function HomeScreen() {
           restaurantName: baseRestaurantDetail.name,
           restaurantSlug: restaurantDetailSlug,
           offer: claim,
-          billAmountBadges: buildPayBillAmountBadges(baseRestaurantDetail),
         })
         return
       }
@@ -380,7 +342,6 @@ export function HomeScreen() {
       restaurantName: baseRestaurantDetail.name,
       restaurantSlug: restaurantDetailSlug,
       offer: null,
-      billAmountBadges: buildPayBillAmountBadges(baseRestaurantDetail),
     })
   }, [baseRestaurantDetail, claimedByOfferId, restaurantDetailSlug])
 
@@ -391,9 +352,10 @@ export function HomeScreen() {
   const handlePayBillPaidDone = useCallback(() => {
     closeRestaurantDetail()
     snackbar.add({
-      title: "Thank you for your order with DineOut",
-      description: "We appreciate you choosing DineOut.",
-      timeout: 4500,
+      title: "Thanks for dining with us",
+      description: "Leave a quick review to share your feedback",
+      actions: [{ label: "Leave a review", onClick: () => {} }],
+      timeout: 5000,
     })
   }, [closeRestaurantDetail, snackbar])
 
@@ -415,62 +377,12 @@ export function HomeScreen() {
   const showBottomSheet = !mapPlaceOpen && !restaurantDetailSlug
   const discoverDockActive = showBottomNav && showBottomSheet
 
-  useLayoutEffect(() => {
-    if (!discoverDockActive) {
-      setDiscoverDockBottomInsetPx(null)
-      lastDockInsetRef.current = 0
-      return
-    }
-    const el = discoverDockRef.current
-    if (!el || typeof ResizeObserver === "undefined") return
-
-    const apply = () => {
-      const h = Math.ceil(el.getBoundingClientRect().height)
-      if (h <= 0) return
-      if (h === lastDockInsetRef.current) return
-      lastDockInsetRef.current = h
-      setDiscoverDockBottomInsetPx(h)
-      setDiscoverLayoutEpoch((n) => n + 1)
-    }
-
-    const ro = new ResizeObserver(apply)
-    ro.observe(el)
-    apply()
-    return () => {
-      ro.disconnect()
-      lastDockInsetRef.current = 0
-      setDiscoverDockBottomInsetPx(null)
-    }
-  }, [discoverDockActive])
-
-  useLayoutEffect(() => {
-    if (!discoverDockActive || sheetSnap !== "full") {
-      if (lastFullGapAppliedPxRef.current !== 0) {
-        lastFullGapAppliedPxRef.current = 0
-        document.documentElement.style.removeProperty(
-          "--discover-full-sheet-gap",
-        )
-        setDiscoverLayoutEpoch((n) => n + 1)
-      }
-      return
-    }
-    const dock = discoverDockRef.current
-    const search = searchPanelRef.current
-    if (!dock || !search) return
-    const sheet = dock.firstElementChild
-    if (!(sheet instanceof HTMLElement)) return
-    const gap =
-      sheet.getBoundingClientRect().top - search.getBoundingClientRect().bottom
-    const measured = gap > 1 ? Math.ceil(gap) : 0
-    const next = Math.max(lastFullGapAppliedPxRef.current, measured)
-    if (next === lastFullGapAppliedPxRef.current) return
-    lastFullGapAppliedPxRef.current = next
-    document.documentElement.style.setProperty(
-      "--discover-full-sheet-gap",
-      `${next}px`,
-    )
-    setDiscoverLayoutEpoch((n) => n + 1)
-  }, [discoverDockActive, sheetSnap, discoverLayoutEpoch])
+  const { discoverLayoutEpoch, discoverDockBottomInsetPx } = useDiscoverDockLayout({
+    searchPanelRef,
+    discoverDockRef,
+    discoverDockActive,
+    sheetSnap,
+  })
 
   const bottomSheetProps = {
     snap: sheetSnap,

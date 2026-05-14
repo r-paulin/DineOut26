@@ -20,6 +20,7 @@ import {
 import { PayBillSavedBadge } from "@/features/payBill/components/PayScreen/PayBillSavedBadge"
 import { SlidingButton } from "@/features/payBill/components/PayScreen/SlidingButton"
 import { ClaimedOfferBillInlineNotice } from "@/features/payBill/components/shared/ClaimedOfferBillInlineNotice"
+import { DiscountReceiptRow } from "@/features/payBill/components/shared/DiscountReceiptRow"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
 import {
@@ -181,6 +182,7 @@ export function PayScreen({
   const setCheckoutPaymentOptionId = usePayBillStore((s) => s.setCheckoutPaymentOptionId)
 
   const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
+  const [claimedDiscountInfoSheet, setClaimedDiscountInfoSheet] = useState(false)
   const [boltInfoSheet, setBoltInfoSheet] = useState(false)
   const [cardSheet, setCardSheet] = useState(false)
   const [paymentPickerOpen, setPaymentPickerOpen] = useState(false)
@@ -271,7 +273,7 @@ export function PayScreen({
         discountAmount: res.discountAmount,
         paymentMethodUi: methodUi,
       })
-      setStep("success")
+      setStep("confirmation")
     } catch {
       snackbar.add({
         description: "Payment failed. Try again.",
@@ -331,11 +333,11 @@ export function PayScreen({
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-layer-floor-1">
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           <div className="flex min-h-0 w-full flex-1 shrink-0 flex-col items-center justify-center gap-1 px-6 py-8">
-            <div className="w-full max-w-[min(100%,22rem)] text-center">
+            <p className="m-0 flex w-full max-w-[min(100%,22rem)] flex-col items-center gap-1 text-center">
               <Typography
                 variant="body-l-regular"
                 color="secondary"
-                as="p"
+                as="span"
                 align="center"
               >
                 <span>You&apos;ll pay</span>
@@ -351,12 +353,12 @@ export function PayScreen({
                   </>
                 : null}
               </Typography>
-            </div>
-            <p
-              className="w-full max-w-[min(100%,22rem)] text-center text-primary"
-              style={payBillHeroMainPriceStyle}
-            >
-              {formatEurMajor(finalAmt)}
+              <span
+                className="text-primary tabular-nums"
+                style={payBillHeroMainPriceStyle}
+              >
+                {formatEurMajor(finalAmt)}
+              </span>
             </p>
             {savedEur > 0 ?
               <PayBillSavedBadge savedAmountEur={savedEur} />
@@ -365,7 +367,7 @@ export function PayScreen({
 
           <CardDivider />
 
-          <div className="flex shrink-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pb-[max(1rem,var(--safe-area-bottom))] pt-6 shadow-[var(--elevation-1)]">
+          <div className="flex shrink-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pb-6 pt-6 shadow-[var(--elevation-1)]">
             <div className="mb-2">
               <Typography variant="heading-s-accent" color="primary" as="h2">
                 Summary
@@ -389,41 +391,19 @@ export function PayScreen({
                 />
               : null}
               {d1 > 0 ?
-                <ReceiptItem
-                  label={`Discount ${d1}%`}
-                  amount={formatEurMajor(-firstDiscEur)}
-                  variant="regular"
-                  labelColor="secondary"
-                  labelTypographyVariant="body-m-regular"
-                  labelSuffix={
-                    <button
-                      type="button"
-                      className="inline-flex border-none bg-transparent p-0"
-                      aria-label="Discount info"
-                      onClick={() => setDineOutBenefitSheet(true)}
-                    >
-                      <InfoCircleOutlined size="sm" className="text-secondary" aria-hidden />
-                    </button>
-                  }
+                <DiscountReceiptRow
+                  percent={d1}
+                  discountEur={firstDiscEur}
+                  infoAriaLabel="Claimed offer discount info"
+                  onInfoClick={() => setClaimedDiscountInfoSheet(true)}
                 />
               : null}
               {d2 > 0 ?
-                <ReceiptItem
-                  label={`Discount ${d2}%`}
-                  amount={formatEurMajor(-secondDiscEur)}
-                  variant="regular"
-                  labelColor="secondary"
-                  labelTypographyVariant="body-m-regular"
-                  labelSuffix={
-                    <button
-                      type="button"
-                      className="inline-flex border-none bg-transparent p-0"
-                      aria-label="DineOut benefit info"
-                      onClick={() => setDineOutBenefitSheet(true)}
-                    >
-                      <InfoCircleOutlined size="sm" className="text-secondary" aria-hidden />
-                    </button>
-                  }
+                <DiscountReceiptRow
+                  percent={d2}
+                  discountEur={secondDiscEur}
+                  infoAriaLabel="DineOut benefit info"
+                  onInfoClick={() => setDineOutBenefitSheet(true)}
                 />
               : null}
             </div>
@@ -488,18 +468,30 @@ export function PayScreen({
                   </span>
                 </div>
               : null}
-              <SlidingButton
-                label="Pay bill"
-                sublabel="Slide to confirm"
-                isLoading={payLoading}
-                disabled={payLoading}
-                onComplete={onSlideComplete}
-              />
             </div>
           </div>
         </div>
+
+        <div className="shrink-0 border-t border-solid border-separator bg-layer-floor-1 px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]">
+          <SlidingButton
+            label="Pay bill"
+            sublabel="Slide to confirm"
+            isLoading={payLoading}
+            disabled={payLoading}
+            onComplete={onSlideComplete}
+          />
+        </div>
       </div>
 
+      <AppInfoBottomSheet
+        open={claimedDiscountInfoSheet}
+        onOpenChange={setClaimedDiscountInfoSheet}
+        container={portalContainer}
+        title="Claimed offer discount"
+        body="This discount comes from the offer you claimed. It applies to your bill subtotal including tip, before any DineOut payment benefit."
+        zOverlay={Z_PAY_SHEET_OVERLAY}
+        zContent={Z_PAY_SHEET_CONTENT}
+      />
       <AppInfoBottomSheet
         open={dineOutBenefitSheet}
         onOpenChange={setDineOutBenefitSheet}

@@ -2,14 +2,17 @@ import { Typography } from "@bolteu/kalep-react"
 import type { CSSProperties, RefObject } from "react"
 import {
   payBillHeroMainPriceStyle,
+  payBillHeroPlaceholderZeroStyle,
   payBillNumericOpentype,
 } from "@/features/payBill/utils/payBillNumericDisplay"
 
 export interface ReceiptAmountBlockProps {
-  label: string
-  labelColor: "secondary" | "danger-primary"
+  /** Shown below the amount row (invalid submit). */
+  errorMessage?: string | null
   /** Target for GSAP wobble on invalid submit. */
-  labelMotionRef?: RefObject<HTMLDivElement | null>
+  errorMotionRef?: RefObject<HTMLDivElement | null>
+  /** `aria-describedby` on the input when `errorMessage` is set. */
+  errorId?: string
   /** Touch devices: autofocus native decimal keyboard on mount. */
   autoFocusInput: boolean
   display: { text: string; dim: boolean }
@@ -22,26 +25,26 @@ export interface ReceiptAmountBlockProps {
   inputAriaLabel: string
 }
 
-/** Figma `15942:12860` Input / Currency — 32px semibold; bottom padding optically aligns € with 64/72 hero digits. */
+/** € ~65% of hero digit size; 8px bottom padding; line-height 1. */
 const euroSuffixStyle: CSSProperties = {
   ...payBillNumericOpentype,
   display: "inline-block",
-  fontSize: 32,
+  fontSize: 42,
   fontStyle: "normal",
-  fontWeight: "var(--font-weight-semibold, 650)",
+  fontWeight: 650,
   lineHeight: 1,
-  letterSpacing: "-0.704px",
-  fontVariationSettings: "'wght' var(--font-weight-semibold, 650)",
-  paddingBottom: "6px",
+  letterSpacing: "-0.462px",
+  fontVariationSettings: "'wght' 650",
+  paddingBottom: "8px",
 }
 
 /**
- * Figma bill amount row: centered [digits][cursor][€]; native keyboard via transparent input.
+ * Bill amount field — pill surface, [0][cursor][€] centered; native keyboard via transparent input.
  */
 export function ReceiptAmountBlock({
-  label,
-  labelColor,
-  labelMotionRef,
+  errorMessage,
+  errorMotionRef,
+  errorId,
   autoFocusInput,
   display,
   amountRef,
@@ -56,13 +59,8 @@ export function ReceiptAmountBlock({
 
   return (
     <div className="flex w-full max-w-[min(100%,22rem)] flex-col items-center px-6">
-      <div ref={labelMotionRef} className="w-full">
-        <Typography variant="body-m-regular" color={labelColor} as="p" align="center">
-          {label}
-        </Typography>
-      </div>
       <div
-        className="relative mt-3 flex min-h-[72px] w-full cursor-text items-center justify-center"
+        className="relative flex min-h-[72px] w-full cursor-text items-center justify-center gap-0.5 rounded-full border border-solid border-separator bg-neutral-secondary px-6 outline-none transition-colors focus-within:border-action-primary focus-within:bg-layer-floor-1 focus-within:ring-2 focus-within:ring-action-primary"
         onClick={onTapAmount}
       >
         <input
@@ -75,6 +73,10 @@ export function ReceiptAmountBlock({
           spellCheck={false}
           autoFocus={autoFocusInput}
           aria-label={inputAriaLabel}
+          aria-invalid={Boolean(errorMessage)}
+          aria-describedby={
+            errorMessage && errorId ? errorId : undefined
+          }
           value={display.text}
           onChange={(ev) => {
             onHiddenInputChange(ev.target.value)
@@ -82,25 +84,25 @@ export function ReceiptAmountBlock({
           onFocus={(ev) => {
             window.setTimeout(() => ev.target.select(), 0)
           }}
-          className="absolute inset-0 z-[1] min-h-[72px] w-full cursor-text rounded-lg border-none bg-transparent p-0 text-left text-base leading-normal text-transparent outline-none ring-0 [caret-color:transparent] focus-visible:ring-0"
+          className="absolute inset-0 z-[1] min-h-[72px] w-full cursor-text rounded-full border-none bg-transparent p-0 text-left text-base leading-normal text-transparent outline-none ring-0 [caret-color:transparent] focus-visible:ring-0"
         />
         <span
           ref={scaleWrapRef}
-          className="pointer-events-none relative z-0 inline-flex min-h-[72px] items-center justify-center gap-1"
+          className="pointer-events-none relative z-0 inline-flex min-h-[72px] items-end justify-center gap-0.5"
           aria-hidden
         >
-          <span className="relative flex min-h-[72px] min-w-[1ch] shrink-0 items-center justify-end">
+          <span className="relative flex min-h-[72px] min-w-[1ch] shrink-0 items-end justify-end">
             {showPlaceholderZero ?
               <span
-                className="pointer-events-none absolute inset-0 flex items-center justify-end pr-[2px] text-tertiary"
-                style={payBillHeroMainPriceStyle}
+                className="pointer-events-none absolute inset-0 flex items-end justify-end pr-[2px] text-tertiary"
+                style={payBillHeroPlaceholderZeroStyle}
               >
                 0
               </span>
             : null}
             <span
               ref={amountRef}
-              className={`relative z-[1] min-h-[72px] min-w-0 text-end ${
+              className={`relative z-[1] flex min-h-[72px] min-w-0 items-end justify-end text-end ${
                 showPlaceholderZero ?
                   "text-transparent"
                 : display.dim ?
@@ -111,18 +113,34 @@ export function ReceiptAmountBlock({
             />
           </span>
           <span
-            className="bill-amount-cursor-blink mb-0 h-[72px] w-1 shrink-0 rounded-[2px] bg-action-primary"
+            className="bill-amount-cursor-blink mb-[2px] h-[64px] w-1 shrink-0 rounded-[2px] bg-action-primary"
             aria-hidden
           />
-          <span
-            className="flex min-h-[72px] shrink-0 flex-col items-center justify-center text-primary"
-            aria-hidden
-          >
-            <span className="leading-none" style={euroSuffixStyle}>
+          <span className="flex shrink-0 items-end text-primary" aria-hidden>
+            <span style={euroSuffixStyle}>
               €
             </span>
           </span>
         </span>
+      </div>
+
+      <div
+        ref={errorMotionRef}
+        className="mt-3 flex min-h-[24px] w-full justify-center px-1"
+        aria-live="polite"
+      >
+        {errorMessage ?
+          <div id={errorId} className="w-full">
+            <Typography
+              variant="body-m-regular"
+              color="danger-primary"
+              as="p"
+              align="center"
+            >
+              {errorMessage}
+            </Typography>
+          </div>
+        : null}
       </div>
     </div>
   )

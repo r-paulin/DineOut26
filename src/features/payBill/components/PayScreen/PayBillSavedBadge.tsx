@@ -57,41 +57,39 @@ export function PayBillSavedBadge({ savedAmountEur }: PayBillSavedBadgeProps) {
   }, [savedAmountEur])
 
   return (
-    <div className="relative mx-auto flex h-[78px] w-full max-w-[375px] shrink-0 items-center justify-center">
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div
-          ref={ticketRef}
-          className="relative h-[78px] w-[120px] will-change-transform"
-        >
-          <img
-            src={savedTicketUrl}
-            alt=""
-            className="pointer-events-none absolute inset-0 size-full max-h-none max-w-none object-contain"
-            draggable={false}
-          />
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-0 px-3 py-0 text-center leading-none">
-            <Typography
-              variant="body-m-regular"
-              color="secondary"
-              as="span"
-              align="center"
-              inlineStyle={{
-                lineHeight: 1,
-                fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
-              }}
-            >
-              Saved
-            </Typography>
-            <span
-              className="m-0 block text-center leading-none text-primary"
-              style={{
-                ...payBillSavedTicketAmountStyle,
-                lineHeight: 1,
-              }}
-            >
-              {formatEurMajor(savedAmountEur)}
-            </span>
-          </div>
+    <div className="relative mx-auto flex h-[78px] w-[120px] shrink-0 items-center justify-center">
+      <div
+        ref={ticketRef}
+        className="relative h-[78px] w-[120px] will-change-transform"
+      >
+        <img
+          src={savedTicketUrl}
+          alt=""
+          className="pointer-events-none absolute inset-0 size-full max-h-none max-w-none object-contain"
+          draggable={false}
+        />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0 px-3 py-0 text-center leading-none">
+          <Typography
+            variant="body-m-regular"
+            color="secondary"
+            as="span"
+            align="center"
+            inlineStyle={{
+              lineHeight: 1,
+              fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+            }}
+          >
+            Saved
+          </Typography>
+          <span
+            className="m-0 block text-center leading-none text-primary"
+            style={{
+              ...payBillSavedTicketAmountStyle,
+              lineHeight: 1,
+            }}
+          >
+            {formatEurMajor(savedAmountEur)}
+          </span>
         </div>
       </div>
     </div>

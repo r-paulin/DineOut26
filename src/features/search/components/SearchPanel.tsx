@@ -51,7 +51,7 @@ export const SearchPanel = forwardRef<HTMLDivElement, SearchPanelProps>(
           />
         </div>
         <div
-          className={`min-h-12 flex flex-row items-center pt-2 px-6 w-full min-w-0 overflow-x-auto overflow-y-visible touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [overscroll-behavior-x:contain] pb-[1em] ${wrapperBg} ${filtersDropShadow}`}
+          className={`min-h-12 flex flex-row items-center pt-2 px-6 w-full min-w-0 overflow-x-auto overflow-y-visible touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [overscroll-behavior-x:contain] pb-3 ${wrapperBg} ${filtersDropShadow}`}
         >
           <FilterChipRow
             surface={surface}

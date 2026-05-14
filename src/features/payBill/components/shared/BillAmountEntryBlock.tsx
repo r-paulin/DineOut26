@@ -61,7 +61,7 @@ export function BillAmountEntryBlock({
         {label}
       </Typography>
       <div
-        className="relative mt-3 flex min-h-[72px] w-full max-w-[min(100%,22rem)] cursor-text items-center justify-center px-4"
+        className="relative mt-3 flex min-h-[72px] w-full max-w-[min(100%,22rem)] cursor-text items-center justify-center rounded-lg px-4 outline-none focus-within:ring-2 focus-within:ring-action-primary"
         onClick={onTapAmount}
       >
         {coarse ?

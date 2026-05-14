@@ -52,7 +52,7 @@ export function TipScreen({
   const options: TipOption[] = useMemo(() => {
     const noneOption: TipOption = {
       id: "none",
-      label: "0 €",
+      label: formatEurMajor(0),
       secondaryLabel: "No tip",
       amount: 0,
     }
@@ -72,7 +72,7 @@ export function TipScreen({
     ]
   }, [receiptTotalEur, tipPercentPresets])
 
-  const [selectedId, setSelectedId] = useState("")
+  const [selectedId, setSelectedId] = useState("none")
   const [customAmount, setCustomAmount] = useState<number | null>(null)
   const [customModal, setCustomModal] = useState(false)
 
@@ -149,45 +149,47 @@ export function TipScreen({
 
       <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
 
-      <div className="flex min-h-0 flex-1 flex-col items-center gap-6 px-6 pb-6 pt-6">
-        <div
-          ref={illustrationRef}
-          className="flex h-[148px] w-[200px] shrink-0 items-center justify-center overflow-hidden"
-        >
-          <img
-            src={tipHandsUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            draggable={false}
-          />
-        </div>
-        <div
-          ref={titleBlockRef}
-          className="flex w-full max-w-[min(100%,24rem)] flex-col items-center gap-1 px-0 text-center"
-        >
-          <Typography
-            variant="heading-m-accent"
-            color="primary"
-            align="center"
-            as="h1"
-            inlineStyle={{
-              fontVariationSettings: "'wght' var(--font-weight-semibold)",
-              fontFeatureSettings: FONT_FEAT,
-            }}
+      <div className="flex min-h-0 flex-1 flex-col items-center pt-6">
+        <div className="flex w-full max-w-[min(100%,24rem)] flex-col items-center gap-6 px-6">
+          <div
+            ref={illustrationRef}
+            className="flex h-[148px] w-[200px] shrink-0 items-center justify-center overflow-hidden"
           >
-            Tip your waiter
-          </Typography>
-          <Typography variant="body-m-regular" color="secondary" align="center" as="p">
-            This is a thank you for great service — 100% goes to the staff
-          </Typography>
+            <img
+              src={tipHandsUrl}
+              alt=""
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
+          </div>
+          <div
+            ref={titleBlockRef}
+            className="flex w-full flex-col items-center gap-1 text-center"
+          >
+            <Typography
+              variant="heading-m-accent"
+              color="primary"
+              align="center"
+              as="h1"
+              inlineStyle={{
+                fontVariationSettings: "'wght' var(--font-weight-semibold)",
+                fontFeatureSettings: FONT_FEAT,
+              }}
+            >
+              Tip your waiter
+            </Typography>
+            <Typography variant="body-m-regular" color="secondary" align="center" as="p">
+              This is a thank you for great service — 100% goes to the staff
+            </Typography>
+          </div>
         </div>
 
         <div
           ref={tipRowRef}
-          className="flex w-full shrink-0 flex-col items-center gap-6"
+          className="mt-6 flex w-full shrink-0 flex-col items-center gap-6 pb-6"
         >
           <div className="w-full overflow-x-auto overflow-y-hidden [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex w-max min-w-full flex-nowrap items-stretch gap-2 pb-0 pt-0">
+            <div className="flex w-max min-w-full flex-nowrap items-stretch gap-2 px-6 pb-0 pt-0">
               {options.map((opt) => {
                 const isSel = selectedId === opt.id
                 const displayOpt =
@@ -212,15 +214,17 @@ export function TipScreen({
               })}
             </div>
           </div>
-          <Typography
-            variant="body-s-regular"
-            color="secondary"
-            align="center"
-            as="p"
-            inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
-          >
-            Total on receipt: {formatEurMajor(receiptTotalEur)}
-          </Typography>
+          <div className="px-6">
+            <Typography
+              variant="body-s-regular"
+              color="secondary"
+              align="center"
+              as="p"
+              inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
+            >
+              Total on receipt: {formatEurMajor(receiptTotalEur)}
+            </Typography>
+          </div>
         </div>
       </div>
 

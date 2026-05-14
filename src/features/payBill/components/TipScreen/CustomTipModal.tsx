@@ -91,9 +91,18 @@ export function CustomTipModal({
 
   const valid = isBillAmountValidForContinue(state)
 
-  const drawerLiftStyle: CSSProperties | undefined =
+  const drawerContentStyle: CSSProperties | undefined =
     coarse && vvLayout && vvLayout.overlapBottom > 0 ?
-      { bottom: vvLayout.overlapBottom }
+      (() => {
+        const visibleMax = Math.max(240, vvLayout.height - 8)
+        const innerH =
+          typeof window !== "undefined" ? window.innerHeight : 640
+        return {
+          bottom: vvLayout.overlapBottom,
+          maxHeight: visibleMax,
+          minHeight: Math.min(Math.round(innerH * 0.35), visibleMax),
+        }
+      })()
     : undefined
 
   return (
@@ -114,7 +123,7 @@ export function CustomTipModal({
           }}
         />
         <Drawer.Content
-          style={drawerLiftStyle}
+          style={drawerContentStyle}
           className={[
             "fixed inset-x-0 bottom-0 z-[201] flex max-h-[min(90dvh,100svh)] min-h-[70dvh]",
             "flex-col rounded-t-[16px] bg-layer-floor-1 px-0 pb-0 outline-none",

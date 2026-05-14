@@ -9,11 +9,7 @@ import {
   useState,
 } from "react"
 import Map, { Marker, type MapRef } from "react-map-gl/maplibre"
-import type {
-  Map as MaplibreMap,
-  MapLayerMouseEvent,
-  MapLayerTouchEvent,
-} from "maplibre-gl"
+import type { Map as MaplibreMap, MapLayerMouseEvent } from "maplibre-gl"
 import { maplibregl } from "@/features/map/maplibreWorker"
 import type { SheetSnap } from "@/features/offers/offers.types"
 import {
@@ -66,28 +62,39 @@ function centerDiffersFromUser(
   )
 }
 
+/** Bottom padding (px) for map camera / recenter FAB — shared by padding rect and FAB offset. */
+function discoverCameraBottomInsetPx(
+  snap: SheetSnap,
+  mapFloatingOverlayHeightPx: number,
+  discoverDockBottomInsetPx: number | null | undefined,
+): number {
+  if (mapFloatingOverlayHeightPx > 0) {
+    return readNavLayoutOffsetPx() + mapFloatingOverlayHeightPx
+  }
+  if (
+    discoverDockBottomInsetPx != null &&
+    discoverDockBottomInsetPx > 0 &&
+    Number.isFinite(discoverDockBottomInsetPx)
+  ) {
+    return discoverDockBottomInsetPx
+  }
+  const appH = readAppHeightPx()
+  return readNavLayoutOffsetPx() + heightForSnap(snap, appH)
+}
+
 /** Inset the map “safe” rect so `easeTo`/`getCenter` match visible area above sheet/card + below search. */
 function viewportPaddingForDiscover(
   snap: SheetSnap,
   mapFloatingOverlayHeightPx: number,
   discoverDockBottomInsetPx: number | null | undefined,
 ) {
-  const appH = readAppHeightPx()
-  let bottom: number
-  if (mapFloatingOverlayHeightPx > 0) {
-    bottom = readNavLayoutOffsetPx() + mapFloatingOverlayHeightPx
-  } else if (
-    discoverDockBottomInsetPx != null &&
-    discoverDockBottomInsetPx > 0 &&
-    Number.isFinite(discoverDockBottomInsetPx)
-  ) {
-    bottom = discoverDockBottomInsetPx
-  } else {
-    bottom = readNavLayoutOffsetPx() + heightForSnap(snap, appH)
-  }
   return {
     top: readSearchStackPx(),
-    bottom,
+    bottom: discoverCameraBottomInsetPx(
+      snap,
+      mapFloatingOverlayHeightPx,
+      discoverDockBottomInsetPx,
+    ),
     left: 0,
     right: 0,
   }
@@ -122,27 +129,17 @@ export function MapLayer({
 }: MapLayerProps) {
   const mapRef = useRef<MapRef>(null)
   const mapContainerRef = useRef<HTMLDivElement>(null)
-  const mapTouchStartRef = useRef<{ x: number; y: number } | null>(null)
-  const lastMapBackgroundTapAtRef = useRef(0)
   const mapStyle = useMemo(() => DISCOVER_STREET_MAP_STYLE_URL, [])
   const [showRecenter, setShowRecenter] = useState(false)
 
   const recenterBottomPx = useMemo(() => {
-    let stackBottom: number
-    if (mapFloatingOverlayHeightPx > 0) {
-      stackBottom = readNavLayoutOffsetPx() + mapFloatingOverlayHeightPx
-    } else if (
-      discoverDockBottomInsetPx != null &&
-      discoverDockBottomInsetPx > 0 &&
-      Number.isFinite(discoverDockBottomInsetPx)
-    ) {
-      stackBottom = discoverDockBottomInsetPx
-    } else {
-      const appH = readAppHeightPx()
-      stackBottom =
-        readNavLayoutOffsetPx() + heightForSnap(sheetSnap, appH)
-    }
-    return stackBottom + 16
+    return (
+      discoverCameraBottomInsetPx(
+        sheetSnap,
+        mapFloatingOverlayHeightPx,
+        discoverDockBottomInsetPx,
+      ) + 16
+    )
   }, [
     sheetSnap,
     mapFloatingOverlayHeightPx,
@@ -187,7 +184,7 @@ export function MapLayer({
     if (!map) return
     applyViewportPaddingAndCenter(sheetSnap, { animate: true })
     scheduleMapResize(map)
-  }, [sheetSnap, mapFloatingOverlayHeightPx, applyViewportPaddingAndCenter, discoverLayoutEpoch])
+  }, [sheetSnap, mapFloatingOverlayHeightPx, applyViewportPaddingAndCenter])
 
   useLayoutEffect(() => {
     const el = mapContainerRef.current
@@ -226,7 +223,7 @@ export function MapLayer({
       essential: true,
     })
     setShowRecenter(false)
-  }, [sheetSnap, mapFloatingOverlayHeightPx, discoverDockBottomInsetPx, discoverLayoutEpoch])
+  }, [sheetSnap, mapFloatingOverlayHeightPx, discoverDockBottomInsetPx])
 
   const mapGesturesEnabled = sheetSnap !== "peek"
 
@@ -255,44 +252,9 @@ export function MapLayer({
     syncMapInteractionHandlers(map)
   }, [sheetSnap, syncMapInteractionHandlers])
 
-  const fireMapBackgroundTap = useCallback(() => {
-    const now = Date.now()
-    if (now - lastMapBackgroundTapAtRef.current < 400) return
-    lastMapBackgroundTapAtRef.current = now
+  const handleMapClick = useCallback((_e: MapLayerMouseEvent) => {
     onMapBackgroundClick?.()
   }, [onMapBackgroundClick])
-
-  const handleMapClick = useCallback((_e: MapLayerMouseEvent) => {
-    fireMapBackgroundTap()
-  }, [fireMapBackgroundTap])
-
-  const handleMapTouchStart = useCallback((e: MapLayerTouchEvent) => {
-    const t = e.originalEvent.touches[0]
-    if (!t) {
-      mapTouchStartRef.current = null
-      return
-    }
-    mapTouchStartRef.current = { x: t.clientX, y: t.clientY }
-  }, [])
-
-  const handleMapTouchEnd = useCallback(
-    (e: MapLayerTouchEvent) => {
-      const te = e.originalEvent
-      if (te.changedTouches.length !== 1) {
-        mapTouchStartRef.current = null
-        return
-      }
-      const t = te.changedTouches[0]!
-      const start = mapTouchStartRef.current
-      mapTouchStartRef.current = null
-      if (!start) return
-      const dx = t.clientX - start.x
-      const dy = t.clientY - start.y
-      if (dx * dx + dy * dy > 28 * 28) return
-      fireMapBackgroundTap()
-    },
-    [fireMapBackgroundTap],
-  )
 
   return (
     <div className="absolute inset-0 z-[1]">
@@ -313,8 +275,6 @@ export function MapLayer({
           }}
           style={{ width: "100%", height: "100%" }}
           onClick={handleMapClick}
-          onTouchStart={handleMapTouchStart}
-          onTouchEnd={handleMapTouchEnd}
           onMoveEnd={handleMoveEnd}
           onLoad={() => {
             const map = getMapInstance(mapRef)

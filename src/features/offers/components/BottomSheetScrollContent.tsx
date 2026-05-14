@@ -59,7 +59,7 @@ export function BottomSheetScrollContent({
   const isFull = snap === "full"
   const isMin = snap === "minimized"
   const scrollClass = isFull
-    ? "overflow-y-auto [-webkit-overflow-scrolling:touch] pt-[1em]"
+    ? "overflow-y-auto [-webkit-overflow-scrolling:touch] pt-4"
     : "overflow-y-hidden [overscroll-behavior:none]"
   const scrollRootRef = useRef<HTMLDivElement>(null)
 

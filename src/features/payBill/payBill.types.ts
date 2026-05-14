@@ -21,12 +21,6 @@ export interface TipOption {
 
 export type PayBillPaymentMethodUi = "bolt_balance" | "card"
 
-/** Bill amount step venue / DineOut offer pill (Figma); hide row when null. */
-export interface PayBillAmountBadges {
-  /** Venue list or DineOut benefit line, e.g. "40% off" from first active tab card. */
-  defaultLabel: string | null
-}
-
 export interface PayBillFlowEntry {
   restaurantName: string
   restaurantSlug: string
@@ -35,8 +29,6 @@ export interface PayBillFlowEntry {
    * When `null`, user pays without a claim.
    */
   offer: ClaimedOffer | null
-  /** Offer pills on bill amount screen; built when opening pay from restaurant detail. */
-  billAmountBadges?: PayBillAmountBadges
 }
 
 /** Stable offer id for mock payment when paying without a claimed offer. */

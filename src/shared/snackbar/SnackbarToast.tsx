@@ -97,6 +97,31 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
   const hasCloseButton = actionButtons ? false : (dismissible ?? true)
 
   const hasDescription = description.trim().length > 0
+  const stackedLayout = Boolean(actionButtons)
+
+  const textBlock = (
+    <div
+      className={
+        stackedLayout ? "flex min-w-0 flex-1 flex-col gap-2" : "min-w-0 flex-1"
+      }
+    >
+      {title ?
+        <div
+          id={titleId}
+          className={
+            stackedLayout ?
+              "bolt-font-body-m-accent font-semibold"
+            : "mb-1 font-semibold"
+          }
+        >
+          {title}
+        </div>
+      : null}
+      {hasDescription ?
+        <div id={descriptionId}>{description}</div>
+      : null}
+    </div>
+  )
 
   return (
     <div
@@ -105,39 +130,35 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
       aria-labelledby={title ? titleId : undefined}
       aria-describedby={hasDescription ? descriptionId : undefined}
       className={joinClassNames(
-        "flex w-full max-w-full items-center gap-4 rounded-md bg-neutral-primary px-4 py-3",
+        "relative w-full max-w-full rounded-lg bg-neutral-primary px-4 py-3",
         "bolt-font-body-s-regular text-primary-inverted",
-        "min-w-60 shadow-[0_4px_16px_rgba(0,0,0,0.18)]",
+        "min-w-60 shadow-[0_1px_3px_rgba(47,49,61,0.04),0_4px_8px_rgba(47,49,61,0.08),0_8px_16px_rgba(47,49,61,0.08)]",
+        stackedLayout ? "flex flex-col gap-2" : "flex items-center gap-4",
       )}
     >
-      <div className="flex w-full min-w-0 flex-row flex-wrap gap-3">
-        <div className="min-w-0 flex-1">
-          {title ?
-            <div id={titleId} className="mb-1 font-semibold">
-              {title}
+      {stackedLayout ?
+        <>
+          {textBlock}
+          {actionButtons ?
+            <div className="flex w-full shrink-0 items-center justify-end gap-7">
+              {actionButtons}
             </div>
           : null}
-          {hasDescription ?
-            <div id={descriptionId}>{description}</div>
+        </>
+      : <>
+          {textBlock}
+          {hasCloseButton ?
+            <IconButton
+              data-testid="snackbar-close-button"
+              overrideClassName="text-primary-inverted h-6 w-6 shrink-0"
+              size="sm"
+              aria-label="Close"
+              onClick={dismissWithAnimation}
+              icon={<Cross size="sm" />}
+            />
           : null}
-        </div>
-        {actionButtons ?
-          <div className="ml-auto flex shrink-0 items-center">
-            <div className="flex w-full justify-end gap-6">{actionButtons}</div>
-          </div>
-        : null}
-      </div>
-
-      {hasCloseButton ?
-        <IconButton
-          data-testid="snackbar-close-button"
-          overrideClassName="text-primary-inverted h-6 w-6 shrink-0"
-          size="sm"
-          aria-label="Close"
-          onClick={dismissWithAnimation}
-          icon={<Cross size="sm" />}
-        />
-      : null}
+        </>
+      }
     </div>
   )
 }

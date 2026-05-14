@@ -20,6 +20,17 @@ export const payBillHeroMainPriceStyle: CSSProperties = {
   fontVariationSettings: "'wght' 650",
 }
 
+/** Figma placeholder `0` — Body regular weight, tertiary fill applied in markup. */
+export const payBillHeroPlaceholderZeroStyle: CSSProperties = {
+  ...payBillNumericOpentype,
+  fontSize: 64,
+  fontStyle: "normal",
+  fontWeight: 400,
+  lineHeight: "72px",
+  letterSpacing: "-1.408px",
+  fontVariationSettings: "'wght' 400",
+}
+
 /** Saved ticket EUR — Heading XS scale + semibold (Figma). */
 export const payBillSavedTicketAmountStyle: CSSProperties = {
   ...payBillNumericOpentype,

@@ -65,11 +65,14 @@ export function PayBillFlow({
           height: "var(--app-h)",
         }}
       >
+        {/*
+          `success` (PaySuccessScreen) is unused: PayScreen jumps straight to `confirmation`
+          so PaymentConfirmationScreen can run the 15767→15823 GSAP sequence in one surface.
+        */}
         {step === "billAmount" ?
           <BillAmountScreen
             restaurantName={entry.restaurantName}
             claimedOffer={entry.offer}
-            billAmountBadges={entry.billAmountBadges}
             onDismiss={dismissAll}
             onContinue={(amt) => {
               setBillAmount(amt)
