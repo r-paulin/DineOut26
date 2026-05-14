@@ -27,12 +27,12 @@ describe("effectivePayDiscountPercents", () => {
     })
   })
 
-  it("uses claim discountAddPercent when set", () => {
+  it("uses claim discountAddPercent when set (claimed % not applied again to receipt)", () => {
     expect(
       effectivePayDiscountPercents(
         claim({ discountPercent: 10, discountAddPercent: 12 }),
       ),
-    ).toEqual({ discountPercent: 10, discountAddPercent: 12 })
+    ).toEqual({ discountPercent: 0, discountAddPercent: 12 })
   })
 
   it("allows explicit 0 add-on on a claim", () => {
@@ -40,7 +40,7 @@ describe("effectivePayDiscountPercents", () => {
       effectivePayDiscountPercents(
         claim({ discountPercent: 5, discountAddPercent: 0 }),
       ),
-    ).toEqual({ discountPercent: 5, discountAddPercent: 0 })
+    ).toEqual({ discountPercent: 0, discountAddPercent: 0 })
   })
 
   it("disables add-on when not paying with DineOut", () => {

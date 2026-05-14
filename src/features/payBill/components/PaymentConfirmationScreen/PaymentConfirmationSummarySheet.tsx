@@ -14,12 +14,9 @@ export interface PaymentConfirmationSummarySheetProps {
   receiptTotal: number
   tip: number | null
   paidAmount: number
-  discountPercentFirst: number
   discountPercentSecond: number
-  firstDiscEur: number
   secondDiscEur: number
   onDone: () => void
-  onClaimedDiscountInfo: () => void
   onDineOutBenefitInfo: () => void
 }
 
@@ -30,12 +27,9 @@ export function PaymentConfirmationSummarySheet({
   receiptTotal,
   tip,
   paidAmount,
-  discountPercentFirst,
   discountPercentSecond,
-  firstDiscEur,
   secondDiscEur,
   onDone,
-  onClaimedDiscountInfo,
   onDineOutBenefitInfo,
 }: PaymentConfirmationSummarySheetProps) {
   return (
@@ -99,14 +93,6 @@ export function PaymentConfirmationSummarySheet({
               variant="regular"
               labelColor="secondary"
               labelTypographyVariant="body-m-regular"
-            />
-          : null}
-          {discountPercentFirst > 0 ?
-            <DiscountReceiptRow
-              percent={discountPercentFirst}
-              discountEur={firstDiscEur}
-              infoAriaLabel="Claimed offer discount info"
-              onInfoClick={onClaimedDiscountInfo}
             />
           : null}
           {discountPercentSecond > 0 ?

@@ -1,5 +1,6 @@
 /**
  * Compound discount on subtotal (receipt + tip): S × (1 − d1/100) × (1 − d2/100).
+ * In the DineOut pay flow, `d1` is 0 because the receipt line is already net of the claimed offer.
  */
 
 export function round2(value: number): number {

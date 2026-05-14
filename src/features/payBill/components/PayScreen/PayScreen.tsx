@@ -24,7 +24,6 @@ import { DiscountReceiptRow } from "@/features/payBill/components/shared/Discoun
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
 import {
-  discountFirstEur,
   discountSecondEur,
   finalAmountCompound,
   round2,
@@ -162,7 +161,7 @@ export interface PayScreenProps {
 }
 
 /**
- * PAY BILL / Pay — Figma `15767:51083`: hero + Saved, card divider, receipt (split discounts) + Total, payments, slide-to-pay.
+ * PAY BILL / Pay — Figma `15767:51083`: hero + Saved, card divider, receipt + DineOut benefit + Total, payments, slide-to-pay.
  */
 export function PayScreen({
   restaurantName,
@@ -182,7 +181,6 @@ export function PayScreen({
   const setCheckoutPaymentOptionId = usePayBillStore((s) => s.setCheckoutPaymentOptionId)
 
   const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
-  const [claimedDiscountInfoSheet, setClaimedDiscountInfoSheet] = useState(false)
   const [boltInfoSheet, setBoltInfoSheet] = useState(false)
   const [cardSheet, setCardSheet] = useState(false)
   const [paymentPickerOpen, setPaymentPickerOpen] = useState(false)
@@ -243,7 +241,6 @@ export function PayScreen({
   const offerId = offer?.offerId ?? payBillSyntheticOfferId(restaurantSlug)
   const subtotal = subtotalWithTip(receiptTotal, tip)
   const finalAmt = finalAmountCompound(receiptTotal, tip, d1, d2)
-  const firstDiscEur = discountFirstEur(receiptTotal, tip, d1)
   const secondDiscEur = discountSecondEur(receiptTotal, tip, d1, d2)
 
   const fromBalance = Math.min(DEMO_BOLT_BALANCE, finalAmt)
@@ -390,14 +387,6 @@ export function PayScreen({
                   labelTypographyVariant="body-m-regular"
                 />
               : null}
-              {d1 > 0 ?
-                <DiscountReceiptRow
-                  percent={d1}
-                  discountEur={firstDiscEur}
-                  infoAriaLabel="Claimed offer discount info"
-                  onInfoClick={() => setClaimedDiscountInfoSheet(true)}
-                />
-              : null}
               {d2 > 0 ?
                 <DiscountReceiptRow
                   percent={d2}
@@ -483,15 +472,6 @@ export function PayScreen({
         </div>
       </div>
 
-      <AppInfoBottomSheet
-        open={claimedDiscountInfoSheet}
-        onOpenChange={setClaimedDiscountInfoSheet}
-        container={portalContainer}
-        title="Claimed offer discount"
-        body="This discount comes from the offer you claimed. It applies to your bill subtotal including tip, before any DineOut payment benefit."
-        zOverlay={Z_PAY_SHEET_OVERLAY}
-        zContent={Z_PAY_SHEET_CONTENT}
-      />
       <AppInfoBottomSheet
         open={dineOutBenefitSheet}
         onOpenChange={setDineOutBenefitSheet}

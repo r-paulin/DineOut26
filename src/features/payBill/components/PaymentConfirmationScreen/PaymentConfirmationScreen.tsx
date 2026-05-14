@@ -6,7 +6,6 @@ import { PaymentConfirmationSummarySheet } from "@/features/payBill/components/P
 import { PaymentSuccessTitle } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentSuccessTitle"
 import { usePaymentConfirmationReveal } from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
 import {
-  discountFirstEur,
   discountSecondEur,
 } from "@/features/payBill/utils/discountCalc"
 import { formatPaymentCodeDisplay } from "@/features/payBill/utils/paymentCodeDisplay"
@@ -55,7 +54,6 @@ export function PaymentConfirmationScreen({
   const titleSmallWrapRef = useRef<HTMLDivElement>(null)
 
   const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
-  const [claimedDiscountInfoSheet, setClaimedDiscountInfoSheet] = useState(false)
 
   const { phase } = usePaymentConfirmationReveal({
     rootRef,
@@ -66,10 +64,8 @@ export function PaymentConfirmationScreen({
     titleSmallWrapRef,
   })
 
-  const { discountPercent: d1, discountAddPercent: d2 } =
-    effectivePayDiscountPercents(offer)
-  const firstDiscEur = discountFirstEur(receiptTotal, tip, d1)
-  const secondDiscEur = discountSecondEur(receiptTotal, tip, d1, d2)
+  const { discountAddPercent: d2 } = effectivePayDiscountPercents(offer)
+  const secondDiscEur = discountSecondEur(receiptTotal, tip, 0, d2)
   const paymentCode = formatPaymentCodeDisplay(offer, transactionId)
 
   const heroLayout =
@@ -140,26 +136,14 @@ export function PaymentConfirmationScreen({
             receiptTotal={receiptTotal}
             tip={tip}
             paidAmount={paidAmount}
-            discountPercentFirst={d1}
             discountPercentSecond={d2}
-            firstDiscEur={firstDiscEur}
             secondDiscEur={secondDiscEur}
             onDone={onDone}
-            onClaimedDiscountInfo={() => setClaimedDiscountInfoSheet(true)}
             onDineOutBenefitInfo={() => setDineOutBenefitSheet(true)}
           />
         </div>
       </div>
 
-      <AppInfoBottomSheet
-        open={claimedDiscountInfoSheet}
-        onOpenChange={setClaimedDiscountInfoSheet}
-        container={portalContainer}
-        title="Claimed offer discount"
-        body="This discount comes from the offer you claimed. It applies to your bill subtotal including tip, before any DineOut payment benefit."
-        zOverlay={Z_CONFIRM_SHEET_OVERLAY}
-        zContent={Z_CONFIRM_SHEET_CONTENT}
-      />
       <AppInfoBottomSheet
         open={dineOutBenefitSheet}
         onOpenChange={setDineOutBenefitSheet}
