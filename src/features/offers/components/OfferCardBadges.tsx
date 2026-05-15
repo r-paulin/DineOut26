@@ -4,6 +4,12 @@ import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.dat
 import type { OfferCardCampaign } from "@/features/offers/offers.types"
 import { hasCampaignBadges } from "@/features/offers/utils/mapPlaceCardView"
 import { buildTimedOfferBadgeModels } from "@/features/offers/utils/offerBadgeStack"
+import {
+  campaignTimeWindowDisplayActive,
+  offerBadgeIconClass,
+  restaurantTimedOfferDisplayActiveNow,
+  useOfferDisplayNow,
+} from "@/features/offers/utils/offerDisplayActive"
 
 export interface OfferCardBadgesProps {
   campaign: OfferCardCampaign
@@ -19,9 +25,6 @@ export interface OfferCardBadgesProps {
   density?: "compact" | "comfortable"
 }
 
-const OFFER_ICON_CLASS =
-  "shrink-0 text-[var(--content-action-primary-inverted)]"
-
 /**
  * Figma campaign pills: dark pill, green Offer icon, `-25% · 11:00–14:00`
  * (time uses `--color-static-content-secondary-light`). Up to three rows when
@@ -33,6 +36,12 @@ export function OfferCardBadges({
   density = "compact",
 }: OfferCardBadgesProps) {
   const comfortable = density === "comfortable"
+  const timedOffers =
+    restaurantSlug ? getRestaurantOffers(restaurantSlug) : []
+  const scheduleAware =
+    timedOffers.length > 0 ||
+    Boolean(campaign.timeWindow && campaign.timeWindow !== "All day")
+  const now = useOfferDisplayNow(scheduleAware)
   const textMain = comfortable
     ? "text-sm leading-5 whitespace-nowrap [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"
     : "text-xs leading-4 whitespace-nowrap [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"
@@ -44,10 +53,8 @@ export function OfferCardBadges({
     : "text-xs leading-4 font-normal whitespace-nowrap"
   const offerSize = comfortable ? "sm" : "xs"
 
-  const timedOffers =
-    restaurantSlug ? getRestaurantOffers(restaurantSlug) : []
   if (restaurantSlug && timedOffers.length > 0) {
-    const rows = buildTimedOfferBadgeModels(timedOffers)
+    const rows = buildTimedOfferBadgeModels(timedOffers, now)
     const stackClass = comfortable
       ? "flex max-w-[calc(100%-2.75rem)] flex-col gap-1"
       : "flex max-w-[min(100%,18rem)] flex-col items-start gap-1"
@@ -56,7 +63,11 @@ export function OfferCardBadges({
       <div className={stackClass}>
         {rows.map((row, i) => (
           <CampaignPill key={i} density={density}>
-            <Offer size={offerSize} className={OFFER_ICON_CLASS} aria-hidden />
+            <Offer
+              size={offerSize}
+              className={offerBadgeIconClass(row.iconActive)}
+              aria-hidden
+            />
             {row.kind === "offer" ? (
               <>
                 {row.discountLabel ? (
@@ -90,9 +101,18 @@ export function OfferCardBadges({
   const { discountLabel, timeWindow, extraOffers } = campaign
   if (!hasCampaignBadges(campaign)) return null
 
+  const primaryIconActive = campaignTimeWindowDisplayActive(timeWindow, now)
+  const extraIconActive = restaurantSlug
+    ? restaurantTimedOfferDisplayActiveNow(restaurantSlug, now)
+    : primaryIconActive
+
   const primaryPill = (
     <CampaignPill density={density}>
-      <Offer size={offerSize} className={OFFER_ICON_CLASS} aria-hidden />
+      <Offer
+        size={offerSize}
+        className={offerBadgeIconClass(primaryIconActive)}
+        aria-hidden
+      />
       {discountLabel ? <span className={textMain}>{discountLabel}</span> : null}
       {timeWindow ? (
         <>
@@ -116,7 +136,11 @@ export function OfferCardBadges({
         density={density}
         className={comfortable ? "absolute left-0 top-7 z-[1] w-max" : undefined}
       >
-        <Offer size={offerSize} className={OFFER_ICON_CLASS} aria-hidden />
+        <Offer
+          size={offerSize}
+          className={offerBadgeIconClass(extraIconActive)}
+          aria-hidden
+        />
         <span className={textMain}>
           {extraOffers === 1 ? "+1 offer" : `+${extraOffers} offers`}
         </span>

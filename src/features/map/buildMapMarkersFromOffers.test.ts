@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { OfferCardModel } from "@/features/offers/offers.types"
-import * as filterDiscover from "@/features/discover/utils/filterDiscoverOffers"
+import * as offerDisplayActive from "@/features/offers/utils/offerDisplayActive"
 import { buildMapMarkersFromOffers } from "./buildMapMarkersFromOffers"
 
 afterEach(() => {
@@ -25,9 +25,9 @@ function stubOffer(slug: string): OfferCardModel {
 }
 
 describe("buildMapMarkersFromOffers", () => {
-  it("sets timedOfferActiveNow from restaurantTimedOfferActiveNow", () => {
+  it("sets timedOfferActiveNow from restaurantTimedOfferDisplayActiveNow", () => {
     const spy = vi
-      .spyOn(filterDiscover, "restaurantTimedOfferActiveNow")
+      .spyOn(offerDisplayActive, "restaurantTimedOfferDisplayActiveNow")
       .mockReturnValue(false)
 
     const markers = buildMapMarkersFromOffers([stubOffer("neiburgs")])
@@ -37,8 +37,8 @@ describe("buildMapMarkersFromOffers", () => {
     expect(spy).toHaveBeenCalledWith("neiburgs", expect.any(Date))
   })
 
-  it("passes true when timed offers are active now", () => {
-    vi.spyOn(filterDiscover, "restaurantTimedOfferActiveNow").mockReturnValue(true)
+  it("passes true when timed offers are display-active", () => {
+    vi.spyOn(offerDisplayActive, "restaurantTimedOfferDisplayActiveNow").mockReturnValue(true)
 
     const markers = buildMapMarkersFromOffers([stubOffer("melna-bite")])
 

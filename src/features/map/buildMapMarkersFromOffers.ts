@@ -1,4 +1,4 @@
-import { restaurantTimedOfferActiveNow } from "@/features/discover/utils/filterDiscoverOffers"
+import { restaurantTimedOfferDisplayActiveNow } from "@/features/offers/utils/offerDisplayActive"
 import type { OfferCardModel } from "@/features/offers/offers.types"
 import { hasCampaignBadges } from "@/features/offers/utils/mapPlaceCardView"
 import type { MapMarkerData } from "./map.types"
@@ -63,7 +63,7 @@ export function buildMapMarkersFromOffers(offers: OfferCardModel[]): MapMarkerDa
       label: o.name,
       discountText: hasCampaignBadges(c) ? c.discountLabel : undefined,
       restaurantId: restaurantKey,
-      timedOfferActiveNow: restaurantTimedOfferActiveNow(restaurantKey, now),
+      timedOfferActiveNow: restaurantTimedOfferDisplayActiveNow(restaurantKey, now),
     } satisfies MapMarkerData
   })
 }

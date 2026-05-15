@@ -19,6 +19,7 @@
   --content-action-primary: var(--color-content-action-primary);
   --content-danger-primary: var(--color-content-danger-primary);
   --content-primary-inverted: var(--color-content-primary-inverted);
+  --content-secondary-inverted: var(--color-content-secondary-inverted);
   --bg-action-primary: var(--color-bg-action-primary);
   --bg-neutral-secondary: var(--color-bg-neutral-secondary);
   --bg-active-neutral-secondary: var(--color-bg-active-neutral-secondary);

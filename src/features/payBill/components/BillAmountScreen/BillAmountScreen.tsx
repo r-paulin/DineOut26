@@ -2,7 +2,7 @@ import { Button, Typography } from "@bolteu/kalep-react"
 import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
 import gsap from "gsap"
 import type { CSSProperties } from "react"
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { ReceiptAmountBlock } from "@/features/payBill/components/BillAmountScreen/ReceiptAmountBlock"
 import { BillAmountTitleSection } from "@/features/payBill/components/BillAmountScreen/BillAmountTitleSection"
@@ -48,7 +48,6 @@ export function BillAmountScreen({
   const scaleWrapRef = useRef<HTMLSpanElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const errorMotionRef = useRef<HTMLDivElement>(null)
-  const errorColorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const coarse = useCoarsePointer()
   const vvLayout = useVisualViewportLayout(coarse)
@@ -64,57 +63,31 @@ export function BillAmountScreen({
       `Confirm the ${formatDiscountPercent(claimedOffer.discountPercent)}% discount is on the receipt and enter the final amount.`
     : "Enter the final amount from your receipt."
 
-  /** Native keyboard: focus after paint; retries cover portal / iOS timing. */
+  /** Native keyboard: one rAF focus + single retry for portal / iOS timing. */
   useLayoutEffect(() => {
     const el = hiddenInputRef.current
     if (!el) return
-    const id = window.requestAnimationFrame(() => {
+    const rafId = window.requestAnimationFrame(() => {
       el.focus({ preventScroll: true })
     })
-    return () => window.cancelAnimationFrame(id)
-  }, [])
-
-  useEffect(() => {
-    const el = hiddenInputRef.current
-    if (!el) return
-    const tryFocus = () => {
+    const retryId = window.setTimeout(() => {
       if (document.activeElement !== el) {
         el.focus({ preventScroll: true })
       }
-    }
-    const t0 = window.setTimeout(tryFocus, 0)
-    const t1 = window.setTimeout(tryFocus, 80)
+    }, 80)
     return () => {
-      clearTimeout(t0)
-      clearTimeout(t1)
+      window.cancelAnimationFrame(rafId)
+      window.clearTimeout(retryId)
     }
   }, [])
 
-  const clearAmountError = useCallback(() => {
-    setShowAmountError(false)
-    if (errorColorTimerRef.current) {
-      clearTimeout(errorColorTimerRef.current)
-      errorColorTimerRef.current = null
+  const onHiddenInputChange = useCallback((raw: string) => {
+    const next = billStateFromFormattedInput(raw)
+    setState(next)
+    if (billStateToCents(next) > 0) {
+      setShowAmountError(false)
     }
   }, [])
-
-  const onHiddenInputChange = useCallback(
-    (raw: string) => {
-      const next = billStateFromFormattedInput(raw)
-      setState(next)
-      if (billStateToCents(next) > 0) {
-        clearAmountError()
-      }
-    },
-    [clearAmountError],
-  )
-
-  useEffect(
-    () => () => {
-      if (errorColorTimerRef.current) clearTimeout(errorColorTimerRef.current)
-    },
-    [],
-  )
 
   const runInvalidSubmitFeedback = useCallback(() => {
     setShowAmountError(true)
@@ -133,11 +106,6 @@ export function BillAmountScreen({
         ease: "none",
       })
     }
-    if (errorColorTimerRef.current) clearTimeout(errorColorTimerRef.current)
-    errorColorTimerRef.current = setTimeout(() => {
-      setShowAmountError(false)
-      errorColorTimerRef.current = null
-    }, 2000)
   }, [])
 
   const onContinueClick = useCallback(() => {
@@ -219,12 +187,9 @@ export function BillAmountScreen({
               amountRef={amountRef}
               scaleWrapRef={scaleWrapRef}
               hiddenInputRef={hiddenInputRef}
-              onTapAmount={() => {
-                hiddenInputRef.current?.focus()
-              }}
               onHiddenInputChange={onHiddenInputChange}
               inputName="billAmount"
-              inputAriaLabel="Bill amount"
+              inputAriaLabel="Bill amount in euros"
             />
           </div>
         </div>
@@ -236,7 +201,7 @@ export function BillAmountScreen({
             type="button"
             variant="primary"
             fullWidth
-            aria-disabled={!valid}
+            aria-describedby={showAmountError ? BILL_AMOUNT_ERROR_ID : undefined}
             onClick={onContinueClick}
             overrideClassName="!min-h-14 h-14 rounded-full"
           >

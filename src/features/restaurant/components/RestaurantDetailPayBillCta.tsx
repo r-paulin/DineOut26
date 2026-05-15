@@ -16,16 +16,17 @@ export function RestaurantDetailPayBillCta({
 }: RestaurantDetailPayBillCtaProps) {
   return (
     <div className="flex w-full flex-col items-center gap-3 px-6 pb-6 pt-3">
-      <Typography
-        variant="body-s-accent"
-        color="primary"
-        as="p"
-        align="center"
-        inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
-        className="max-w-[14rem]"
-      >
-        Enjoy your meal. Save when you pay with DineOut.
-      </Typography>
+      <div className="max-w-[14rem]">
+        <Typography
+          variant="body-s-accent"
+          color="primary"
+          as="p"
+          align="center"
+          inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
+        >
+          Enjoy your meal. Save when you pay with DineOut.
+        </Typography>
+      </div>
       <Button
         type="button"
         variant="primary"

@@ -31,6 +31,19 @@ export const payBillHeroPlaceholderZeroStyle: CSSProperties = {
   fontVariationSettings: "'wght' 400",
 }
 
+/** € suffix — ~65% of hero digits, 8px bottom padding, line-height 1. */
+export const payBillEuroSuffixStyle: CSSProperties = {
+  ...payBillNumericOpentype,
+  display: "inline-block",
+  fontSize: 42,
+  fontStyle: "normal",
+  fontWeight: 650,
+  lineHeight: 1,
+  letterSpacing: "-0.462px",
+  fontVariationSettings: "'wght' 650",
+  paddingBottom: "8px",
+}
+
 /** Saved ticket EUR — Heading XS scale + semibold (Figma). */
 export const payBillSavedTicketAmountStyle: CSSProperties = {
   ...payBillNumericOpentype,

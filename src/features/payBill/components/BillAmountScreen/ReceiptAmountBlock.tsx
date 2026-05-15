@@ -1,10 +1,6 @@
 import { Typography } from "@bolteu/kalep-react"
-import type { CSSProperties, RefObject } from "react"
-import {
-  payBillHeroMainPriceStyle,
-  payBillHeroPlaceholderZeroStyle,
-  payBillNumericOpentype,
-} from "@/features/payBill/utils/payBillNumericDisplay"
+import type { RefObject } from "react"
+import { BillAmountDisplayRow } from "@/features/payBill/components/shared/BillAmountDisplayRow"
 
 export interface ReceiptAmountBlockProps {
   /** Shown below the amount row (invalid submit). */
@@ -19,28 +15,12 @@ export interface ReceiptAmountBlockProps {
   amountRef: RefObject<HTMLSpanElement | null>
   scaleWrapRef: RefObject<HTMLSpanElement | null>
   hiddenInputRef: RefObject<HTMLInputElement | null>
-  onTapAmount: () => void
   onHiddenInputChange: (raw: string) => void
   inputName: string
   inputAriaLabel: string
 }
 
-/** € ~65% of hero digit size; 8px bottom padding; line-height 1. */
-const euroSuffixStyle: CSSProperties = {
-  ...payBillNumericOpentype,
-  display: "inline-block",
-  fontSize: 42,
-  fontStyle: "normal",
-  fontWeight: 650,
-  lineHeight: 1,
-  letterSpacing: "-0.462px",
-  fontVariationSettings: "'wght' 650",
-  paddingBottom: "8px",
-}
-
-/**
- * Bill amount field — centered [0][cursor][€]; native keyboard via transparent input (no pill fill).
- */
+/** Bill amount field — title chrome lives in parent; error row below shared display. */
 export function ReceiptAmountBlock({
   errorMessage,
   errorMotionRef,
@@ -50,79 +30,25 @@ export function ReceiptAmountBlock({
   amountRef,
   scaleWrapRef,
   hiddenInputRef,
-  onTapAmount,
   onHiddenInputChange,
   inputName,
   inputAriaLabel,
 }: ReceiptAmountBlockProps) {
-  const showPlaceholderZero = !display.text
-
   return (
     <div className="flex w-full max-w-[min(100%,22rem)] flex-col items-center px-6">
-      <div
-        className="relative flex min-h-[72px] w-full cursor-text items-center justify-center gap-0.5 rounded-full border border-solid border-separator bg-transparent px-6 outline-none transition-colors"
-        onClick={onTapAmount}
-      >
-        <input
-          ref={hiddenInputRef}
-          type="text"
-          inputMode="decimal"
-          name={inputName}
-          autoComplete="off"
-          autoCorrect="off"
-          spellCheck={false}
-          autoFocus={autoFocusInput}
-          aria-label={inputAriaLabel}
-          aria-invalid={Boolean(errorMessage)}
-          aria-describedby={
-            errorMessage && errorId ? errorId : undefined
-          }
-          value={display.text}
-          onChange={(ev) => {
-            onHiddenInputChange(ev.target.value)
-          }}
-          onFocus={(ev) => {
-            window.setTimeout(() => ev.target.select(), 0)
-          }}
-          className="absolute inset-0 z-[1] min-h-[72px] w-full cursor-text rounded-full border-none bg-transparent p-0 text-left text-base leading-normal text-transparent shadow-none outline-none outline-offset-0 ring-0 [caret-color:transparent] focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-        />
-        <span
-          ref={scaleWrapRef}
-          className="pointer-events-none relative z-0 inline-flex min-h-[72px] items-end justify-center gap-0.5"
-          aria-hidden
-        >
-          <span className="relative flex min-h-[72px] min-w-[1ch] shrink-0 items-end justify-end">
-            {showPlaceholderZero ?
-              <span
-                className="pointer-events-none absolute inset-0 flex items-end justify-end pr-[2px] text-tertiary"
-                style={payBillHeroPlaceholderZeroStyle}
-              >
-                0
-              </span>
-            : null}
-            <span
-              ref={amountRef}
-              className={`relative z-[1] flex min-h-[72px] min-w-0 items-end justify-end text-end ${
-                showPlaceholderZero ?
-                  "text-transparent"
-                : display.dim ?
-                  "text-tertiary"
-                : "text-primary"
-              }`}
-              style={payBillHeroMainPriceStyle}
-            />
-          </span>
-          <span
-            className="bill-amount-cursor-blink mb-[2px] h-[64px] w-1 shrink-0 rounded-[2px] bg-action-primary"
-            aria-hidden
-          />
-          <span className="flex shrink-0 items-end text-primary" aria-hidden>
-            <span style={euroSuffixStyle}>
-              €
-            </span>
-          </span>
-        </span>
-      </div>
+      <BillAmountDisplayRow
+        display={display}
+        amountRef={amountRef}
+        scaleWrapRef={scaleWrapRef}
+        hiddenInputRef={hiddenInputRef}
+        onHiddenInputChange={onHiddenInputChange}
+        inputName={inputName}
+        inputAriaLabel={inputAriaLabel}
+        autoFocusInput={autoFocusInput}
+        selectAllOnFirstFocus
+        ariaInvalid={Boolean(errorMessage)}
+        ariaDescribedBy={errorMessage && errorId ? errorId : undefined}
+      />
 
       <div
         ref={errorMotionRef}

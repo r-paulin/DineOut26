@@ -1,4 +1,5 @@
 import type { RestaurantTimedOffer } from "@/features/offers/data/restaurantOffers.types"
+import { isTimedOfferDisplayActive } from "@/features/offers/utils/offerDisplayActive"
 import { formatTimeWindowLabel } from "@/features/offers/utils/offerCampaign"
 
 export type TimedOfferBadgeRow =
@@ -6,11 +7,14 @@ export type TimedOfferBadgeRow =
       kind: "offer"
       discountLabel: string
       timeWindow: string
+      /** Green Offer icon vs muted `content/secondary-inverted` (15m pre-start grace). */
+      iconActive: boolean
     }
   | {
       kind: "overflow"
       /** Number of offers not shown in the first two pills (third pill text `+count offers`). */
       count: number
+      iconActive: boolean
     }
 
 function sortTimedOffersForBadges(
@@ -30,31 +34,32 @@ function sortTimedOffersForBadges(
  */
 export function buildTimedOfferBadgeModels(
   offers: readonly RestaurantTimedOffer[],
+  now: Date = new Date(),
 ): TimedOfferBadgeRow[] {
   if (offers.length === 0) return []
   const sorted = sortTimedOffersForBadges(offers)
 
+  const offerRow = (offer: RestaurantTimedOffer): TimedOfferBadgeRow => ({
+    kind: "offer",
+    discountLabel: `-${offer.discountPercent}%`,
+    timeWindow: formatTimeWindowLabel(offer.window),
+    iconActive: isTimedOfferDisplayActive(offer, now),
+  })
+
   if (sorted.length <= 3) {
-    return sorted.map((offer) => ({
-      kind: "offer" as const,
-      discountLabel: `-${offer.discountPercent}%`,
-      timeWindow: formatTimeWindowLabel(offer.window),
-    }))
+    return sorted.map(offerRow)
   }
 
   const [a, b] = sorted
-  const overflow = sorted.length - 2
+  const hidden = sorted.slice(2)
+  const overflow = hidden.length
   return [
+    offerRow(a),
+    offerRow(b),
     {
-      kind: "offer",
-      discountLabel: `-${a.discountPercent}%`,
-      timeWindow: formatTimeWindowLabel(a.window),
+      kind: "overflow",
+      count: overflow,
+      iconActive: hidden.some((o) => isTimedOfferDisplayActive(o, now)),
     },
-    {
-      kind: "offer",
-      discountLabel: `-${b.discountPercent}%`,
-      timeWindow: formatTimeWindowLabel(b.window),
-    },
-    { kind: "overflow", count: overflow },
   ]
 }

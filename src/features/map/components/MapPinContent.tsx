@@ -3,6 +3,7 @@ import Percent from "@bolteu/kalep-react-icons/dist/Percent"
 import Wallet from "@bolteu/kalep-react-icons/dist/Wallet"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import type { MapMarkerData } from "@/features/map/map.types"
+import { OFFER_ICON_INACTIVE_CLASS } from "@/features/offers/utils/offerDisplayActive"
 import { MapPinTail } from "./MapPinTail"
 
 export interface MapPinContentProps {
@@ -26,7 +27,7 @@ export function MapPinContent({ marker, selected }: MapPinContentProps) {
     const iconClass = selected
       ? "shrink-0 text-static-key-light"
       : timedOfferActiveNow === false
-        ? "shrink-0 text-tertiary"
+        ? OFFER_ICON_INACTIVE_CLASS
         : "shrink-0 text-action-primary"
     const discountClass = selected
       ? "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"

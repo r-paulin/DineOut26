@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom"
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { BillAmountScreen } from "@/features/payBill/components/BillAmountScreen/BillAmountScreen"
 import { PayScreen } from "@/features/payBill/components/PayScreen/PayScreen"
 import { PaySuccessScreen } from "@/features/payBill/components/PaySuccessScreen/PaySuccessScreen"
@@ -41,9 +41,14 @@ export function PayBillFlow({
   const discountAmount = usePayBillStore((s) => s.discountAmount)
   const paymentMethodUi = usePayBillStore((s) => s.paymentMethodUi)
 
+  const entryIdentity = `${entry.restaurantSlug}|${entry.offer?.offerId ?? ""}`
+  const openedEntryRef = useRef<string | null>(null)
+
   useEffect(() => {
+    if (openedEntryRef.current === entryIdentity) return
+    openedEntryRef.current = entryIdentity
     open(entry)
-  }, [entry, open])
+  }, [entry, entryIdentity, open])
 
   const dismissAll = useCallback(() => {
     reset()

@@ -183,7 +183,7 @@ export function CustomTipModal({
                 setState(billStateFromFormattedInput(raw))
               }}
               inputName="customTipAmount"
-              inputAriaLabel="Custom tip amount"
+              inputAriaLabel="Custom tip amount in euros"
             />
           </div>
 
