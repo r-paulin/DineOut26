@@ -1,0 +1,6 @@
+{"sessionId":"89f606","location":"usePaymentConfirmationReveal.ts:refs","message":"reveal effect refs","data":{"refsReady":true,"hasCompactContent":true},"timestamp":1778834201678,"hypothesisId":"A"}
+{"sessionId":"89f606","location":"usePaymentConfirmationReveal.ts:compactShow","message":"compact hero show","data":{"sheetInsetPx":446,"celebrationDisplay":"none","compactVisibility":"hidden"},"timestamp":1778834204624,"hypothesisId":"B"}
+{"sessionId":"89f606","location":"usePaymentConfirmationReveal.ts:complete","message":"timeline complete","data":{"phase":"revealed","compactOpacity":1,"compactScale":1},"timestamp":1778834205075,"hypothesisId":"C"}
+{"sessionId":"89f606","location":"usePaymentConfirmationReveal.ts:refs","message":"reveal effect refs","data":{"refsReady":true,"hasCompactContent":true},"timestamp":1778834583860,"hypothesisId":"A"}
+{"sessionId":"89f606","location":"usePaymentConfirmationReveal.ts:compactShow","message":"compact hero show","data":{"sheetInsetPx":446,"celebrationDisplay":"none","compactVisibility":"hidden"},"timestamp":1778834586815,"hypothesisId":"B"}
+{"sessionId":"89f606","location":"usePaymentConfirmationReveal.ts:complete","message":"timeline complete","data":{"phase":"revealed","compactOpacity":1,"compactScale":1},"timestamp":1778834587266,"hypothesisId":"C"}

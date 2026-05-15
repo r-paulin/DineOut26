@@ -8,13 +8,14 @@ import {
   useRef,
   useState,
 } from "react"
-import { useSnackbar } from "@/shared/snackbar"
+import { useSnackbar, useSnackbarLayoutBaseline } from "@/shared/snackbar"
 import { BottomNav } from "@/shared/components/BottomNav"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
 import {
   BottomSheet,
   ClaimOfferModal,
   ClaimedOfferPage,
+  ClaimedOfferPayBillInfoSheet,
   MapPlaceCardOpened,
   SectionOffersListScreen,
   claimOffer,
@@ -214,6 +215,10 @@ export function HomeScreen() {
   >({})
   const [claimedView, setClaimedView] = useState<ClaimedOffer | null>(null)
   const [payBillEntry, setPayBillEntry] = useState<PayBillFlowEntry | null>(null)
+  const [claimedPayInfoOpen, setClaimedPayInfoOpen] = useState(false)
+  const [pendingPayBillEntry, setPendingPayBillEntry] =
+    useState<PayBillFlowEntry | null>(null)
+  const hasSeenClaimedPayInfoRef = useRef(false)
   const { portalRoot } = useDeviceShell()
   const snackbar = useSnackbar()
 
@@ -396,13 +401,34 @@ export function HomeScreen() {
   const handlePayFromClaimedOffer = useCallback(() => {
     if (!claimedView) return
     const detail = getRestaurantDetailDemo(claimedView.restaurantSlug)
-    setPayBillEntry({
+    const entry: PayBillFlowEntry = {
       restaurantName: detail.name,
       restaurantSlug: claimedView.restaurantSlug,
       offer: claimedView,
-    })
+    }
     setClaimedView(null)
-  }, [claimedView])
+    if (hasSeenClaimedPayInfoRef.current) {
+      setPayBillEntry(entry)
+      return
+    }
+    setPendingPayBillEntry(entry)
+    setClaimedPayInfoOpen(true)
+  }, [claimedView, catalogSnapshot])
+
+  const handleClaimedPayInfoContinue = useCallback(() => {
+    if (!pendingPayBillEntry) return
+    hasSeenClaimedPayInfoRef.current = true
+    setPayBillEntry(pendingPayBillEntry)
+    setPendingPayBillEntry(null)
+    setClaimedPayInfoOpen(false)
+  }, [pendingPayBillEntry])
+
+  const handleClaimedPayInfoOpenChange = useCallback((open: boolean) => {
+    setClaimedPayInfoOpen(open)
+    if (!open) {
+      setPendingPayBillEntry(null)
+    }
+  }, [])
 
   const handleOpenPayBill = useCallback(() => {
     if (!restaurantDetailSlug || !baseRestaurantDetail) return
@@ -426,19 +452,35 @@ export function HomeScreen() {
     })
   }, [baseRestaurantDetail, claimedByOfferId, restaurantDetailSlug])
 
-  const handlePayBillFlowClose = useCallback(() => {
+  const exitPayFlowToHome = useCallback(() => {
     setPayBillEntry(null)
-  }, [])
+    closeRestaurantDetail()
+  }, [closeRestaurantDetail])
+
+  const fulfillPaidOfferAndExitHome = useCallback(() => {
+    const offerId = payBillEntry?.offer?.offerId
+    if (offerId) {
+      setClaimedByOfferId((prev) => {
+        if (!(offerId in prev)) return prev
+        const next = { ...prev }
+        delete next[offerId]
+        return next
+      })
+    }
+    setPayBillEntry(null)
+    closeRestaurantDetail()
+  }, [closeRestaurantDetail, payBillEntry])
+
+  const handlePayBillFlowClose = exitPayFlowToHome
 
   const handlePayBillPaidDone = useCallback(() => {
-    closeRestaurantDetail()
     snackbar.add({
       title: "Thanks for dining with us",
       description: "Leave a quick review to share your feedback",
       actions: [{ label: "Leave a review", onClick: () => {} }],
       timeout: 5000,
     })
-  }, [closeRestaurantDetail, snackbar])
+  }, [snackbar])
 
   const filterBarProps = {
     getChipLabel,
@@ -464,6 +506,19 @@ export function HomeScreen() {
     discoverDockRef,
     discoverDockActive,
     sheetSnap,
+  })
+
+  useSnackbarLayoutBaseline({
+    discoverDockActive,
+    discoverDockBottomInsetPx,
+    showBottomNav,
+    overlaysActive: Boolean(
+      payBillEntry ||
+        restaurantDetailSlug ||
+        pendingClaimOffer ||
+        offerClaimModalOfferId ||
+        claimedPayInfoOpen,
+    ),
   })
 
   const bottomSheetProps = {
@@ -623,6 +678,7 @@ export function HomeScreen() {
           entry={payBillEntry}
           portalContainer={portalRoot}
           onClose={handlePayBillFlowClose}
+          onExitAfterPayment={fulfillPaidOfferAndExitHome}
           onPaidDone={handlePayBillPaidDone}
         />
       : null}
@@ -660,6 +716,14 @@ export function HomeScreen() {
           }}
           container={portalRoot}
           onContinue={handleInfoContinue}
+        />
+      ) : null}
+      {claimedPayInfoOpen ? (
+        <ClaimedOfferPayBillInfoSheet
+          isOpen
+          onOpenChange={handleClaimedPayInfoOpenChange}
+          container={portalRoot}
+          onContinue={handleClaimedPayInfoContinue}
         />
       ) : null}
       <FilterSheet

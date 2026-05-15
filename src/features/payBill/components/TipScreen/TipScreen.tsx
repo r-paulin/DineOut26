@@ -255,6 +255,7 @@ export function TipScreen({
 
       <div
         ref={footerRef}
+        data-snackbar-anchor=""
         className="sticky bottom-0 mt-auto flex w-full shrink-0 flex-col bg-layer-floor-1 px-6 pb-[max(1rem,var(--safe-area-bottom))] pt-6"
       >
         {/*

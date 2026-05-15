@@ -321,7 +321,10 @@ export function ClaimOfferModal({
               </div>
             </div>
 
-            <div className="shrink-0 bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-3">
+            <div
+              data-snackbar-anchor=""
+              className="shrink-0 bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-3"
+            >
               <Button
                 type="button"
                 variant="primary"

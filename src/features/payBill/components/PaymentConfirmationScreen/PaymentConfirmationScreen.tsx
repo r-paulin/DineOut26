@@ -4,7 +4,9 @@ import paySuccessCheckmarkUrl from "@/features/payBill/assets/pay-success-checkm
 import { PaymentConfirmationNavbar } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationNavbar"
 import { PaymentConfirmationSummarySheet } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationSummarySheet"
 import { PaymentSuccessTitle } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentSuccessTitle"
-import { usePaymentConfirmationReveal } from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
+import {
+  usePaymentConfirmationReveal,
+} from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
 import {
   discountSecondEur,
 } from "@/features/payBill/utils/discountCalc"
@@ -32,6 +34,13 @@ export interface PaymentConfirmationScreenProps {
 const Z_CONFIRM_SHEET_OVERLAY = 200
 const Z_CONFIRM_SHEET_CONTENT = 201
 
+const CHECKMARK_IMG_PROPS = {
+  src: paySuccessCheckmarkUrl,
+  alt: "",
+  draggable: false,
+  className: "pointer-events-none size-full object-contain",
+} as const
+
 /**
  * Figma 15767 → 15823: brand hero + timed GSAP reveal + white summary sheet (payment code, receipt, Done).
  */
@@ -47,30 +56,26 @@ export function PaymentConfirmationScreen({
   onDone,
 }: PaymentConfirmationScreenProps) {
   const rootRef = useRef<HTMLDivElement>(null)
-  const sheetRef = useRef<HTMLDivElement>(null)
+  const heroBandRef = useRef<HTMLDivElement>(null)
   const imgWrapRef = useRef<HTMLDivElement>(null)
-  const titleWrapRef = useRef<HTMLDivElement>(null)
+  const titleCelebrationRef = useRef<HTMLDivElement>(null)
+  const sheetRef = useRef<HTMLDivElement>(null)
 
   const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
 
   const { phase } = usePaymentConfirmationReveal({
     rootRef,
-    sheetRef,
+    heroBandRef,
     imgWrapRef,
-    titleWrapRef,
+    titleCelebrationRef,
+    sheetRef,
   })
 
   const { discountAddPercent: d2 } = effectivePayDiscountPercents(offer)
   const secondDiscEur = discountSecondEur(receiptTotal, tip, 0, d2)
   const paymentCode = formatPaymentCodeDisplay(offer, transactionId)
 
-  const heroLayout =
-    phase === "celebration" ?
-      "flex flex-1 basis-0 min-h-0 flex-col items-center justify-center px-6"
-    : "flex flex-1 basis-0 min-h-0 flex-col items-center justify-center px-6 pt-10 pb-[min(72vh,calc(var(--app-h)*0.72))]"
-
-  const imgBoxClass =
-    phase === "revealed" ? "relative size-[72px] shrink-0" : "relative size-[180px] shrink-0"
+  const revealed = phase === "revealed"
 
   return (
     <div
@@ -82,46 +87,37 @@ export function PaymentConfirmationScreen({
         onDismiss={onDismiss}
       />
 
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <div className={`${heroLayout} min-h-0`}>
-          <div
-            className={
-              phase === "celebration" ?
-                "flex flex-col items-center gap-6"
-              : "flex flex-col items-center gap-3"
-            }
-          >
-            <div ref={imgWrapRef} className={imgBoxClass}>
-              <img
-                src={paySuccessCheckmarkUrl}
-                alt=""
-                width={180}
-                height={180}
-                draggable={false}
-                className="pointer-events-none size-full object-contain"
-              />
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div
+          ref={heroBandRef}
+          className="absolute inset-x-0 top-0 z-20 flex items-center justify-center px-6"
+        >
+          <div className="flex flex-col items-center gap-4">
+            <div
+              ref={imgWrapRef}
+              className="relative size-[180px] shrink-0 will-change-transform [backface-visibility:hidden]"
+            >
+              <img {...CHECKMARK_IMG_PROPS} width={180} height={180} />
             </div>
 
-            {phase === "celebration" ?
+            <div className="relative h-[3.5rem] w-full max-w-md shrink-0">
               <div
-                ref={titleWrapRef}
-                className="w-full max-w-md text-center [transform:translateZ(0)]"
+                ref={titleCelebrationRef}
+                className="absolute inset-0 flex items-center justify-center"
+                aria-hidden={revealed}
               >
                 <PaymentSuccessTitle variant="large" />
               </div>
-            : <div className="w-full max-w-md text-center">
-                <PaymentSuccessTitle variant="small" />
-              </div>
-            }
+            </div>
           </div>
         </div>
 
         <div
           ref={sheetRef}
-          className="absolute inset-x-0 bottom-0 z-10 max-h-[85%] min-h-0 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]"
+          data-snackbar-anchor=""
+          className="absolute inset-x-0 bottom-0 z-10 max-h-[min(72vh,calc(var(--app-h)*0.72))] overflow-hidden rounded-t-[var(--sheet-radius)] bg-layer-floor-1 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]"
         >
           <PaymentConfirmationSummarySheet
-            offer={offer}
             paymentCode={paymentCode}
             receiptTotal={receiptTotal}
             tip={tip}

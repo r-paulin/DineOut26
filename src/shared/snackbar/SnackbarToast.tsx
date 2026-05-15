@@ -3,6 +3,7 @@ import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import gsap from "gsap"
 import { useCallback, useEffect, useId, useLayoutEffect, useRef } from "react"
 import { toast } from "sonner"
+import { resolveSnackbarDismiss } from "@/shared/snackbar/resolveSnackbarDismiss"
 import type { SnackbarContent } from "@/shared/snackbar/snackbar.types"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
@@ -15,12 +16,26 @@ function joinClassNames(...parts: Array<string | false | null | undefined>): str
   return parts.filter(Boolean).join(" ")
 }
 
+function CloseControl({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <IconButton
+      data-testid="snackbar-close-button"
+      overrideClassName="text-primary-inverted h-6 w-6 shrink-0"
+      size="sm"
+      aria-label="Close"
+      onClick={onDismiss}
+      icon={<Cross size="sm" />}
+    />
+  )
+}
+
 /**
  * Toast body: matches Kalep Snackbar visuals; entry/exit motion is GSAP-driven
  * (Sonner list-item transitions are neutralized in CSS for this toaster).
  */
 export function SnackbarToast({ id, content }: SnackbarToastProps) {
-  const { title, description, actions, dismissible } = content
+  const { title, description, actions } = content
+  const { showCloseButton, timeoutMs } = resolveSnackbarDismiss(content)
   const panelRef = useRef<HTMLDivElement>(null)
   const exitingRef = useRef(false)
   const rootId = useId()
@@ -66,18 +81,9 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
   }, [])
 
   useEffect(() => {
-    const raw = content.timeout
-    if (
-      raw == null ||
-      raw === Number.POSITIVE_INFINITY ||
-      !Number.isFinite(raw) ||
-      raw <= 0
-    ) {
-      return
-    }
-    const tid = window.setTimeout(() => dismissWithAnimation(), raw)
+    const tid = window.setTimeout(() => dismissWithAnimation(), timeoutMs)
     return () => window.clearTimeout(tid)
-  }, [content.timeout, dismissWithAnimation])
+  }, [dismissWithAnimation, timeoutMs])
 
   const actionButtons = actions?.length
     ? actions.map((action) => (
@@ -94,39 +100,14 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
       ))
     : null
 
-  const hasCloseButton = actionButtons ? false : (dismissible ?? true)
-
   const hasDescription = description.trim().length > 0
   const stackedLayout = Boolean(actionButtons)
-
-  const textBlock = (
-    <div
-      className={
-        stackedLayout ? "flex min-w-0 flex-1 flex-col gap-2" : "min-w-0 flex-1"
-      }
-    >
-      {title ?
-        <div
-          id={titleId}
-          className={
-            stackedLayout ?
-              "bolt-font-body-m-accent font-semibold"
-            : "bolt-font-body-m-accent mb-1 font-semibold"
-          }
-        >
-          {title}
-        </div>
-      : null}
-      {hasDescription ?
-        <div id={descriptionId}>{description}</div>
-      : null}
-    </div>
-  )
 
   return (
     <div
       ref={panelRef}
-      role="alertdialog"
+      role="status"
+      aria-live="polite"
       aria-labelledby={title ? titleId : undefined}
       aria-describedby={hasDescription ? descriptionId : undefined}
       className={joinClassNames(
@@ -138,7 +119,24 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
     >
       {stackedLayout ?
         <>
-          {textBlock}
+          <div className="flex w-full items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              {title ?
+                <div
+                  id={titleId}
+                  className="bolt-font-body-m-accent font-semibold"
+                >
+                  {title}
+                </div>
+              : null}
+              {hasDescription ?
+                <div id={descriptionId}>{description}</div>
+              : null}
+            </div>
+            {showCloseButton ?
+              <CloseControl onDismiss={dismissWithAnimation} />
+            : null}
+          </div>
           {actionButtons ?
             <div className="flex w-full shrink-0 items-center justify-end gap-7">
               {actionButtons}
@@ -146,16 +144,21 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
           : null}
         </>
       : <>
-          {textBlock}
-          {hasCloseButton ?
-            <IconButton
-              data-testid="snackbar-close-button"
-              overrideClassName="text-primary-inverted h-6 w-6 shrink-0"
-              size="sm"
-              aria-label="Close"
-              onClick={dismissWithAnimation}
-              icon={<Cross size="sm" />}
-            />
+          <div className="min-w-0 flex-1">
+            {title ?
+              <div
+                id={titleId}
+                className="bolt-font-body-m-accent mb-1 font-semibold"
+              >
+                {title}
+              </div>
+            : null}
+            {hasDescription ?
+              <div id={descriptionId}>{description}</div>
+            : null}
+          </div>
+          {showCloseButton ?
+            <CloseControl onDismiss={dismissWithAnimation} />
           : null}
         </>
       }

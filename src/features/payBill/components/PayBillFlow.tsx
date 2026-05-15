@@ -13,6 +13,8 @@ export interface PayBillFlowProps {
   entry: PayBillFlowEntry
   portalContainer?: HTMLElement | null
   onClose: () => void
+  /** User left payment confirmation after a successful pay (Close or Done). */
+  onExitAfterPayment?: () => void
   /** After the user taps Done on the payment confirmation screen. */
   onPaidDone?: () => void
 }
@@ -24,6 +26,7 @@ export function PayBillFlow({
   entry,
   portalContainer,
   onClose,
+  onExitAfterPayment,
   onPaidDone,
 }: PayBillFlowProps) {
   const step = usePayBillStore((s) => s.step)
@@ -55,11 +58,16 @@ export function PayBillFlow({
     onClose()
   }, [onClose, reset])
 
+  const exitAfterPayment = useCallback(() => {
+    reset()
+    onExitAfterPayment?.()
+  }, [onExitAfterPayment, reset])
+
   const completeAfterConfirmation = useCallback(() => {
     reset()
-    onClose()
+    onExitAfterPayment?.()
     onPaidDone?.()
-  }, [onClose, onPaidDone, reset])
+  }, [onExitAfterPayment, onPaidDone, reset])
 
   const node = (
     <div className="fixed inset-0 z-[120] flex w-full justify-center bg-layer-floor-1">
@@ -131,7 +139,7 @@ export function PayBillFlow({
             paidAt={paidAt}
             offer={entry.offer}
             portalContainer={portalContainer}
-            onDismiss={dismissAll}
+            onDismiss={exitAfterPayment}
             onDone={completeAfterConfirmation}
           />
         : null}

@@ -1,4 +1,5 @@
 import type { ClaimData, ClaimedOffer } from "@/features/offers/offers.types"
+import { formatClaimedOfferMenuLabel } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
 import { parseHHMMToMinutes } from "@/features/offers/utils/offerTimePicker"
 
 export interface ClaimOfferInput extends ClaimData {
@@ -17,6 +18,8 @@ export interface ClaimOfferInput extends ClaimData {
   discountAddPercent?: number
   /** Local calendar day for offer-window end; defaults to today at call time. */
   offerWindowBaseDate?: Date
+  /** Figma offer list row; defaults from {@link formatClaimedOfferMenuLabel}. */
+  offerDetailLabel?: string
 }
 
 /**
@@ -76,6 +79,8 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
     guestCount: input.guestCount,
     paymentMethod: input.paymentMethod,
     discountPercent: input.discountPercent,
+    offerDetailLabel:
+      input.offerDetailLabel ?? formatClaimedOfferMenuLabel(input.discountPercent),
     promoText: input.promoText,
     restaurantSlug: input.restaurantSlug,
     offerId: input.offerId,

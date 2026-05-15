@@ -2,7 +2,20 @@ import { describe, expect, it } from "vitest"
 import {
   formatCountdownHms,
   formatOfferCountdownLive,
+  formatOfferWindowClosesLabel,
 } from "./useOfferCountdown"
+
+describe("formatOfferWindowClosesLabel", () => {
+  it("uses H:MM:SS without “in” when active", () => {
+    expect(formatOfferWindowClosesLabel(false, "1:59:23")).toBe(
+      "Offer window closes 1:59:23",
+    )
+  })
+
+  it("shows expired copy", () => {
+    expect(formatOfferWindowClosesLabel(true, "0:00:00")).toBe("Offer expired")
+  })
+})
 
 describe("formatCountdownHms", () => {
   it("formats as H:MM:SS with unpadded hours", () => {

@@ -1,6 +1,6 @@
-import { Button, Typography } from "@bolteu/kalep-react"
+import { Button, List, Typography } from "@bolteu/kalep-react"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
-import { useEffect, useId, useState } from "react"
+import { useCallback, useEffect, useId, useState } from "react"
 import { Drawer } from "vaul"
 import {
   Z_RESTAURANT_SHEET_CONTENT,
@@ -19,23 +19,31 @@ import {
 export const RESTAURANT_REPORT_PROBLEM_REASONS = [
   {
     id: "dineout-not-offered",
-    label: "DineOut payment is not offered here",
+    label: "DineOut payment isn't available here",
   },
   {
     id: "no-table",
-    label: "I could not get a table",
+    label: "I couldn't get a table",
   },
   {
     id: "discount-not-applied",
-    label: "My DineOut discount was not applied",
+    label: "My DineOut discount wasn't applied",
   },
   {
     id: "bill-wrong",
-    label: "The bill or total looked wrong",
+    label: "The bill or total didn't look right",
+  },
+  {
+    id: "code-or-app-issue",
+    label: "I had trouble with the app or payment code",
+  },
+  {
+    id: "staff-unaware",
+    label: "Staff didn't know how DineOut works",
   },
   {
     id: "other",
-    label: "Something else about DineOut",
+    label: "Something else about my visit",
   },
 ] as const
 
@@ -47,11 +55,13 @@ export interface RestaurantReportProblemSheetProps {
   onOpenChange: (open: boolean) => void
   container?: HTMLElement | null
   /** Optional hook for analytics / future API. */
-  onReport?: (reasonId: RestaurantReportProblemReasonId) => void
+  onReport?: (reasonIds: readonly RestaurantReportProblemReasonId[]) => void
 }
 
 /**
- * Prototype: user picks a DineOut-related reason and taps Submit — snackbar + dismiss.
+ * Report-a-problem bottom sheet — same Vaul shell as {@link RestaurantOpenHoursSheet}
+ * (h-fit, 16px radius). Checkbox list uses 24px horizontal inset; all reasons visible
+ * without an inner scroll region.
  */
 export function RestaurantReportProblemSheet({
   isOpen,
@@ -61,16 +71,28 @@ export function RestaurantReportProblemSheet({
 }: RestaurantReportProblemSheetProps) {
   const titleId = useId()
   const snackbar = useSnackbar()
-  const [selectedId, setSelectedId] =
-    useState<RestaurantReportProblemReasonId | null>(null)
+  const [selectedIds, setSelectedIds] = useState<
+    Set<RestaurantReportProblemReasonId>
+  >(() => new Set())
 
   useEffect(() => {
-    if (!isOpen) setSelectedId(null)
+    if (!isOpen) setSelectedIds(new Set())
   }, [isOpen])
 
+  const toggleReason = useCallback((id: RestaurantReportProblemReasonId) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
+  const canSubmit = selectedIds.size > 0
+
   const handleSubmit = () => {
-    if (!selectedId) return
-    onReport?.(selectedId)
+    if (!canSubmit) return
+    onReport?.([...selectedIds])
     snackbar.add({
       description:
         "Thanks — we have received your report and will look into it.",
@@ -107,9 +129,9 @@ export function RestaurantReportProblemSheet({
               <Cross size="xs" className={SHEET_CLOSE_ICON_ON_SURFACE_CLASS} aria-hidden />
             </button>
           </Drawer.Close>
-          <div className="flex max-h-[min(32rem,85vh)] flex-col pb-[max(1rem,var(--safe-area-bottom))]">
+          <div className="flex flex-col pb-[max(2rem,var(--safe-area-bottom))]">
             <Drawer.Description className="sr-only">
-              Choose the option that best describes the issue, then submit.
+              Select all options that apply, then submit.
             </Drawer.Description>
             <div className="flex w-full flex-col gap-2 px-6 pb-3 pt-6 pe-14">
               <h2 id={titleId} className="m-0 p-0">
@@ -118,46 +140,40 @@ export function RestaurantReportProblemSheet({
                 </Typography>
               </h2>
               <Typography variant="body-s-regular" color="secondary" as="p">
-                Tell us what went wrong so we can improve DineOut.
+                Tell us what went wrong. Select all that apply so we can improve
+                DineOut.
               </Typography>
             </div>
-            <div
-              className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-6 pb-4"
-              role="radiogroup"
-              aria-labelledby={titleId}
-            >
-              <div className="flex flex-col gap-2">
-                {RESTAURANT_REPORT_PROBLEM_REASONS.map((r) => {
-                  const selected = selectedId === r.id
-                  return (
-                    <button
-                      key={r.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      className={`flex w-full cursor-pointer rounded-xl border border-solid px-4 py-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary ${
-                        selected
-                          ? "border-action-primary bg-active-neutral-secondary"
-                          : "border-separator bg-transparent"
-                      }`}
-                      onClick={() => {
-                        setSelectedId(r.id)
-                      }}
-                    >
-                      <Typography variant="body-m-regular" color="primary" as="span">
-                        {r.label}
-                      </Typography>
-                    </button>
-                  )
-                })}
-              </div>
+            <div className="w-full px-6">
+              <List.Root role="group" aria-labelledby={titleId}>
+                {RESTAURANT_REPORT_PROBLEM_REASONS.map((r, index) => (
+                  <List.Item
+                    key={r.id}
+                    primary={r.label}
+                    selected={selectedIds.has(r.id)}
+                    selectionMode="multiple"
+                    separator={
+                      index < RESTAURANT_REPORT_PROBLEM_REASONS.length - 1
+                    }
+                    paddingStart={0}
+                    paddingEnd={0}
+                    onClick={() => {
+                      toggleReason(r.id)
+                    }}
+                    aria-label={r.label}
+                  />
+                ))}
+              </List.Root>
             </div>
-            <div className="shrink-0 border-t border-solid border-separator px-6 pt-4">
+            <div
+              data-snackbar-anchor=""
+              className="shrink-0 border-t border-solid border-separator px-6 pt-4"
+            >
               <Button
                 type="button"
                 variant="primary"
                 fullWidth
-                disabled={!selectedId}
+                disabled={!canSubmit}
                 onClick={handleSubmit}
                 overrideClassName="!h-12 rounded-full"
               >

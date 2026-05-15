@@ -4,6 +4,14 @@ function pad2(n: number): string {
   return String(n).padStart(2, "0")
 }
 
+/** Claimed-offer detail row — Figma `Offer window closes 1:59:23` (no “in”). */
+export function formatOfferWindowClosesLabel(
+  expired: boolean,
+  countdownHms: string,
+): string {
+  return expired ? "Offer expired" : `Offer window closes ${countdownHms}`
+}
+
 /** `H:MM:SS` (hours unpadded), e.g. `1:05:09` or `23:40:00`. */
 export function formatCountdownHms(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000))

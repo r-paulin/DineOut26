@@ -187,14 +187,6 @@ export function PayScreen({
   const [payLoading, setPayLoading] = useState(false)
   /** Strict Mode runs effects twice with the same `intent` snapshot; only show once. */
   const intentConsumedRef = useRef(false)
-
-  useEffect(() => {
-    document.documentElement.dataset.dineoutPayScreen = "true"
-    return () => {
-      delete document.documentElement.dataset.dineoutPayScreen
-    }
-  }, [])
-
   useEffect(() => {
     if (intent == null) {
       intentConsumedRef.current = false
@@ -206,14 +198,14 @@ export function PayScreen({
     setIntent(null)
     if (kind === "tip-added") {
       snackbar.add({
-        dismissible: false,
+        swipeToDismiss: false,
         title: "Tip added",
         description: "Your tip will go to the restaurant staff.",
         timeout: 3500,
       })
     } else if (kind === "no-tip") {
       snackbar.add({
-        dismissible: false,
+        swipeToDismiss: false,
         description: "No tip was added",
         timeout: 3500,
       })
@@ -461,7 +453,10 @@ export function PayScreen({
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-solid border-separator bg-layer-floor-1 px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]">
+        <div
+          data-snackbar-anchor=""
+          className="shrink-0 border-t border-solid border-separator bg-layer-floor-1 px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
+        >
           <SlidingButton
             label="Pay bill"
             sublabel="Slide to confirm"

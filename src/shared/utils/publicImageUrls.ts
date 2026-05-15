@@ -11,3 +11,8 @@ export function restaurantImageUrl(filename: string): string {
 export function modalImageUrl(filename: string): string {
   return `/images/modal-img/${encodeURIComponent(filename)}`
 }
+
+/** Bolt + DineOut wordmark slices (`public/images/dineout-logo-*.svg`). */
+export function dineOutLogoUrl(filename: string): string {
+  return `/images/${encodeURIComponent(filename)}`
+}

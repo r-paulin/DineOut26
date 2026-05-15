@@ -48,7 +48,6 @@ export function BillAmountScreen({
   const scaleWrapRef = useRef<HTMLSpanElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const errorMotionRef = useRef<HTMLDivElement>(null)
-
   const coarse = useCoarsePointer()
   const vvLayout = useVisualViewportLayout(coarse)
 
@@ -195,7 +194,10 @@ export function BillAmountScreen({
         </div>
       </div>
 
-      <div className="relative z-10 flex shrink-0 flex-col items-center gap-[11px] bg-layer-floor-1 pb-3 pt-0">
+      <div
+        data-snackbar-anchor=""
+        className="relative z-10 flex shrink-0 flex-col items-center gap-[11px] bg-layer-floor-1 pb-3 pt-0"
+      >
         <div className="flex w-full flex-col items-center gap-3 px-6">
           <Button
             type="button"

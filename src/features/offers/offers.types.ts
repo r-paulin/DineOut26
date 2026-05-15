@@ -78,6 +78,8 @@ export interface ClaimedOffer {
   guestCount: number
   paymentMethod: PaymentMethod
   discountPercent: number
+  /** Claimed-offer details row (Figma `15753:13182`), e.g. "30% discount on menu". */
+  offerDetailLabel?: string
   promoText?: string
   restaurantSlug: string
   offerId: string

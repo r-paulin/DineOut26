@@ -472,8 +472,8 @@ export function RestaurantDetailScreen({
         isOpen={reportProblemOpen}
         onOpenChange={setReportProblemOpen}
         container={portalRoot}
-        onReport={(reasonId) => {
-          onReportProblem?.(reasonId)
+        onReport={(reasonIds) => {
+          onReportProblem?.(reasonIds)
         }}
       />
     </div>

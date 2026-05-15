@@ -1,5 +1,7 @@
 import { createContext, useContext, useMemo } from "react"
 import { Toaster, toast } from "sonner"
+import { SnackbarInsetController } from "@/shared/snackbar/SnackbarInsetContext"
+import { resolveSnackbarDismiss } from "@/shared/snackbar/resolveSnackbarDismiss"
 import { SnackbarToast } from "@/shared/snackbar/SnackbarToast"
 import type {
   SnackbarContent,
@@ -18,7 +20,7 @@ export function useSnackbar(): SnackbarState {
 }
 
 /**
- * App snackbars: 12px horizontal inset (see `index.css` + Toaster offsets),
+ * App snackbars: `--snackbar-bottom-inset` + `--snackbar-toaster-gap` (see `index.css`),
  * GSAP entry/exit on the panel ({@link SnackbarToast}), Sonner for stacking only.
  */
 export function SnackbarProvider({
@@ -30,12 +32,12 @@ export function SnackbarProvider({
   const value = useMemo<SnackbarState>(
     () => ({
       add(content: SnackbarContent) {
-        const swipeOk = content.dismissible !== false
+        const { swipeToDismiss } = resolveSnackbarDismiss(content)
         return toast.custom((t) => <SnackbarToast id={t} content={content} />, {
           duration: Number.POSITIVE_INFINITY,
-          dismissible: swipeOk,
+          dismissible: swipeToDismiss,
           classNames: {
-            toast: "dineout-snackbar-host",
+            toast: "dineout-snackbar-host !w-full !max-w-none",
             content: "!m-0 !w-full !max-w-full !gap-0 !p-0",
             title: "!m-0 !w-full !p-0",
           },
@@ -50,19 +52,29 @@ export function SnackbarProvider({
 
   return (
     <SnackbarContext.Provider value={value}>
-      <Toaster
-        className="dineout-snackbar-toaster"
-        visibleToasts={maxVisibleSnackbars}
-        position={placement}
-        expand={expand}
-        theme="system"
-        offset={{ left: 12, right: 12, bottom: 24 }}
-        mobileOffset={{ left: 12, right: 12, bottom: 24 }}
-        toastOptions={{
-          unstyled: true,
-        }}
-      />
-      {children}
+      <SnackbarInsetController>
+        <Toaster
+          className="dineout-snackbar-toaster"
+          visibleToasts={maxVisibleSnackbars}
+          position={placement}
+          expand={expand}
+          theme="system"
+          offset={{
+            left: 24,
+            right: 24,
+            bottom: 32,
+          }}
+          mobileOffset={{
+            left: 24,
+            right: 24,
+            bottom: 32,
+          }}
+          toastOptions={{
+            unstyled: true,
+          }}
+        />
+        {children}
+      </SnackbarInsetController>
     </SnackbarContext.Provider>
   )
 }

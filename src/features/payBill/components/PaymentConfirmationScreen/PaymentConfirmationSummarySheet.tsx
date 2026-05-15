@@ -1,6 +1,4 @@
 import { Button, Typography } from "@bolteu/kalep-react"
-import type { ClaimedOffer } from "@/features/offers/offers.types"
-import { ClaimedOfferBillInlineNotice } from "@/features/payBill/components/shared/ClaimedOfferBillInlineNotice"
 import { DiscountReceiptRow } from "@/features/payBill/components/shared/DiscountReceiptRow"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
@@ -9,7 +7,6 @@ const FONT_FEAT =
   "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
 export interface PaymentConfirmationSummarySheetProps {
-  offer: ClaimedOffer | null
   paymentCode: string
   receiptTotal: number
   tip: number | null
@@ -20,9 +17,8 @@ export interface PaymentConfirmationSummarySheetProps {
   onDineOutBenefitInfo: () => void
 }
 
-/** Figma `15823:25243` — white sheet: notice, payment code, summary, total, Done. */
+/** Figma `15823:25243` — white sheet: payment code, summary, total, Done. */
 export function PaymentConfirmationSummarySheet({
-  offer,
   paymentCode,
   receiptTotal,
   tip,
@@ -32,17 +28,10 @@ export function PaymentConfirmationSummarySheet({
   onDone,
   onDineOutBenefitInfo,
 }: PaymentConfirmationSummarySheetProps) {
-  return (
-    <div className="flex max-h-[min(72vh,calc(var(--app-h)*0.72))] min-h-0 flex-col overflow-y-auto rounded-t-[16px] bg-layer-floor-1 px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-6">
-      {offer ?
-        <div className="shrink-0 pb-4">
-          <ClaimedOfferBillInlineNotice
-            discountPercent={offer.discountPercent}
-            flushHorizontal
-          />
-        </div>
-      : null}
+  const hasDiscount = discountPercentSecond > 0
 
+  return (
+    <div className="flex max-h-[min(72vh,calc(var(--app-h)*0.72))] min-h-0 flex-col overflow-y-auto px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-6">
       <div className="flex shrink-0 flex-col gap-2 rounded-lg bg-layer-floor-0-grouped px-6 py-3 text-center">
         <Typography variant="body-s-regular" color="secondary" as="p">
           Payment code
@@ -95,20 +84,23 @@ export function PaymentConfirmationSummarySheet({
               labelTypographyVariant="body-m-regular"
             />
           : null}
-          {discountPercentSecond > 0 ?
-            <DiscountReceiptRow
-              percent={discountPercentSecond}
-              discountEur={secondDiscEur}
-              infoAriaLabel="DineOut benefit info"
-              onInfoClick={onDineOutBenefitInfo}
-            />
+          {hasDiscount ?
+            <>
+              <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+              <DiscountReceiptRow
+                percent={discountPercentSecond}
+                discountEur={secondDiscEur}
+                infoAriaLabel="DineOut benefit info"
+                onInfoClick={onDineOutBenefitInfo}
+              />
+              <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+            </>
           : null}
         </div>
 
-        <div
-          className="my-1 h-px w-full shrink-0 bg-separator"
-          aria-hidden
-        />
+        {!hasDiscount ?
+          <div className="my-1 h-px w-full shrink-0 bg-separator" aria-hidden />
+        : null}
 
         <ReceiptItem
           label="Total paid"

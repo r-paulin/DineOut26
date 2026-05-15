@@ -19,15 +19,69 @@ const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
+const PROMO_ENTER_DURATION = 0.28
+const PROMO_EXIT_DURATION = 0.26
+
+const PAYMENT_OPTION_LABEL_CLASS =
+  "flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4 hover:bg-active-neutral-secondary"
+
+function animatePromoIn(slot: HTMLElement, banner: HTMLElement) {
+  gsap.killTweensOf([slot, banner])
+  const targetHeight = banner.offsetHeight
+  gsap.set(slot, { height: 0, overflow: "hidden" })
+  gsap.set(banner, { opacity: 0, y: 8 })
+  gsap.to(slot, {
+    height: targetHeight,
+    duration: PROMO_ENTER_DURATION,
+    ease: "power2.out",
+  })
+  gsap.to(banner, {
+    opacity: 1,
+    y: 0,
+    duration: PROMO_ENTER_DURATION,
+    ease: "power2.out",
+    onComplete: () => {
+      gsap.set(slot, { height: "auto", clearProps: "overflow" })
+      gsap.set(banner, { clearProps: "transform,opacity" })
+    },
+  })
+}
+
+function animatePromoOut(
+  slot: HTMLElement,
+  banner: HTMLElement,
+  onDone: () => void,
+) {
+  gsap.killTweensOf([slot, banner])
+  const startHeight = slot.offsetHeight
+  gsap.set(slot, { height: startHeight, overflow: "hidden" })
+  gsap.to(banner, {
+    opacity: 0,
+    y: -6,
+    duration: PROMO_EXIT_DURATION * 0.75,
+    ease: "power2.in",
+  })
+  gsap.to(slot, {
+    height: 0,
+    duration: PROMO_EXIT_DURATION,
+    ease: "power2.inOut",
+    onComplete: () => {
+      onDone()
+      gsap.set([slot, banner], { clearProps: "all" })
+    },
+  })
+}
+
 /**
  * Payment method radios + DineOut-only inline promo (Figma MODAL / Claiming offer).
- * GSAP fades the promo when switching away from Bolt DineOut.
+ * GSAP expands/collapses the promo slot when switching Bolt DineOut.
  */
 export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
   const groupName = "claim-offer-payment"
   const [renderedPromo, setRenderedPromo] = useState<"dineout" | "empty">(() =>
     value === "dineout" ? "dineout" : "empty",
   )
+  const promoSlotRef = useRef<HTMLDivElement>(null)
   const bannerRef = useRef<HTMLDivElement>(null)
   const lastValueRef = useRef(value)
 
@@ -35,8 +89,9 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
     const prev = lastValueRef.current
     lastValueRef.current = value
 
-    const el = bannerRef.current
-    if (el) gsap.killTweensOf(el)
+    const slot = promoSlotRef.current
+    const banner = bannerRef.current
+    if (slot || banner) gsap.killTweensOf([slot, banner].filter(Boolean))
 
     if (value === "dineout") {
       if (prev === "dineout") return
@@ -47,43 +102,21 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
       flushSync(() => {
         setRenderedPromo("dineout")
       })
-      const node = bannerRef.current
-      if (!node) return
-      gsap.fromTo(
-        node,
-        {
-          autoAlpha: 0,
-          scale: 0.98,
-          transformOrigin: "50% 50%",
-          force3D: true,
-        },
-        {
-          autoAlpha: 1,
-          scale: 1,
-          duration: 0.22,
-          ease: "power2.out",
-          force3D: true,
-        },
-      )
+      const slotEl = promoSlotRef.current
+      const bannerEl = bannerRef.current
+      if (!slotEl || !bannerEl) return
+      animatePromoIn(slotEl, bannerEl)
       return
     }
 
     if (prev !== "dineout") return
 
-    if (!el || prefersReducedMotion()) {
+    if (!slot || !banner || prefersReducedMotion()) {
       setRenderedPromo("empty")
       return
     }
-    gsap.to(el, {
-      autoAlpha: 0,
-      scale: 0.98,
-      duration: 0.15,
-      ease: "power2.in",
-      transformOrigin: "50% 50%",
-      force3D: true,
-      onComplete: () => {
-        setRenderedPromo("empty")
-      },
+    animatePromoOut(slot, banner, () => {
+      setRenderedPromo("empty")
     })
   }, [value])
 
@@ -117,7 +150,7 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
             <div className="w-full border-b border-separator">
               <label
                 htmlFor={`${groupName}-dineout`}
-                className="flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4 transition-colors hover:bg-active-neutral-secondary focus-within:bg-active-neutral-secondary"
+                className={PAYMENT_OPTION_LABEL_CLASS}
               >
                 <span className="min-w-0 flex-1 text-start">
                   <Typography as="span" variant="body-m-regular" color="primary">
@@ -130,7 +163,7 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
             <div className="w-full">
               <label
                 htmlFor={`${groupName}-card`}
-                className="flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4 transition-colors hover:bg-active-neutral-secondary focus-within:bg-active-neutral-secondary"
+                className={PAYMENT_OPTION_LABEL_CLASS}
               >
                 <span className="min-w-0 flex-1 text-start">
                   <Typography as="span" variant="body-m-regular" color="primary">
@@ -145,31 +178,33 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
       </div>
 
       <div className="min-h-0 px-6 pb-8 pt-0">
-        {renderedPromo === "dineout" ?
-          <div
-            ref={bannerRef}
-            className="flex min-h-[48px] w-full gap-2 rounded-xl bg-action-secondary px-3 py-3 [will-change:transform,opacity]"
-          >
-            <CheckCircle
-              size="md"
-              className="size-6 shrink-0 text-action-primary"
-              aria-hidden
-            />
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5 py-0.5">
-              <Typography
-                as="p"
-                variant="body-s-accent"
-                color="primary"
-                inlineStyle={SEMIBOLD}
-              >
-                {DINEOUT_CLAIM_INLINE_PRIMARY}
-              </Typography>
-              <Typography as="p" variant="body-s-regular" color="primary">
-                {DINEOUT_CLAIM_INLINE_SECONDARY}
-              </Typography>
+        <div ref={promoSlotRef} className="overflow-hidden">
+          {renderedPromo === "dineout" ?
+            <div
+              ref={bannerRef}
+              className="flex min-h-[48px] w-full gap-2 rounded-xl bg-action-secondary px-3 py-3"
+            >
+              <CheckCircle
+                size="md"
+                className="size-6 shrink-0 text-action-primary"
+                aria-hidden
+              />
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5 py-0.5">
+                <Typography
+                  as="p"
+                  variant="body-s-accent"
+                  color="primary"
+                  inlineStyle={SEMIBOLD}
+                >
+                  {DINEOUT_CLAIM_INLINE_PRIMARY}
+                </Typography>
+                <Typography as="p" variant="body-s-regular" color="primary">
+                  {DINEOUT_CLAIM_INLINE_SECONDARY}
+                </Typography>
+              </div>
             </div>
-          </div>
-        : null}
+          : null}
+        </div>
       </div>
     </div>
   )

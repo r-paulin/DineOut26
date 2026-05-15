@@ -12,9 +12,9 @@ export interface ListItemProps {
   /** When false, renders as non-interactive div. */
   interactive?: boolean
   onPress?: () => void
-  /** Show 1px bottom separator (full width of row). */
+  /** Show 1px bottom separator inset with row horizontal padding (24px). */
   showSeparator?: boolean
-  labelColor?: "secondary" | "tertiary"
+  labelColor?: "secondary" | "tertiary" | "danger-primary"
   /** `labelFirst`: small label on top (default). `valueFirst`: primary value on top like PIN rows. */
   lineOrder?: "labelFirst" | "valueFirst"
   href?: string
@@ -74,27 +74,25 @@ export function ListItem({
   const body = (
     <>
       <div className="flex w-full items-center gap-3 pt-[10px] pb-[9px]">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          {icon != null ? (
-            <div className="flex shrink-0 items-center text-action-primary">
-              {icon}
-            </div>
-          ) : null}
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5 overflow-hidden">
-            {textLines}
-          </div>
-        </div>
-        {showChevron ? (
-          <div className="flex min-w-6 shrink-0 self-stretch items-center justify-end">
-            <ChevronRight size="sm" className="text-tertiary" aria-hidden />
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {icon != null ? (
+          <div className="flex shrink-0 items-center text-action-primary">
+            {icon}
           </div>
         ) : null}
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5 overflow-hidden">
+          {textLines}
+        </div>
       </div>
-      {showSeparator ? (
-        <div className="box-border w-full shrink-0 px-6" aria-hidden>
-          <div className="h-px w-full bg-separator" />
+      {showChevron ? (
+        <div className="flex min-w-6 shrink-0 self-stretch items-center justify-end">
+          <ChevronRight size="sm" className="text-tertiary" aria-hidden />
         </div>
       ) : null}
+      </div>
+      {showSeparator ?
+        <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+      : null}
     </>
   )
 

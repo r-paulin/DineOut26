@@ -9,30 +9,19 @@ export interface RestaurantDetailPayBillCtaProps {
 }
 
 /**
- * Figma `16004:24690` — intro, primary “Pay with DineOut”, acceptance row.
+ * Figma `16012:13704` — primary “Pay with DineOut”, acceptance row.
  */
 export function RestaurantDetailPayBillCta({
   onPayBill,
 }: RestaurantDetailPayBillCtaProps) {
   return (
-    <div className="flex w-full flex-col items-center gap-3 px-6 pb-6 pt-3">
-      <div className="max-w-[14rem]">
-        <Typography
-          variant="body-s-accent"
-          color="primary"
-          as="p"
-          align="center"
-          inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
-        >
-          Enjoy your meal. Save when you pay with DineOut.
-        </Typography>
-      </div>
+    <div className="flex w-full flex-col items-stretch gap-[10px] px-6 py-3">
       <Button
         type="button"
         variant="primary"
         fullWidth
         onClick={onPayBill}
-        overrideClassName="!h-14 !min-h-14 rounded-full"
+        overrideClassName="!h-12 !min-h-12 rounded-full"
       >
         Pay with DineOut
       </Button>
@@ -45,7 +34,7 @@ export function RestaurantDetailPayBillCta({
           as="p"
           inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
         >
-          This restaurant accepts DineOut payments
+          You can pay with DineOut at this restaurant
         </Typography>
       </div>
     </div>

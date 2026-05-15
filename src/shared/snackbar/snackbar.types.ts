@@ -6,8 +6,15 @@ export interface SnackbarContent {
     label: string
     onClick: () => void
   }>
+  /** Show close (X) control. Default true. */
+  showCloseButton?: boolean
+  /** Allow swipe-to-dismiss (Sonner). Default true unless legacy `dismissible: false`. */
+  swipeToDismiss?: boolean
+  /**
+   * @deprecated Prefer `showCloseButton` / `swipeToDismiss`. When false, disables swipe only.
+   */
   dismissible?: boolean
-  /** Auto-dismiss delay in ms. Omit or `Infinity` to keep open until user dismisses. */
+  /** Auto-dismiss delay in ms. Defaults to 5000 when omitted. */
   timeout?: number
 }
 
