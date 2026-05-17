@@ -178,7 +178,13 @@ function FilterSheetPanel({
       </div>
 
       <div className="flex-none bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-3">
-        <Button type="submit" variant="primary" disabled={applyDisabled} fullWidth>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          disabled={applyDisabled}
+          fullWidth
+        >
           Apply
         </Button>
       </div>

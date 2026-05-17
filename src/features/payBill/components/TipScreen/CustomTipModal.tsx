@@ -190,13 +190,13 @@ export function CustomTipModal({
           <div className="flex shrink-0 flex-col gap-3 px-6 pt-2 pb-[max(1.5rem,var(--safe-area-bottom))]">
             <Button
               variant="primary"
+              size="lg"
               fullWidth
               disabled={!valid}
               onClick={() => {
                 onSave(cents / 100)
                 onOpenChange(false)
               }}
-              overrideClassName="!min-h-14 h-14 rounded-full"
             >
               Save
             </Button>

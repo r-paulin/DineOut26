@@ -447,6 +447,7 @@ export function DineOutPromoSheet({
               <Button
                 type="button"
                 variant="primary"
+                size="lg"
                 fullWidth
                 onClick={() => onDismiss()}
               >

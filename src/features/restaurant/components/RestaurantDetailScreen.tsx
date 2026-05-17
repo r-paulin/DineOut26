@@ -10,12 +10,16 @@ import { buildVenueSharePayload } from "@/shared/utils/venueShare"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 import { slideOffScreenXPx } from "@/shared/utils/slideOffScreenXPx"
 import { useRestaurantDetailHeaderTitle } from "@/features/restaurant/hooks/useRestaurantDetailHeaderTitle"
+import { useRestaurantHeroStatusPill } from "@/features/restaurant/hooks/useRestaurantHeroStatusPill"
 import type { RestaurantDetailScreenProps } from "@/features/restaurant/restaurantDetail.types"
+import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
+import { toTelHref } from "@/shared/utils/telHref"
 import { RestaurantBenefitPromoSheet } from "./RestaurantBenefitPromoSheet"
+import { RestaurantDetailAtVenueBar } from "./RestaurantDetailAtVenueBar"
 import { RestaurantDetailBenefitsSection } from "./RestaurantDetailBenefitsSection"
 import { RestaurantDetailHeader } from "./RestaurantDetailHeader"
 import { RestaurantDetailOffersSection } from "./RestaurantDetailOffersSection"
-import { RestaurantDetailPayBillCta } from "./RestaurantDetailPayBillCta"
+import { RestaurantDetailQuickActions } from "./RestaurantDetailQuickActions"
 import { RestaurantDetailSectionDivider } from "./RestaurantDetailSectionDivider"
 import { RestaurantDetailStatsBar } from "./RestaurantDetailStatsBar"
 import { RestaurantAbout } from "./RestaurantAbout"
@@ -110,11 +114,15 @@ export function RestaurantDetailScreen({
   >("dineout40")
   const [reportProblemOpen, setReportProblemOpen] = useState(false)
   const { titleOpacity, onScroll } = useRestaurantDetailHeaderTitle()
+  const statusPill = useRestaurantHeroStatusPill(model.weeklyOpenHours)
   const {
     titleOpacity: aboutTitleOpacity,
     onScroll: onAboutTitleScroll,
     reset: resetAboutTitleOpacity,
   } = useRestaurantDetailHeaderTitle()
+
+  const mapsHref = googleMapsSearchUrl(model.address)
+  const telHref = toTelHref(model.phone)
 
   const handleBenefitRowPress = useCallback((benefitId: string) => {
     if (benefitId === "b1") {
@@ -313,7 +321,8 @@ export function RestaurantDetailScreen({
             className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-layer-floor-1"
             onScroll={handleScroll}
             style={{
-              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)",
+              paddingBottom:
+                "calc(env(safe-area-inset-bottom, 0px) + 7rem)",
             }}
             aria-hidden={aboutOpen}
           >
@@ -323,12 +332,11 @@ export function RestaurantDetailScreen({
               heroImageUrl={model.heroImageUrl}
               logoCandidates={model.logoCandidates}
               logoFallbackUrl={model.logoFallbackUrl}
-              isOpen={model.isOpen}
-              closesAt={model.closesAt}
+              statusPill={statusPill}
               titleOpacity={titleOpacity}
               onBack={handleAnimatedBack}
               onShare={handleShare}
-              onOpenAbout={openAbout}
+              onOpenHours={onOpenHours === null ? undefined : handleOpenHours}
             />
             <div className="bg-layer-floor-1 px-0 pb-0">
               <RestaurantDetailStatsBar
@@ -341,7 +349,32 @@ export function RestaurantDetailScreen({
                 onOpenPriceInfo={handleOpenPriceInfo}
                 onOpenMaps={onOpenMaps}
               />
-              <RestaurantDetailPayBillCta onPayBill={onPayBill} />
+              <RestaurantDetailQuickActions
+                onOpenMenu={
+                  onOpenMenu === null ? undefined : handleOpenMenuGallery
+                }
+                onOpenDirections={
+                  onOpenMaps ?
+                    () => {
+                      window.open(mapsHref, "_blank", "noopener,noreferrer")
+                      onOpenMaps()
+                    }
+                  : undefined
+                }
+                onCall={
+                  telHref && onCall ?
+                    () => {
+                      window.location.href = telHref
+                      onCall()
+                    }
+                  : onCall ?
+                    () => {
+                      onCall()
+                    }
+                  : undefined
+                }
+                onOpenDetails={openAbout}
+              />
               <RestaurantDetailOffersSection
                 tabs={model.offerDateTabs}
                 offersByTabId={model.offersByTabId}
@@ -439,6 +472,12 @@ export function RestaurantDetailScreen({
               </div>
             </div>
           ) : null}
+          {!aboutOpen ?
+            <RestaurantDetailAtVenueBar
+              onPress={onPayBill}
+              animateIn={!aboutOpen}
+            />
+          : null}
         </div>
       </div>
       <RestaurantRatingSheet

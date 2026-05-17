@@ -61,9 +61,9 @@ const DINEOUT40_COPY = {
 } as const
 
 const VISA10_COPY = {
-  title: "Get 10€ off when you pay with Visa",
+  title: "Get 5 € off when you pay with Visa",
   intro:
-    "Use a Visa card when paying in the Bolt DineOut and get 10€ off your restaurant bill.",
+    "Use a Visa card when paying in the Bolt DineOut and get 5 € off your restaurant bill.",
   rows: [
     {
       title: "Pay your bill through the app",
@@ -76,7 +76,7 @@ const VISA10_COPY = {
     },
     {
       title: "Applied to the restaurant's bill",
-      subtitle: "The 10€ discount is deducted from your total before payment.",
+      subtitle: "The 5 € discount is deducted from your total before payment.",
     },
     {
       title: "No claiming required",
@@ -86,7 +86,7 @@ const VISA10_COPY = {
 } as const
 
 /**
- * Bottom sheet: DineOut 40% or Visa 10€ benefit promos from “More benefits”.
+ * Bottom sheet: DineOut 40% or Visa 5 € benefit promos from “More benefits”.
  * Figma: MODAL / DineOut Promo (`15876:20051`), MODAL / Partner Promo (`15877:20153`).
  * Shell matches {@link RestaurantOpenHoursSheet} / {@link RestaurantRatingSheet}.
  * The 40% hero uses `Modal-2.png`; Visa uses `Modal-3.png` from `public/images/modal-img/`.
@@ -207,6 +207,7 @@ export function RestaurantBenefitPromoSheet({
             <Button
               type="button"
               variant="primary"
+              size="lg"
               fullWidth
               onClick={() => onOpenChange(false)}
             >

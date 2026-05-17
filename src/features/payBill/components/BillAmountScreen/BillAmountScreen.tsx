@@ -202,10 +202,10 @@ export function BillAmountScreen({
           <Button
             type="button"
             variant="primary"
+            size="lg"
             fullWidth
             aria-describedby={showAmountError ? BILL_AMOUNT_ERROR_ID : undefined}
             onClick={onContinueClick}
-            overrideClassName="!min-h-14 h-14 rounded-full"
           >
             Continue
           </Button>

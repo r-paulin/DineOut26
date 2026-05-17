@@ -25,11 +25,11 @@ export function ClaimedOfferPayFooter({
         <Button
           type="button"
           variant="primary"
+          size="lg"
           fullWidth
           disabled={expired}
           aria-label="Pay bill with DineOut"
           onClick={onPay}
-          overrideClassName="!h-14 !min-h-14 rounded-full"
         >
           Pay bill with DineOut
         </Button>

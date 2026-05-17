@@ -297,7 +297,7 @@ function offersForDateTab(
       tags: ["enabled"],
       discountPercent: pct,
       restaurantName,
-      title: `Claim ${pct}% discount`,
+      title: `Claim ${pct}% discount on menu`,
       date: day,
       timeWindow,
       closingLine: `Offer window closes ${o.window.kind === "all-day" ? (wh.workingHoursEnd ?? "23:59") : o.window.end}`,
@@ -367,8 +367,9 @@ export function getRestaurantDetailDemo(slug: string): RestaurantDetailModel {
       {
         id: "b2",
         imageUrl: "/images/benefit-visa-10eur-badge.png",
-        title: "10€ off from the bill.",
-        subtitle: "Available when paying through DineOut with VISA card.",
+        title: "Save 5€ with Visa",
+        subtitle:
+          "Applies when you pay through the Bolt Food app using a Visa card",
       },
     ],
     venueGalleryCycles: [

@@ -19,9 +19,9 @@ export function RestaurantDetailPayBillCta({
       <Button
         type="button"
         variant="primary"
+        size="lg"
         fullWidth
         onClick={onPayBill}
-        overrideClassName="!h-12 !min-h-12 rounded-full"
       >
         Pay with DineOut
       </Button>

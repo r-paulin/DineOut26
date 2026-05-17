@@ -32,6 +32,7 @@ export function MapViewFab({
     >
       <Button
         variant="primary"
+        size="lg"
         onClick={onClick}
         aria-label="View map"
         startIcon={<Map />}

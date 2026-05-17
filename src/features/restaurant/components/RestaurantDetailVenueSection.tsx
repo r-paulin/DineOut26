@@ -69,7 +69,7 @@ export function RestaurantDetailVenueSection({
         <Typography variant="body-m-accent" color="primary" as="span" noWrap>
           {hoursStatusLabel}
         </Typography>
-        <ChevronRight size="sm" className="shrink-0 text-tertiary" aria-hidden />
+        <ChevronRight size="lg" className="shrink-0 text-tertiary" aria-hidden />
       </div>
     </>
   )
@@ -214,9 +214,9 @@ export function RestaurantDetailVenueSection({
           <Button
             type="button"
             variant="secondary"
+            size="lg"
             fullWidth
             onClick={onOpenReportProblem}
-            overrideClassName="!h-14 rounded-full"
           >
             Report a problem
           </Button>

@@ -114,9 +114,9 @@ export function PaymentConfirmationSummarySheet({
       <div className="mt-6 shrink-0">
         <Button
           variant="primary"
+          size="lg"
           fullWidth
           onClick={onDone}
-          overrideClassName="!h-14 !min-h-14 rounded-full"
         >
           Done
         </Button>

@@ -160,6 +160,7 @@ export function ClaimedOfferPayBillInfoSheet({
             <Button
               type="button"
               variant="primary"
+              size="lg"
               fullWidth
               onClick={(e) => {
                 e.preventDefault()

@@ -535,6 +535,7 @@ export function PayScreen({
                 </button>
                 <Button
                   variant="secondary"
+                  size="lg"
                   fullWidth
                   onClick={() => setCardSheet(false)}
                 >

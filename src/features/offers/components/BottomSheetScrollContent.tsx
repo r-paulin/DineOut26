@@ -244,6 +244,7 @@ export function BottomSheetScrollContent({
             <Button
               type="button"
               variant="secondary"
+              size="lg"
               fullWidth
               onClick={onOpenAdminPlaces}
             >

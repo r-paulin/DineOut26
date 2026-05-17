@@ -200,7 +200,12 @@ export function ClaimedOfferPage({
               <Button fullWidth variant="danger" onClick={handleConfirmCancel}>
                 Cancel offer
               </Button>
-              <Button fullWidth variant="secondary" onClick={() => setCancelDialogOpen(false)}>
+              <Button
+                fullWidth
+                variant="secondary"
+                size="lg"
+                onClick={() => setCancelDialogOpen(false)}
+              >
                 Back
               </Button>
             </div>

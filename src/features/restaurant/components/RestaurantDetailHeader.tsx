@@ -3,6 +3,7 @@ import { Typography } from "@bolteu/kalep-react"
 import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
 import ChevronRight from "@bolteu/kalep-react-icons/dist/ChevronRight"
 import ShareIosOutlined from "@bolteu/kalep-react-icons/dist/ShareIosOutlined"
+import type { RestaurantHeroStatusPill } from "@/features/restaurant/utils/restaurantOpenHoursUi"
 
 const HERO_MIN_H = 274
 const HERO_GRAD =
@@ -13,13 +14,12 @@ export interface RestaurantDetailHeaderProps {
   heroImageUrl: string
   logoCandidates: string[]
   logoFallbackUrl?: string
-  isOpen: boolean
-  closesAt: string
+  statusPill: RestaurantHeroStatusPill
   titleOpacity: number
   onBack: () => void
   onShare?: () => void
-  /** Opens the full About screen (hero “Open · Closes …” pill). */
-  onOpenAbout?: () => void
+  /** Opens working-hours sheet (hero status pill). */
+  onOpenHours?: () => void
 }
 
 /** Figma: white circular controls — use Kalep static key fill (not `bg-neutral-white`, which is not in the Tailwind palette). */
@@ -31,12 +31,11 @@ export function RestaurantDetailHeader({
   heroImageUrl,
   logoCandidates,
   logoFallbackUrl,
-  isOpen,
-  closesAt,
+  statusPill,
   titleOpacity,
   onBack,
   onShare,
-  onOpenAbout,
+  onOpenHours,
 }: RestaurantDetailHeaderProps) {
   const [attempt, setAttempt] = useState(0)
   const [usingLogoFallback, setUsingLogoFallback] = useState(false)
@@ -131,14 +130,14 @@ export function RestaurantDetailHeader({
             type="button"
             className="inline-flex max-w-full cursor-pointer flex-wrap items-center justify-center gap-0 rounded-full border-none bg-special-scrim py-1 pl-2 pr-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
             onClick={() => {
-              onOpenAbout?.()
+              onOpenHours?.()
             }}
-            aria-label="About this restaurant"
+            aria-label={statusPill.ariaLabel}
           >
             <Typography variant="body-s-regular" color="primary-inverted" as="span">
-              {isOpen ? "Open " : "Closed"}
+              {statusPill.primary}
             </Typography>
-            {isOpen ?
+            {statusPill.showSecondary && statusPill.secondary ?
               <>
                 <span
                   className="mx-0.5 text-primary-inverted opacity-64"
@@ -147,7 +146,7 @@ export function RestaurantDetailHeader({
                   ·
                 </span>
                 <Typography variant="body-s-regular" color="primary-inverted" as="span">
-                  Closes {closesAt}
+                  {statusPill.secondary}
                 </Typography>
               </>
             : null}

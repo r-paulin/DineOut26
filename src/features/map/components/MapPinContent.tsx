@@ -8,7 +8,7 @@ import { MapPinTail } from "./MapPinTail"
 
 export interface MapPinContentProps {
   marker: MapMarkerData
-  /** Map pin selection — green discount pill (Figma 15809:12977). */
+  /** Map pin selection — dark pill + mint icon (Figma 15809:12977). */
   selected?: boolean
 }
 
@@ -21,14 +21,13 @@ export function MapPinContent({ marker, selected }: MapPinContentProps) {
   const { variant, label, sublabel, discountText, timedOfferActiveNow } = marker
 
   if (variant === "map_pin") {
-    const pillClass = selected
-      ? "bg-[var(--map-pin-selected)]"
-      : "bg-layer-floor-1"
-    const iconClass = selected
-      ? "shrink-0 text-static-key-light"
-      : timedOfferActiveNow === false
-        ? OFFER_ICON_INACTIVE_CLASS
-        : "shrink-0 text-action-primary"
+    const pillClass = selected ? "bg-neutral-primary" : "bg-layer-floor-1"
+    const iconClass =
+      selected ?
+        "shrink-0 text-action-primary-inverted"
+      : timedOfferActiveNow === false ?
+        OFFER_ICON_INACTIVE_CLASS
+      : "shrink-0 text-action-primary"
     const discountClass = selected
       ? "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"
       : "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-primary"

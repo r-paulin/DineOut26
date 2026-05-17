@@ -196,7 +196,13 @@ export function AdminPlacesScreen({ onClose }: AdminPlacesScreenProps) {
             })}
           </ul>
           <div className="mt-6 pt-4 border-t border-[var(--color-border-separator)]">
-            <Button type="button" variant="secondary" fullWidth onClick={handleResetAll}>
+            <Button
+              type="button"
+              variant="secondary"
+              size="lg"
+              fullWidth
+              onClick={handleResetAll}
+            >
               Reset all overrides
             </Button>
           </div>
@@ -382,10 +388,16 @@ export function AdminPlacesScreen({ onClose }: AdminPlacesScreenProps) {
         </LabeledField>
 
         <div className="flex flex-col gap-2 pt-2">
-          <Button type="button" variant="primary" fullWidth onClick={handleSave}>
+          <Button type="button" variant="primary" size="lg" fullWidth onClick={handleSave}>
             Save
           </Button>
-          <Button type="button" variant="secondary" fullWidth onClick={handleResetVenue}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            onClick={handleResetVenue}
+          >
             Reset this venue to defaults
           </Button>
         </div>

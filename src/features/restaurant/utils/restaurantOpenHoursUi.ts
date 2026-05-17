@@ -36,6 +36,8 @@ export function formatHm(totalMin: number): string {
   return `${h}:${String(m).padStart(2, "0")}`
 }
 
+export const HERO_STATUS_SOON_MINUTES = 30
+
 export interface RestaurantOpenHoursUi {
   isOpenNow: boolean
   /** Value line for venue / About rows, e.g. `12:00 – 23:00`. */
@@ -46,6 +48,19 @@ export interface RestaurantOpenHoursUi {
   openHoursSheetSubtitle: string
   /** Hero pill “Closes …” time, e.g. `23:00`. */
   closesAtLabel: string
+  /** Same-day opening time label, e.g. `12:00`. */
+  opensAtLabel: string
+}
+
+/** Hero scrim pill — Figma `16004:24677`. */
+export interface RestaurantHeroStatusPill {
+  /** Left segment before the bullet (omitted when {@link showSecondary} is false). */
+  primary: string
+  /** Right segment after the bullet, e.g. `Closes 23:00`. */
+  secondary: string | null
+  showSecondary: boolean
+  /** Full string for `aria-label`. */
+  ariaLabel: string
 }
 
 /**
@@ -62,11 +77,12 @@ export function buildOpenHoursUiState(
   const mins = now.getHours() * 60 + now.getMinutes()
   const isOpenNow = close > open && mins >= open && mins < close
   const closesAtLabel = formatHm(close)
+  const opensAtLabel = formatHm(open)
 
   const openHoursSheetHeading = isOpenNow ? "Open now" : "Closed"
   const openHoursSheetSubtitle = isOpenNow
     ? `Closes at ${closesAtLabel}`
-    : `Opens at ${formatHm(open)}`
+    : `Opens at ${opensAtLabel}`
 
   return {
     isOpenNow,
@@ -74,5 +90,101 @@ export function buildOpenHoursUiState(
     openHoursSheetHeading,
     openHoursSheetSubtitle,
     closesAtLabel,
+    opensAtLabel,
   }
+}
+
+function todayRangeMinutes(
+  now: Date,
+  weekly: readonly RestaurantFixedOpenHoursRow[],
+): { open: number; close: number; opensAtLabel: string; closesAtLabel: string } {
+  const name = dayName(now)
+  const row = weekly.find((r) => r.day === name) ?? weekly[1]!
+  const { open, close } = parseDayRangeMinutes(row.range)
+  return {
+    open,
+    close,
+    opensAtLabel: formatHm(open),
+    closesAtLabel: formatHm(close),
+  }
+}
+
+/**
+ * Hero status pill copy (prototype: same-day hours only).
+ * @see Figma `16004:24677`
+ */
+export function buildRestaurantHeroStatusPill(
+  now: Date,
+  weekly: readonly RestaurantFixedOpenHoursRow[],
+): RestaurantHeroStatusPill {
+  const hours = buildOpenHoursUiState(now, weekly)
+  const { open, close, opensAtLabel, closesAtLabel } = todayRangeMinutes(
+    now,
+    weekly,
+  )
+  const mins = now.getHours() * 60 + now.getMinutes()
+  const isOpenNow = hours.isOpenNow
+
+  if (isOpenNow) {
+    const minsUntilClose = close - mins
+    if (
+      minsUntilClose > 0 &&
+      minsUntilClose < HERO_STATUS_SOON_MINUTES
+    ) {
+      const secondary = `Closes ${closesAtLabel}`
+      return {
+        primary: "Closes soon",
+        secondary,
+        showSecondary: true,
+        ariaLabel: `Closes soon, ${secondary}, working hours`,
+      }
+    }
+    const secondary = `Closes ${closesAtLabel}`
+    return {
+      primary: "Open now",
+      secondary,
+      showSecondary: true,
+      ariaLabel: `Open now, ${secondary}, working hours`,
+    }
+  }
+
+  if (mins < open) {
+    const minsUntilOpen = open - mins
+    if (minsUntilOpen > 0 && minsUntilOpen < HERO_STATUS_SOON_MINUTES) {
+      const secondary = `Opens ${opensAtLabel}`
+      return {
+        primary: "Opens soon",
+        secondary,
+        showSecondary: true,
+        ariaLabel: `Opens soon, ${secondary}, working hours`,
+      }
+    }
+  }
+
+  return {
+    primary: "Closed",
+    secondary: null,
+    showSecondary: false,
+    ariaLabel: "Closed, working hours",
+  }
+}
+
+/** True when the pill may change within the next 31 minutes (for a light tick). */
+export function heroStatusPillNeedsClockTick(
+  now: Date,
+  weekly: readonly RestaurantFixedOpenHoursRow[],
+): boolean {
+  const { open, close } = todayRangeMinutes(now, weekly)
+  const mins = now.getHours() * 60 + now.getMinutes()
+  const isOpenNow = close > open && mins >= open && mins < close
+
+  if (isOpenNow) {
+    const untilClose = close - mins
+    return untilClose > 0 && untilClose <= HERO_STATUS_SOON_MINUTES + 1
+  }
+  if (mins < open) {
+    const untilOpen = open - mins
+    return untilOpen > 0 && untilOpen <= HERO_STATUS_SOON_MINUTES + 1
+  }
+  return false
 }

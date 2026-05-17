@@ -34,7 +34,7 @@
   --device-bg: var(--color-special-brand-alt);
 
   /* Constants Kalep doesn't expose */
-  /** Map pin selected pill + tail — Consumer Dine-out spec (Figma). */
+  /** Accent green for map-adjacent UI (e.g. venue row icons); not the selected pin pill. */
   --map-pin-selected: #2b8659;
   --green-500: #32bb78;
   --neutral-white: #ffffff;
@@ -88,6 +88,8 @@
   --icon-size-m: 1.5rem;
   --icon-size-s: 1.125rem;
   --icon-size-xs: 0.875rem;
+  /** Comfortable CTA height — use Kalep `<Button size="lg">` (56px / 3.5rem). */
+  --button-comfortable-height: 3.5rem;
   --device-bezel-outer: #a0b39f;
   --device-bezel-inner: #000000;
   --device-screen-w: 24.5625rem;

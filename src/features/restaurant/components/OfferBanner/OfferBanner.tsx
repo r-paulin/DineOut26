@@ -120,7 +120,7 @@ function OfferBannerVisible({
       onClick={onActivate}
     >
       <div className="flex w-[72px] shrink-0 flex-col items-center justify-center self-stretch overflow-visible">
-        <div className="-rotate-1 flex origin-center items-center justify-center">
+        <div className="-rotate-[4deg] flex origin-center items-center justify-center">
           <OfferBannerDiscountSticker
             tagFill={ticketFill}
             label={`-${displayDiscount}%`}
@@ -129,7 +129,7 @@ function OfferBannerVisible({
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 pl-3 pr-2">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 pl-3 pr-0">
         <OfferBannerBadge offer={offer} state={state} />
         <Typography
           variant="body-m-accent"
@@ -150,7 +150,7 @@ function OfferBannerVisible({
         </Typography>
       </div>
 
-      <div className="flex w-8 shrink-0 items-center justify-center self-center">
+      <div className="flex w-5 shrink-0 items-center justify-center self-center">
         <ChevronRight
           size="sm"
           className={

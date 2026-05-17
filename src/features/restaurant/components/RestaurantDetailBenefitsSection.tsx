@@ -1,5 +1,4 @@
 import { Typography } from "@bolteu/kalep-react"
-import CheckCircle from "@bolteu/kalep-react-icons/dist/CheckCircle"
 import ChevronRight from "@bolteu/kalep-react-icons/dist/ChevronRight"
 import { OfferBannerDiscountSticker } from "@/features/restaurant/components/OfferBanner/OfferBannerDiscountSticker"
 import type { RestaurantBenefitRowModel } from "@/features/restaurant/restaurantDetail.types"
@@ -31,8 +30,8 @@ export interface RestaurantDetailBenefitsSectionProps {
 }
 
 /**
- * Figma `16005:12213` — same shell as claimed {@link OfferBanner}: action-secondary
- * surface, ticket column, “Applied” pill, primary title, secondary line, chevron.
+ * Figma `16005:12213` — available benefit rows: neutral-secondary surface, ticket,
+ * title + optional subtitle, chevron (no “Applied” pill).
  */
 export function RestaurantDetailBenefitsSection({
   benefits,
@@ -56,7 +55,7 @@ export function RestaurantDetailBenefitsSection({
           const rowInner = (
             <>
               <div className="flex w-[72px] shrink-0 flex-col items-center justify-center self-stretch overflow-visible">
-                <div className="-rotate-1 flex origin-center items-center justify-center">
+                <div className="-rotate-[4deg] flex origin-center items-center justify-center">
                   <OfferBannerDiscountSticker
                     tagFill={FILL_TICKET_ACTIVE}
                     label={stickerLabel}
@@ -64,35 +63,21 @@ export function RestaurantDetailBenefitsSection({
                   />
                 </div>
               </div>
-              <div className="flex min-w-0 flex-1 flex-col gap-2 pl-3 pr-1">
-                <div className="flex min-w-0 flex-col gap-2">
-                  <span className="inline-flex h-5 max-w-fit items-center justify-center gap-0.5 rounded-[4px] bg-special-brand-alt px-1 py-0.5">
-                    <CheckCircle
-                      className="size-[14px] shrink-0 text-action-primary-inverted"
-                      aria-hidden
-                    />
-                    <Typography
-                      variant="body-xs-accent"
-                      color="primary-inverted"
-                      as="span"
-                      inlineStyle={SEMIBOLD}
-                    >
-                      Applied
-                    </Typography>
-                  </span>
-                  <Typography
-                    variant="body-m-accent"
-                    color="primary"
-                    as="p"
-                    lines={3}
-                    inlineStyle={SEMIBOLD}
-                  >
-                    {b.title}
-                  </Typography>
-                </div>
-                <Typography variant="body-xs-regular" color="secondary" as="p">
-                  {b.subtitle}
+              <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 pl-3 pr-1">
+                <Typography
+                  variant="body-m-accent"
+                  color="primary"
+                  as="p"
+                  lines={3}
+                  inlineStyle={SEMIBOLD}
+                >
+                  {b.title}
                 </Typography>
+                {b.subtitle.trim().length > 0 ?
+                  <Typography variant="body-xs-regular" color="secondary" as="p">
+                    {b.subtitle}
+                  </Typography>
+                : null}
               </div>
               <div className="flex w-8 shrink-0 items-center justify-center self-center">
                 <ChevronRight
@@ -109,13 +94,13 @@ export function RestaurantDetailBenefitsSection({
               {onBenefitRowPress ?
                 <button
                   type="button"
-                  className="relative flex w-full min-w-0 cursor-pointer items-stretch overflow-hidden rounded-lg border-0 bg-action-secondary p-3 text-left outline-none ring-inset ring-action-primary focus-visible:ring-2"
+                  className="relative flex w-full min-w-0 cursor-pointer items-stretch overflow-hidden rounded-lg border-0 bg-neutral-secondary p-3 text-left outline-none ring-inset ring-action-primary focus-visible:ring-2"
                   aria-haspopup="dialog"
                   onClick={() => onBenefitRowPress(b.id)}
                 >
                   {rowInner}
                 </button>
-              : <div className="relative flex w-full min-w-0 items-stretch overflow-hidden rounded-lg bg-action-secondary p-3">
+              : <div className="relative flex w-full min-w-0 items-stretch overflow-hidden rounded-lg bg-neutral-secondary p-3">
                   {rowInner}
                 </div>}
             </li>

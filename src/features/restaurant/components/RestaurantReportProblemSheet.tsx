@@ -172,10 +172,10 @@ export function RestaurantReportProblemSheet({
               <Button
                 type="button"
                 variant="primary"
+                size="lg"
                 fullWidth
                 disabled={!canSubmit}
                 onClick={handleSubmit}
-                overrideClassName="!h-12 rounded-full"
               >
                 Submit
               </Button>

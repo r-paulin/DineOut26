@@ -328,6 +328,7 @@ export function ClaimOfferModal({
               <Button
                 type="button"
                 variant="primary"
+                size="lg"
                 fullWidth
                 onClick={handleClaim}
               >

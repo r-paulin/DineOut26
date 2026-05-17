@@ -266,9 +266,9 @@ export function TipScreen({
           {canContinue ?
             <Button
               variant="primary"
+              size="lg"
               fullWidth
               onClick={onContinuePress}
-              overrideClassName="!min-h-14 h-14 rounded-full"
             >
               Continue
             </Button>
