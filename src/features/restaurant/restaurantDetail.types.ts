@@ -51,6 +51,10 @@ export interface RestaurantOfferCardModel {
   closingLine?: string
   /** Shown in the scarcity badge when `available` and defined. */
   remainingCount?: number
+  /** Banner copy: `Min. order X.XX€`. */
+  minOrderEur?: number
+  /** Banner copy: `Max. saving X.XX€`. */
+  maxSavingEur?: number
   /** Venue photo URL (restaurant gallery), not a generic placeholder. */
   restaurantImage: string
   /** Shown when the user taps an expired banner (snackbar). */

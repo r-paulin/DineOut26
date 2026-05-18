@@ -82,6 +82,8 @@ export interface ClaimedOffer {
   offerDetailLabel?: string
   /** Minimum order for banner copy, e.g. `10` → "Min. order 10.00€". */
   minOrderEur?: number
+  /** Maximum saving for banner copy, e.g. `40` → "Max. saving 40.00€". */
+  maxSavingEur?: number
   promoText?: string
   restaurantSlug: string
   offerId: string

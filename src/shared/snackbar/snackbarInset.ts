@@ -10,6 +10,15 @@ export const SNACKBAR_SCREEN_MARGIN_BOTTOM_PX = 32
 
 export const SNACKBAR_ANCHOR_SELECTOR = "[data-snackbar-anchor]"
 
+/** Ignore sub-pixel / layout-noise changes when updating `--snackbar-bottom-inset`. */
+export const SNACKBAR_INSET_UPDATE_THRESHOLD_PX = 2
+
+export function shouldUpdateSnackbarInsetPx(prev: number, next: number): boolean {
+  if (prev === next) return false
+  if (prev === 0 || next === 0) return true
+  return Math.abs(next - prev) >= SNACKBAR_INSET_UPDATE_THRESHOLD_PX
+}
+
 export function readSnackbarBottomInsetPx(): number {
   if (typeof document === "undefined") {
     return readNavLayoutOffsetPx()

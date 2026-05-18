@@ -9,6 +9,10 @@ import {
 } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import {
+  getOfferBannerWindowPhase,
+  hasOtherClaimAtVenue,
+} from "@/features/restaurant/utils/offerBannerWindowPhase"
+import {
   getOfferBannerState,
   shouldShowOfferBanner,
   toOfferForBanner,
@@ -126,6 +130,10 @@ function OfferBannerInteractive({
   const claim = claimedOffersById[offer.id]
   const displayDiscount =
     discountValue ?? claim?.discountPercent ?? offer.discountPercent ?? 30
+  const offerForBanner = toOfferForBanner(offer)
+  const windowPhase = getOfferBannerWindowPhase(offerForBanner, nowMs)
+  const blocked =
+    state === "available" && hasOtherClaimAtVenue(offer.id, userClaims)
 
   const content = useMemo(
     () =>
@@ -135,12 +143,25 @@ function OfferBannerInteractive({
         claim,
         context,
         displayDiscount,
+        windowPhase,
+        hasOtherClaimAtVenue: blocked,
         minOrderEur,
+        maxSavingEur: offer.maxSavingEur,
       }),
-    [state, offer, claim, context, displayDiscount, minOrderEur],
+    [
+      state,
+      offer,
+      claim,
+      context,
+      displayDiscount,
+      windowPhase,
+      blocked,
+      minOrderEur,
+    ],
   )
 
   const onActivate = useCallback(() => {
+    if (blocked) return
     if (state === "available") {
       onAvailablePress?.()
       return
@@ -148,13 +169,15 @@ function OfferBannerInteractive({
     if (state === "claimed") {
       onClaimedPress?.()
     }
-  }, [onAvailablePress, onClaimedPress, state])
+  }, [blocked, onAvailablePress, onClaimedPress, state])
+
+  const isDisabled = state === "expired" || blocked
 
   return (
     <button
       type="button"
-      disabled={state === "expired"}
-      className={`w-full min-w-0 border-none bg-transparent p-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-action-primary focus-visible:ring-inset ${state === "expired" ? "cursor-not-allowed opacity-[0.92]" : "cursor-pointer"}`}
+      disabled={isDisabled}
+      className={`w-full min-w-0 border-none bg-transparent p-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-action-primary focus-visible:ring-inset ${isDisabled ? "cursor-not-allowed opacity-[0.92]" : "cursor-pointer"}`}
       aria-label={content.ariaLabel}
       onClick={onActivate}
     >

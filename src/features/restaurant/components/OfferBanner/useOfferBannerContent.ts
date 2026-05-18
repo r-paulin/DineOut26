@@ -1,7 +1,7 @@
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { formatOfferBannerValidityTime } from "@/features/restaurant/utils/formatOfferBannerValidityTime"
-import { formatOfferScarcityLabel } from "@/features/restaurant/utils/formatOfferScarcityLabel"
+import type { OfferBannerWindowPhase } from "@/features/restaurant/utils/offerBannerWindowPhase"
 import type { OfferState } from "@/features/restaurant/utils/offerState"
 
 export type OfferBannerContext = "restaurant" | "home"
@@ -12,7 +12,7 @@ export type OfferBannerDataLine = {
   tone?: "primary" | "secondary"
 }
 
-export type OfferBannerActionKind = "claim-now" | "claimed"
+export type OfferBannerActionKind = "claim-now" | "pre-book-now" | "claimed"
 
 export type OfferBannerAction = {
   kind: OfferBannerActionKind
@@ -20,12 +20,17 @@ export type OfferBannerAction = {
   disabled: boolean
 }
 
-export type OfferBannerStickerKind = "countdown" | "scarcity" | "expired"
+export type OfferBannerStickerKind =
+  | "countdown"
+  | "scarcity"
+  | "expired"
+  | "locked"
 
 export type OfferBannerSticker =
   | { kind: "countdown" }
   | { kind: "scarcity"; text: string }
   | { kind: "expired"; text: string }
+  | { kind: "locked"; text: string }
 
 export type OfferBannerImageVariant = "claimed" | "unclaimed"
 
@@ -41,17 +46,31 @@ export type OfferBannerContent = {
 }
 
 const DEFAULT_MIN_ORDER_EUR = 10
+const DEFAULT_MAX_SAVING_EUR = 20
 
-export function formatOfferBannerDiscountDetailLine(
-  discountPercent: number,
-  offerDetailLabel?: string,
+const LOCKED_STICKER_COPY = "One offer per restaurant per day"
+
+/** Banner copy uses whole euros; always round up so savings read as round numbers. */
+export function roundMaxSavingEurUp(eur: number): number {
+  if (!Number.isFinite(eur) || eur <= 0) return DEFAULT_MAX_SAVING_EUR
+  return Math.ceil(eur)
+}
+
+export function formatOfferBannerTitle(discountPercent: number): string {
+  return `${discountPercent}% discount on menu`
+}
+
+export function formatOfferBannerMinMaxLine(
   minOrderEur?: number,
+  maxSavingEur?: number,
 ): string {
   const min = minOrderEur ?? DEFAULT_MIN_ORDER_EUR
-  const base =
-    offerDetailLabel?.replace(/\s+on menu$/iu, "").trim() ||
-    `${discountPercent}% discount`
-  return `${base} · Min. order ${min.toFixed(2)}€`
+  const max = roundMaxSavingEurUp(maxSavingEur ?? DEFAULT_MAX_SAVING_EUR)
+  return `Min. order ${min.toFixed(2)}€ · Max. saving ${max}€`
+}
+
+export function formatLimitedAvailabilityLabel(remainingCount: number): string {
+  return `Limited availability — ${remainingCount} left`
 }
 
 export function formatOfferBannerScheduleLine(
@@ -66,13 +85,50 @@ export function formatOfferBannerArrivalLine(claim: ClaimedOffer): string {
   return `${claim.arrivalDate} · ${claim.arrivalTime}`
 }
 
+function resolveMinMax(
+  offer: RestaurantOfferCardModel,
+  claim: ClaimedOffer | undefined,
+  minOrderEur?: number,
+  maxSavingEur?: number,
+): { min: number; max: number } {
+  return {
+    min: minOrderEur ?? offer.minOrderEur ?? claim?.minOrderEur ?? DEFAULT_MIN_ORDER_EUR,
+    max:
+      maxSavingEur ??
+      offer.maxSavingEur ??
+      claim?.maxSavingEur ??
+      DEFAULT_MAX_SAVING_EUR,
+  }
+}
+
 export interface BuildOfferBannerContentArgs {
   state: OfferState
   offer: RestaurantOfferCardModel
   claim: ClaimedOffer | undefined
   context: OfferBannerContext
   displayDiscount: number
+  windowPhase: OfferBannerWindowPhase
+  hasOtherClaimAtVenue: boolean
   minOrderEur?: number
+  maxSavingEur?: number
+}
+
+function buildAvailableDataLines(
+  offer: RestaurantOfferCardModel,
+  minMax: { min: number; max: number },
+): OfferBannerDataLine[] {
+  return [
+    {
+      text: formatOfferBannerScheduleLine(offer.date, offer.timeWindow),
+      emphasis: "regular",
+      tone: "primary",
+    },
+    {
+      text: formatOfferBannerMinMaxLine(minMax.min, minMax.max),
+      emphasis: "regular",
+      tone: "secondary",
+    },
+  ]
 }
 
 export function buildOfferBannerContent({
@@ -81,19 +137,15 @@ export function buildOfferBannerContent({
   claim,
   context,
   displayDiscount,
+  windowPhase,
+  hasOtherClaimAtVenue,
   minOrderEur,
+  maxSavingEur,
 }: BuildOfferBannerContentArgs): OfferBannerContent {
-  const scheduleLine = formatOfferBannerScheduleLine(
-    offer.date,
-    offer.timeWindow,
-  )
+  const minMax = resolveMinMax(offer, claim, minOrderEur, maxSavingEur)
+  const minMaxLine = formatOfferBannerMinMaxLine(minMax.min, minMax.max)
 
   if (state === "claimed" && claim) {
-    const discountLine = formatOfferBannerDiscountDetailLine(
-      displayDiscount,
-      claim.offerDetailLabel,
-      minOrderEur ?? claim.minOrderEur,
-    )
     if (context === "home") {
       const headline =
         offer.restaurantName?.trim() || "Restaurant"
@@ -103,7 +155,7 @@ export function buildOfferBannerContent({
         headline,
         dataLines: [
           { text: formatOfferBannerArrivalLine(claim), emphasis: "accent" },
-          { text: discountLine, emphasis: "regular", tone: "secondary" },
+          { text: minMaxLine, emphasis: "regular", tone: "secondary" },
         ],
         action: { kind: "claimed", label: "Claimed", disabled: false },
         sticker: { kind: "countdown" },
@@ -117,7 +169,7 @@ export function buildOfferBannerContent({
       innerClaimed: true,
       headline,
       dataLines: [
-        { text: discountLine, emphasis: "regular", tone: "secondary" },
+        { text: minMaxLine, emphasis: "regular", tone: "secondary" },
       ],
       action: { kind: "claimed", label: "Claimed", disabled: false },
       sticker: { kind: "countdown" },
@@ -126,31 +178,63 @@ export function buildOfferBannerContent({
     }
   }
 
-  const headline = offer.title
+  const headline = formatOfferBannerTitle(displayDiscount)
+  const dataLines = buildAvailableDataLines(offer, minMax)
 
-  const scarcity =
-    state === "available" &&
-    offer.remainingCount != null &&
-    offer.remainingCount > 0 ?
-      `Limited offer: ${formatOfferScarcityLabel(offer.remainingCount)}`
+  if (state === "expired") {
+    return {
+      outerClaimed: false,
+      innerClaimed: false,
+      headline,
+      dataLines,
+      action: { kind: "claim-now", label: "Claim now", disabled: true },
+      sticker: { kind: "expired", text: "Offer has expired" },
+      imageVariant: "unclaimed",
+      ariaLabel: headline,
+    }
+  }
+
+  if (hasOtherClaimAtVenue) {
+    return {
+      outerClaimed: false,
+      innerClaimed: false,
+      headline,
+      dataLines,
+      action: { kind: "claim-now", label: "Claim now", disabled: true },
+      sticker: { kind: "locked", text: LOCKED_STICKER_COPY },
+      imageVariant: "unclaimed",
+      ariaLabel: headline,
+    }
+  }
+
+  if (windowPhase === "active") {
+    return {
+      outerClaimed: false,
+      innerClaimed: false,
+      headline,
+      dataLines,
+      action: { kind: "claim-now", label: "Claim now", disabled: false },
+      sticker: null,
+      imageVariant: "unclaimed",
+      ariaLabel: headline,
+    }
+  }
+
+  const availabilitySticker =
+    offer.remainingCount != null && offer.remainingCount > 0 ?
+      {
+        kind: "scarcity" as const,
+        text: formatLimitedAvailabilityLabel(offer.remainingCount),
+      }
     : null
 
   return {
     outerClaimed: false,
     innerClaimed: false,
     headline,
-    dataLines: [{ text: scheduleLine, emphasis: "regular", tone: "primary" }],
-    action: {
-      kind: "claim-now",
-      label: "Claim now",
-      disabled: state === "expired",
-    },
-    sticker:
-      state === "expired" ?
-        { kind: "expired", text: "Offer has expired" }
-      : scarcity ?
-        { kind: "scarcity", text: scarcity }
-      : null,
+    dataLines,
+    action: { kind: "pre-book-now", label: "Pre-book now", disabled: false },
+    sticker: availabilitySticker,
     imageVariant: "unclaimed",
     ariaLabel: headline,
   }

@@ -10,6 +10,8 @@ export {
   measureMaxSnackbarAnchorInset,
   resolveSnackbarLayoutBaseline,
   readSafeAreaBottomPx,
+  shouldUpdateSnackbarInsetPx,
+  SNACKBAR_INSET_UPDATE_THRESHOLD_PX,
 } from "@/shared/snackbar/snackbarInset"
 export type {
   SnackbarContent,

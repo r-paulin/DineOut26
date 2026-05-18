@@ -557,16 +557,6 @@ export function HomeScreen() {
     discoverDockActive,
     discoverDockBottomInsetPx,
     showBottomNav,
-    overlaysActive: Boolean(
-      payBillEntry ||
-        restaurantDetailSlug ||
-        pendingClaimOffer ||
-        offerClaimModalOfferId ||
-        claimedPayInfoOpen ||
-        atVenueNoClaimPayInfoOpen ||
-        pendingAtVenuePayBillEntry ||
-        claimedView,
-    ),
   })
 
   const bottomSheetProps = {

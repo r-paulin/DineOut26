@@ -20,8 +20,8 @@ export interface OfferBannerCardProps {
 export function OfferBannerCard({ content }: OfferBannerCardProps) {
   const innerClass =
     content.innerClaimed ?
-      "relative w-full overflow-hidden rounded-[12px] border border-action-secondary bg-layer-floor-1 p-3"
-    : "relative w-full overflow-hidden rounded-[12px] border border-neutral-secondary bg-layer-floor-1 p-3"
+      "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-action-secondary bg-layer-floor-1 p-3"
+    : "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-neutral-secondary bg-layer-floor-1 p-3"
 
   return (
     <div

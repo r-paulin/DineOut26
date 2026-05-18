@@ -1,4 +1,5 @@
 import { Typography } from "@bolteu/kalep-react"
+import Lock from "@bolteu/kalep-react-icons/dist/Lock"
 import PercentCircle from "@bolteu/kalep-react-icons/dist/PercentCircle"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
@@ -37,13 +38,17 @@ export function OfferBannerStickerRow({
           className={`${STICKER_ICON_CLASS} ${iconClass}`}
           aria-hidden
         />
+      : sticker.kind === "locked" ?
+        <Lock className={`${STICKER_ICON_CLASS} ${iconClass}`} aria-hidden />
       : <Time className={`${STICKER_ICON_CLASS} ${iconClass}`} aria-hidden />}
       <Typography
         variant="body-xs-regular"
         color={claimed ? "primary-inverted" : "primary"}
         as="p"
       >
-        {sticker.kind === "scarcity" || sticker.kind === "expired" ?
+        {sticker.kind === "scarcity" ||
+        sticker.kind === "expired" ||
+        sticker.kind === "locked" ?
           sticker.text
         : ""}
       </Typography>

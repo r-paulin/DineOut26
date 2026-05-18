@@ -47,6 +47,8 @@ export function SnackbarInsetController({ children }: { children: ReactNode }) {
 
   const setAnchorInset = useCallback(
     (px: number) => {
+      const prev = anchorInsetRef.current
+      if (prev === px) return
       anchorInsetRef.current = px
       recompute()
     },

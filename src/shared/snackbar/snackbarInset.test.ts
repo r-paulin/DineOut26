@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   measureSnackbarInsetFromElement,
   resolveSnackbarLayoutBaseline,
+  shouldUpdateSnackbarInsetPx,
 } from "@/shared/snackbar/snackbarInset"
 
 vi.mock("@/features/offers/utils/bottomSheetLayout", () => ({
@@ -24,6 +25,22 @@ function rect(partial: Partial<DOMRect>): DOMRect {
     ...partial,
   } as DOMRect
 }
+
+describe("shouldUpdateSnackbarInsetPx", () => {
+  it("ignores sub-threshold changes", () => {
+    expect(shouldUpdateSnackbarInsetPx(100, 101)).toBe(false)
+    expect(shouldUpdateSnackbarInsetPx(100, 102)).toBe(true)
+  })
+
+  it("always applies when crossing zero", () => {
+    expect(shouldUpdateSnackbarInsetPx(80, 0)).toBe(true)
+    expect(shouldUpdateSnackbarInsetPx(0, 80)).toBe(true)
+  })
+
+  it("skips identical values", () => {
+    expect(shouldUpdateSnackbarInsetPx(50, 50)).toBe(false)
+  })
+})
 
 describe("measureSnackbarInsetFromElement", () => {
   it("returns distance from shell bottom to element top", () => {

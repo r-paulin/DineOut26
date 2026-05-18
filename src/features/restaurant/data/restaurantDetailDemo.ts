@@ -305,6 +305,8 @@ function offersForDateTab(
         o.remainingSpots != null && o.remainingSpots > 0 ?
           o.remainingSpots
         : undefined,
+      minOrderEur: pct >= 30 ? 10 : 5,
+      maxSavingEur: Math.ceil((pct * 10) / 3),
       restaurantImage: restaurantImageForOfferIndex(base, i),
       ...wh,
       paymentPromoText: DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT,

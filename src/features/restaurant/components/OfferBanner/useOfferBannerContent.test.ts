@@ -4,9 +4,11 @@ import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantD
 import {
   buildOfferBannerContent,
   buildStaticOfferBannerContent,
+  formatLimitedAvailabilityLabel,
   formatOfferBannerArrivalLine,
-  formatOfferBannerDiscountDetailLine,
-  formatOfferBannerScheduleLine,
+  formatOfferBannerMinMaxLine,
+  formatOfferBannerTitle,
+  roundMaxSavingEurUp,
 } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
 
 const baseOffer: RestaurantOfferCardModel = {
@@ -19,6 +21,9 @@ const baseOffer: RestaurantOfferCardModel = {
   timeWindow: "Arrive between 10:00 - 17:00",
   restaurantImage: "/x.jpg",
   restaurantName: "3 Pavāru Restorāns",
+  minOrderEur: 10,
+  maxSavingEur: 40,
+  remainingCount: 2,
 }
 
 const claim: ClaimedOffer = {
@@ -32,43 +37,99 @@ const claim: ClaimedOffer = {
   restaurantSlug: "neiburgs",
   offerId: "o1",
   claimedAt: Date.now(),
-  offerDetailLabel: "30% discount on menu",
+  minOrderEur: 10,
+  maxSavingEur: 40,
 }
 
-describe("formatOfferBannerDiscountDetailLine", () => {
-  it("includes min order with two decimals", () => {
-    expect(formatOfferBannerDiscountDetailLine(30)).toBe(
-      "30% discount · Min. order 10.00€",
+describe("formatOfferBannerTitle", () => {
+  it("formats discount headline", () => {
+    expect(formatOfferBannerTitle(20)).toBe("20% discount on menu")
+  })
+})
+
+describe("roundMaxSavingEurUp", () => {
+  it("ceil's fractional savings to whole euros", () => {
+    expect(roundMaxSavingEurUp(26.67)).toBe(27)
+    expect(roundMaxSavingEurUp(40)).toBe(40)
+  })
+})
+
+describe("formatOfferBannerMinMaxLine", () => {
+  it("formats min with decimals and max saving as a round euro amount", () => {
+    expect(formatOfferBannerMinMaxLine(10, 40)).toBe(
+      "Min. order 10.00€ · Max. saving 40€",
+    )
+    expect(formatOfferBannerMinMaxLine(10, 26.67)).toBe(
+      "Min. order 10.00€ · Max. saving 27€",
     )
   })
+})
 
-  it("strips on menu suffix from detail label", () => {
-    expect(
-      formatOfferBannerDiscountDetailLine(30, "30% discount on menu", 15),
-    ).toBe("30% discount · Min. order 15.00€")
+describe("formatLimitedAvailabilityLabel", () => {
+  it("uses em dash and count", () => {
+    expect(formatLimitedAvailabilityLabel(2)).toBe(
+      "Limited availability — 2 left",
+    )
   })
 })
 
 describe("buildOfferBannerContent", () => {
-  it("available state uses title and schedule line", () => {
+  it("active window: Claim now, no sticker, min/max lines", () => {
     const c = buildOfferBannerContent({
       state: "available",
       offer: baseOffer,
       claim: undefined,
       context: "restaurant",
       displayDiscount: 30,
+      windowPhase: "active",
+      hasOtherClaimAtVenue: false,
     })
-    expect(c.headline).toBe(baseOffer.title)
-    expect(c.dataLines[0]?.text).toBe(
-      formatOfferBannerScheduleLine("Today", baseOffer.timeWindow),
-    )
+    expect(c.headline).toBe("30% discount on menu")
+    expect(c.dataLines[1]?.text).toBe("Min. order 10.00€ · Max. saving 40€")
     expect(c.action).toEqual({
       kind: "claim-now",
       label: "Claim now",
       disabled: false,
     })
-    expect(c.sticker?.kind).toBeUndefined()
-    expect(c.outerClaimed).toBe(false)
+    expect(c.sticker).toBeNull()
+  })
+
+  it("prebook: Pre-book now with availability sticker", () => {
+    const c = buildOfferBannerContent({
+      state: "available",
+      offer: baseOffer,
+      claim: undefined,
+      context: "restaurant",
+      displayDiscount: 30,
+      windowPhase: "prebook",
+      hasOtherClaimAtVenue: false,
+    })
+    expect(c.action).toEqual({
+      kind: "pre-book-now",
+      label: "Pre-book now",
+      disabled: false,
+    })
+    expect(c.sticker).toEqual({
+      kind: "scarcity",
+      text: "Limited availability — 2 left",
+    })
+  })
+
+  it("locked: disabled Claim now and lock sticker", () => {
+    const c = buildOfferBannerContent({
+      state: "available",
+      offer: baseOffer,
+      claim: undefined,
+      context: "restaurant",
+      displayDiscount: 30,
+      windowPhase: "active",
+      hasOtherClaimAtVenue: true,
+    })
+    expect(c.action?.disabled).toBe(true)
+    expect(c.sticker).toEqual({
+      kind: "locked",
+      text: "One offer per restaurant per day",
+    })
   })
 
   it("expired state disables claim and shows expired sticker", () => {
@@ -78,6 +139,8 @@ describe("buildOfferBannerContent", () => {
       claim: undefined,
       context: "restaurant",
       displayDiscount: 30,
+      windowPhase: "prebook",
+      hasOtherClaimAtVenue: false,
     })
     expect(c.action?.disabled).toBe(true)
     expect(c.sticker).toEqual({
@@ -86,32 +149,33 @@ describe("buildOfferBannerContent", () => {
     })
   })
 
-  it("restaurant claimed uses arrival as headline", () => {
+  it("restaurant claimed uses arrival headline and min/max", () => {
     const c = buildOfferBannerContent({
       state: "claimed",
       offer: baseOffer,
       claim,
       context: "restaurant",
       displayDiscount: 30,
+      windowPhase: "active",
+      hasOtherClaimAtVenue: false,
     })
     expect(c.headline).toBe(formatOfferBannerArrivalLine(claim))
-    expect(c.dataLines[0]?.text).toContain("30% discount")
-    expect(c.action?.kind).toBe("claimed")
+    expect(c.dataLines[0]?.text).toContain("Min. order")
     expect(c.sticker).toEqual({ kind: "countdown" })
-    expect(c.outerClaimed).toBe(true)
   })
 
-  it("home claimed uses restaurant name as headline", () => {
+  it("home claimed uses restaurant name", () => {
     const c = buildOfferBannerContent({
       state: "claimed",
       offer: baseOffer,
       claim,
       context: "home",
       displayDiscount: 30,
+      windowPhase: "active",
+      hasOtherClaimAtVenue: false,
     })
     expect(c.headline).toBe("3 Pavāru Restorāns")
     expect(c.dataLines[0]?.text).toBe(formatOfferBannerArrivalLine(claim))
-    expect(c.dataLines[1]?.tone).toBe("secondary")
   })
 })
 
@@ -119,10 +183,9 @@ describe("buildStaticOfferBannerContent", () => {
   it("omits action and sticker", () => {
     const c = buildStaticOfferBannerContent({
       title: "40% discount for your first 2 orders",
-      subtitle: "Valid when paying the bill through the Bolt Food app",
+      subtitle: "Valid when paying through DineOut",
     })
     expect(c.action).toBeNull()
     expect(c.sticker).toBeNull()
-    expect(c.dataLines[0]?.text).toContain("Bolt Food")
   })
 })

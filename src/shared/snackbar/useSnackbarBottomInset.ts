@@ -1,11 +1,14 @@
 import {
   useCallback,
   useContext,
-  useEffect,
   useLayoutEffect,
+  useRef,
   type MutableRefObject,
   type RefObject,
 } from "react"
+import {
+  shouldUpdateSnackbarInsetPx,
+} from "@/shared/snackbar/snackbarInset"
 import { SnackbarInsetContext } from "@/shared/snackbar/SnackbarInsetContext"
 
 export interface UseSnackbarBottomInsetOptions {
@@ -14,6 +17,7 @@ export interface UseSnackbarBottomInsetOptions {
 
 /**
  * Overrides `--snackbar-bottom-inset` while mounted (stacked for nested screens).
+ * Updates run in layout effect via {@link SnackbarInsetContext.replaceTop}.
  */
 export function useSnackbarBottomInset(
   insetPx: number,
@@ -21,12 +25,44 @@ export function useSnackbarBottomInset(
 ): void {
   const { enabled = true } = options
   const ctx = useContext(SnackbarInsetContext)
+  const registeredRef = useRef(false)
+  const lastAppliedRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    if (!enabled || !ctx) return
-    ctx.push(insetPx)
+  useLayoutEffect(() => {
+    if (!ctx) return
+
+    if (!enabled) {
+      if (registeredRef.current) {
+        ctx.pop()
+        registeredRef.current = false
+        lastAppliedRef.current = null
+      }
+      return
+    }
+
+    const prev = lastAppliedRef.current
+    if (
+      registeredRef.current &&
+      prev != null &&
+      !shouldUpdateSnackbarInsetPx(prev, insetPx)
+    ) {
+      return
+    }
+
+    lastAppliedRef.current = insetPx
+    if (!registeredRef.current) {
+      ctx.replaceTop(insetPx)
+      registeredRef.current = true
+    } else {
+      ctx.replaceTop(insetPx)
+    }
+
     return () => {
-      ctx.pop()
+      if (registeredRef.current) {
+        ctx.pop()
+        registeredRef.current = false
+        lastAppliedRef.current = null
+      }
     }
   }, [ctx, enabled, insetPx])
 }
@@ -62,7 +98,7 @@ export function useSnackbarBottomInsetFromElement(
     if (!enabled) return
     const el = anchorRef.current
     if (el) el.setAttribute("data-snackbar-anchor", "")
-  })
+  }, [anchorRef, enabled])
 
   return callbackRef
 }

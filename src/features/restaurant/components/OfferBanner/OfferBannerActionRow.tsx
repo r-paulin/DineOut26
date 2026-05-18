@@ -30,7 +30,11 @@ export function OfferBannerActionRow({ action }: OfferBannerActionRowProps) {
       </Typography>
       {action.kind === "claimed" ?
         <CheckCircle size="sm" className={`shrink-0 ${iconClass}`} aria-hidden />
-      : <ArrowCircleRight size="sm" className={`shrink-0 ${iconClass}`} aria-hidden />}
+      : <ArrowCircleRight
+          size="sm"
+          className={`shrink-0 ${iconClass}`}
+          aria-hidden
+        />}
     </div>
   )
 }

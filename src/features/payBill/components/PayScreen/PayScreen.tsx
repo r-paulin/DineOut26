@@ -19,7 +19,6 @@ import {
 } from "@/features/payBill/constants/checkoutPaymentOptions"
 import { PayBillSavedBadge } from "@/features/payBill/components/PayScreen/PayBillSavedBadge"
 import { SlidingButton } from "@/features/payBill/components/PayScreen/SlidingButton"
-import { ClaimedOfferBillInlineNotice } from "@/features/payBill/components/shared/ClaimedOfferBillInlineNotice"
 import { DiscountReceiptRow } from "@/features/payBill/components/shared/DiscountReceiptRow"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
@@ -315,10 +314,6 @@ export function PayScreen({
         </div>
         <span className="size-6 shrink-0" aria-hidden />
       </header>
-
-      {offer ?
-        <ClaimedOfferBillInlineNotice discountPercent={offer.discountPercent} />
-      : null}
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-layer-floor-1">
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">

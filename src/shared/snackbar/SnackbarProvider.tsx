@@ -7,7 +7,6 @@ import {
   SNACKBAR_SCREEN_MARGIN_BOTTOM_PX,
   SNACKBAR_SCREEN_MARGIN_X_PX,
 } from "@/shared/snackbar/snackbarInset"
-import { resolveSnackbarDismiss } from "@/shared/snackbar/resolveSnackbarDismiss"
 import { SnackbarToast } from "@/shared/snackbar/SnackbarToast"
 import type {
   SnackbarContent,
@@ -44,10 +43,9 @@ export function SnackbarProvider({
   const value = useMemo<SnackbarState>(
     () => ({
       add(content: SnackbarContent) {
-        const { swipeToDismiss } = resolveSnackbarDismiss(content)
         return toast.custom((t) => <SnackbarToast id={t} content={content} />, {
           duration: Number.POSITIVE_INFINITY,
-          dismissible: swipeToDismiss,
+          dismissible: false,
           classNames: {
             toast: "dineout-snackbar-host !w-full !max-w-none",
             content: "!m-0 !w-full !max-w-full !gap-0 !p-0",
