@@ -257,7 +257,12 @@ export function HomeScreen() {
   const homeClaimedOfferCard = useMemo(() => {
     if (!latestClaimedOfferForHome) return null
     const model = getRestaurantDetailDemo(latestClaimedOfferForHome.restaurantSlug)
-    return findOfferCardById(model, latestClaimedOfferForHome.offerId) ?? null
+    const card = findOfferCardById(model, latestClaimedOfferForHome.offerId)
+    if (!card) return null
+    return {
+      ...card,
+      restaurantName: card.restaurantName ?? model.name,
+    }
   }, [latestClaimedOfferForHome, catalogSnapshot])
 
   const handleHomeClaimedOfferPress = useCallback(() => {

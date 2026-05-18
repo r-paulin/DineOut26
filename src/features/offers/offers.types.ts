@@ -80,6 +80,8 @@ export interface ClaimedOffer {
   discountPercent: number
   /** Claimed-offer details row (Figma `15753:13182`), e.g. "30% discount on menu". */
   offerDetailLabel?: string
+  /** Minimum order for banner copy, e.g. `10` → "Min. order 10.00€". */
+  minOrderEur?: number
   promoText?: string
   restaurantSlug: string
   offerId: string

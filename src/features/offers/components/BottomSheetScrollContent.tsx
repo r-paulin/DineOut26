@@ -115,6 +115,7 @@ export function BottomSheetScrollContent({
             aria-label="Your claimed offer"
           >
             <OfferBanner
+              context="home"
               offer={homeClaimedOfferCard}
               userClaims={userClaims}
               claimedOffersById={claimedOffersById}

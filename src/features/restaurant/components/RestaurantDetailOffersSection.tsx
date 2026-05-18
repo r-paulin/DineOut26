@@ -176,6 +176,7 @@ export function RestaurantDetailOffersSection({
                       className="will-change-[opacity]"
                     >
                       <OfferBanner
+                        context="restaurant"
                         offer={card}
                         userClaims={userClaims}
                         claimedOffersById={claimedOffersById}
