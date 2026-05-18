@@ -19,6 +19,7 @@ import {
   MapPlaceCardOpened,
   SectionOffersListScreen,
   claimOffer,
+  findActiveClaimForRestaurant,
   findOfferCardById,
   getOffersAllRestaurants,
   getOffersDinner,
@@ -44,10 +45,12 @@ import { findOfferByRestaurantId } from "@/features/offers/utils/findOfferByRest
 import { PayBillFlow } from "@/features/payBill"
 import type { PayBillFlowEntry } from "@/features/payBill/payBill.types"
 import {
+  AtVenueNoClaimedOffersSheet,
   getRestaurantDetailDemo,
   RestaurantDetailScreen,
   RestaurantOfferClaimInfoSheet,
 } from "@/features/restaurant"
+import { hasSeenWalkInOfferInfoThisSession } from "@/features/restaurant/utils/walkInOfferInfoSession"
 import { MapSurfaceErrorBoundary } from "./MapSurfaceErrorBoundary"
 import type {
   ClaimData,
@@ -218,7 +221,11 @@ export function HomeScreen() {
   const [claimedPayInfoOpen, setClaimedPayInfoOpen] = useState(false)
   const [pendingPayBillEntry, setPendingPayBillEntry] =
     useState<PayBillFlowEntry | null>(null)
+  const [atVenueNoClaimPayInfoOpen, setAtVenueNoClaimPayInfoOpen] = useState(false)
+  const [pendingAtVenuePayBillEntry, setPendingAtVenuePayBillEntry] =
+    useState<PayBillFlowEntry | null>(null)
   const hasSeenClaimedPayInfoRef = useRef(false)
+  const continueAtVenuePayAfterCloseRef = useRef(false)
   const { portalRoot } = useDeviceShell()
   const snackbar = useSnackbar()
 
@@ -281,56 +288,70 @@ export function HomeScreen() {
   const searchPanelRef = useRef<HTMLDivElement>(null)
   const discoverDockRef = useRef<HTMLDivElement>(null)
 
+  const beginClaimOfferFlow = useCallback(
+    (id: string) => {
+      if (!restaurantDetailSlug || !baseRestaurantDetail) {
+        snackbar.add({
+          description: "Something went wrong. Try again.",
+          timeout: 4000,
+        })
+        return
+      }
+      const card = findOfferCardById(baseRestaurantDetail, id)
+      if (!card) {
+        snackbar.add({
+          description: "Could not find this offer. Try again.",
+          timeout: 4000,
+        })
+        return
+      }
+      const scheduleOpts =
+        card.offerScheduleDate != null ?
+          { offerScheduleDate: card.offerScheduleDate }
+        : undefined
+      const cfg = getTimePickerConfig(
+        {
+          isAllDay: Boolean(card.isAllDay),
+          offerStart: card.offerStart ?? "12:00",
+          offerEnd: card.offerEnd ?? "23:00",
+          workingHoursStart: card.workingHoursStart ?? "12:00",
+          workingHoursEnd: card.workingHoursEnd ?? "23:00",
+        },
+        new Date(),
+        scheduleOpts,
+      )
+      if (cfg.mode === "slots" && (!cfg.slots || cfg.slots.length === 0)) {
+        snackbar.add({
+          description: "This offer is no longer available to claim.",
+          timeout: 4000,
+        })
+        return
+      }
+      const offerPayload = mapOfferCardToClaimModalOffer(card)
+      // Unmount info sheet and mount claim modal in one batch so only one Vaul
+      // root is active; offer payload is stored — do not re-derive from model.
+      setOfferClaimModalOfferId(null)
+      setPendingClaimOffer(offerPayload)
+    },
+    [baseRestaurantDetail, restaurantDetailSlug, snackbar],
+  )
+
+  const handleOfferAvailablePress = useCallback(
+    (id: string) => {
+      if (hasSeenWalkInOfferInfoThisSession()) {
+        beginClaimOfferFlow(id)
+        return
+      }
+      setOfferClaimModalOfferId(id)
+    },
+    [beginClaimOfferFlow],
+  )
+
   const handleInfoContinue = useCallback(() => {
     const id = offerClaimModalOfferId
-    if (!id || !restaurantDetailSlug || !baseRestaurantDetail) {
-      snackbar.add({
-        description: "Something went wrong. Try again.",
-        timeout: 4000,
-      })
-      return
-    }
-    const card = findOfferCardById(baseRestaurantDetail, id)
-    if (!card) {
-      snackbar.add({
-        description: "Could not find this offer. Try again.",
-        timeout: 4000,
-      })
-      return
-    }
-    const scheduleOpts =
-      card.offerScheduleDate != null ?
-        { offerScheduleDate: card.offerScheduleDate }
-      : undefined
-    const cfg = getTimePickerConfig(
-      {
-        isAllDay: Boolean(card.isAllDay),
-        offerStart: card.offerStart ?? "12:00",
-        offerEnd: card.offerEnd ?? "23:00",
-        workingHoursStart: card.workingHoursStart ?? "12:00",
-        workingHoursEnd: card.workingHoursEnd ?? "23:00",
-      },
-      new Date(),
-      scheduleOpts,
-    )
-    if (cfg.mode === "slots" && (!cfg.slots || cfg.slots.length === 0)) {
-      snackbar.add({
-        description: "This offer is no longer available to claim.",
-        timeout: 4000,
-      })
-      return
-    }
-    const offerPayload = mapOfferCardToClaimModalOffer(card)
-    // Unmount info sheet and mount claim modal in one batch so only one Vaul
-    // root is active; offer payload is stored — do not re-derive from model.
-    setOfferClaimModalOfferId(null)
-    setPendingClaimOffer(offerPayload)
-  }, [
-    baseRestaurantDetail,
-    offerClaimModalOfferId,
-    restaurantDetailSlug,
-    snackbar,
-  ])
+    if (!id) return
+    beginClaimOfferFlow(id)
+  }, [beginClaimOfferFlow, offerClaimModalOfferId])
 
   const handleClaimed = useCallback(
     (data: ClaimData) => {
@@ -432,30 +453,49 @@ export function HomeScreen() {
 
   const handleOpenPayBill = useCallback(() => {
     if (!restaurantDetailSlug || !baseRestaurantDetail) return
-    const claims = Object.values(claimedByOfferId).filter(
-      (c) => c.restaurantSlug === restaurantDetailSlug,
+    const claim = findActiveClaimForRestaurant(
+      restaurantDetailSlug,
+      baseRestaurantDetail,
+      claimedByOfferId,
     )
-    for (const claim of claims) {
-      if (findOfferCardById(baseRestaurantDetail, claim.offerId)) {
-        setPayBillEntry({
-          restaurantName: baseRestaurantDetail.name,
-          restaurantSlug: restaurantDetailSlug,
-          offer: claim,
-        })
-        return
-      }
+    if (claim) {
+      setClaimedView(claim)
+      return
     }
-    setPayBillEntry({
+    setPendingAtVenuePayBillEntry({
       restaurantName: baseRestaurantDetail.name,
       restaurantSlug: restaurantDetailSlug,
       offer: null,
     })
+    setAtVenueNoClaimPayInfoOpen(true)
   }, [baseRestaurantDetail, claimedByOfferId, restaurantDetailSlug])
 
-  const exitPayFlowToHome = useCallback(() => {
+  const handleAtVenueNoClaimPayInfoContinue = useCallback(() => {
+    if (!pendingAtVenuePayBillEntry) return
+    continueAtVenuePayAfterCloseRef.current = true
+    setAtVenueNoClaimPayInfoOpen(false)
+  }, [pendingAtVenuePayBillEntry])
+
+  const handleAtVenueSheetAfterClose = useCallback(() => {
+    if (!continueAtVenuePayAfterCloseRef.current) return
+    continueAtVenuePayAfterCloseRef.current = false
+    const entry = pendingAtVenuePayBillEntry
+    if (!entry) return
+    setPayBillEntry(entry)
+    setPendingAtVenuePayBillEntry(null)
+  }, [pendingAtVenuePayBillEntry])
+
+  const handleAtVenueNoClaimPayInfoOpenChange = useCallback((open: boolean) => {
+    setAtVenueNoClaimPayInfoOpen(open)
+    if (!open && !continueAtVenuePayAfterCloseRef.current) {
+      setPendingAtVenuePayBillEntry(null)
+    }
+  }, [])
+
+  /** Back from bill amount / early dismiss — keep restaurant detail open. */
+  const exitPayFlowToRestaurant = useCallback(() => {
     setPayBillEntry(null)
-    closeRestaurantDetail()
-  }, [closeRestaurantDetail])
+  }, [])
 
   const fulfillPaidOfferAndExitHome = useCallback(() => {
     const offerId = payBillEntry?.offer?.offerId
@@ -471,7 +511,7 @@ export function HomeScreen() {
     closeRestaurantDetail()
   }, [closeRestaurantDetail, payBillEntry])
 
-  const handlePayBillFlowClose = exitPayFlowToHome
+  const handlePayBillFlowClose = exitPayFlowToRestaurant
 
   const handlePayBillPaidDone = useCallback(() => {
     snackbar.add({
@@ -517,7 +557,10 @@ export function HomeScreen() {
         restaurantDetailSlug ||
         pendingClaimOffer ||
         offerClaimModalOfferId ||
-        claimedPayInfoOpen,
+        claimedPayInfoOpen ||
+        atVenueNoClaimPayInfoOpen ||
+        pendingAtVenuePayBillEntry ||
+        claimedView,
     ),
   })
 
@@ -664,7 +707,7 @@ export function HomeScreen() {
           }}
           activeTab={activeTab}
           onTabChange={onTabChange}
-          onOfferAvailablePress={(id) => setOfferClaimModalOfferId(id)}
+          onOfferAvailablePress={handleOfferAvailablePress}
           onOfferClaimedPress={(id) => {
             const c = claimedByOfferId[id]
             if (c) setClaimedView(c)
@@ -724,6 +767,16 @@ export function HomeScreen() {
           onOpenChange={handleClaimedPayInfoOpenChange}
           container={portalRoot}
           onContinue={handleClaimedPayInfoContinue}
+        />
+      ) : null}
+      {pendingAtVenuePayBillEntry && baseRestaurantDetail ? (
+        <AtVenueNoClaimedOffersSheet
+          isOpen={atVenueNoClaimPayInfoOpen}
+          onOpenChange={handleAtVenueNoClaimPayInfoOpenChange}
+          restaurantName={baseRestaurantDetail.name}
+          container={portalRoot}
+          onContinue={handleAtVenueNoClaimPayInfoContinue}
+          onAfterClose={handleAtVenueSheetAfterClose}
         />
       ) : null}
       <FilterSheet

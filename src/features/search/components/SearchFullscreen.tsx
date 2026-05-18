@@ -9,7 +9,8 @@ import { SearchResultsStatic } from "./SearchResultsStatic"
 
 /**
  * Full-screen search overlay: debounced static results, recent searches, and
- * popular categories. Filter chips share discover filter state.
+ * popular categories. Filter chips share discover filter state. Fills the app
+ * viewport (same inset as {@link SectionOffersListScreen}, no `--modal-top-gap`).
  */
 export function SearchFullscreen(props: SearchFullscreenProps) {
   const {
@@ -40,8 +41,7 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
 
   return (
     <div
-      className="fixed left-0 right-0 bottom-0 top-[var(--modal-top-gap)] z-[120] flex flex-col w-full max-w-[var(--shell-width)] mx-auto bg-layer-floor-1 box-border"
-      style={{ minHeight: "calc(var(--app-h) - var(--modal-top-gap))" }}
+      className="fixed inset-0 z-[120] flex min-h-0 w-full max-w-[var(--shell-width)] mx-auto flex-col bg-layer-floor-1 box-border"
       role="dialog"
       aria-modal="true"
       aria-label="Search"

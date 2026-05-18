@@ -7,7 +7,9 @@ export interface MapPinTailProps {
 export function MapPinTail({ selected }: MapPinTailProps) {
   return (
     <div
-      className={`relative z-[1] -mt-0.5 h-2 w-4 ${selected ? "text-neutral-primary" : "text-layer-floor-1"}`}
+      className={`relative z-[1] -mt-0.5 h-2 w-4 ${
+        selected ? "text-neutral-primary" : "text-[var(--layer-floor-1)]"
+      }`}
       aria-hidden
     >
       <svg

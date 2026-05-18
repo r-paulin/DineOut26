@@ -36,6 +36,7 @@ function discoverRow(
     area: r.area,
     cuisine: "",
     rating: r.rating,
+    reviewCount: r.reviewSuffix,
     image: slotUrl(slug, imageSlot),
     campaign: campaignFor(slug),
   }

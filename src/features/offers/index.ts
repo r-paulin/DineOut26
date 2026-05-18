@@ -77,6 +77,7 @@ export {
 export { claimOffer, cancelOffer, computeOfferWindowCloseIso, generateClaimPin } from "./utils/claimOffer"
 export type { ClaimOfferInput } from "./utils/claimOffer"
 export {
+  findActiveClaimForRestaurant,
   findOfferCardById,
   mapOfferCardToClaimModalOffer,
 } from "./utils/claimFlowModel"

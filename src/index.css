@@ -18,56 +18,83 @@
 }
 
 /**
- * DineOut snackbar toaster (Sonner): fixed above bottom chrome
- * (`--snackbar-bottom-inset`, default tab bar) plus {@link --snackbar-toaster-gap}.
+ * DineOut snackbar toaster (Sonner v2 renders `<ol data-sonner-toaster>`).
+ * Screen margins: 24px horizontal, 32px above bottom chrome + `--snackbar-bottom-inset`.
  * Sonner’s default `<li>` motion is disabled so entry/exit can be driven by GSAP.
  */
-section.dineout-snackbar-toaster[data-sonner-toaster][data-y-position="bottom"] {
-  bottom: calc(
-    max(32px, var(--snackbar-bottom-inset) + var(--snackbar-toaster-gap))
+.dineout-snackbar-toaster[data-sonner-toaster] {
+  z-index: 130 !important;
+  --width: 100% !important;
+  --offset-left: var(--snackbar-screen-margin-x) !important;
+  --offset-right: var(--snackbar-screen-margin-x) !important;
+  --mobile-offset-left: var(--snackbar-screen-margin-x) !important;
+  --mobile-offset-right: var(--snackbar-screen-margin-x) !important;
+  --offset-bottom: calc(
+    var(--snackbar-bottom-inset) + var(--snackbar-screen-margin-bottom)
+  ) !important;
+  --mobile-offset-bottom: calc(
+    var(--snackbar-bottom-inset) + var(--snackbar-screen-margin-bottom)
   ) !important;
 }
 
-section.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="center"] {
-  left: 24px !important;
-  right: 24px !important;
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="center"] {
+  left: var(--snackbar-screen-margin-x) !important;
+  right: var(--snackbar-screen-margin-x) !important;
   transform: none !important;
-  width: min(
-    calc(var(--shell-width, 100vw) - 48px),
-    calc(100vw - 48px)
-  ) !important;
-  max-width: min(
-    calc(var(--shell-width, 100vw) - 48px),
-    calc(100vw - 48px)
-  ) !important;
+  width: auto !important;
+  max-width: none !important;
+  box-sizing: border-box;
 }
 
-section.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="center"]
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="center"]
   [data-sonner-toast] {
   width: 100% !important;
   max-width: none !important;
   box-sizing: border-box;
 }
 
-section.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="center"]
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="center"]
+  .dineout-snackbar-host,
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="left"]
+  .dineout-snackbar-host,
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="right"]
   .dineout-snackbar-host {
   width: 100% !important;
   max-width: none !important;
 }
 
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="left"],
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="right"] {
+  left: var(--snackbar-screen-margin-x) !important;
+  right: var(--snackbar-screen-margin-x) !important;
+  transform: none !important;
+  width: auto !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="left"]
+  [data-sonner-toast],
+.dineout-snackbar-toaster[data-sonner-toaster][data-x-position="right"]
+  [data-sonner-toast] {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   /* Disable Sonner’s default enter/leave transitions on the host `<li>` so the
    * card can use GSAP; keep `animation` for swipe-dismiss keyframes. */
-  section.dineout-snackbar-toaster [data-sonner-toast] {
+  .dineout-snackbar-toaster [data-sonner-toast] {
     transition: none !important;
   }
 
-  section.dineout-snackbar-toaster [data-sonner-toast][data-mounted="true"] {
+  .dineout-snackbar-toaster [data-sonner-toast][data-mounted="true"] {
     opacity: 1 !important;
     transform: none !important;
   }
 
-  section.dineout-snackbar-toaster [data-sonner-toast] > * {
+  .dineout-snackbar-toaster [data-sonner-toast] > * {
     transition: none !important;
     animation: none !important;
   }

@@ -1,15 +1,16 @@
 import { Button, Typography } from "@bolteu/kalep-react"
-import Calendar from "@bolteu/kalep-react-icons/dist/Calendar"
-import CheckFlower from "@bolteu/kalep-react-icons/dist/CheckFlower"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
-import { useEffect, useId, type ReactElement } from "react"
+import MobilePayment from "@bolteu/kalep-react-icons/dist/MobilePayment"
+import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
+import { useEffect, useId, useRef, type AnimationEvent, type ReactElement } from "react"
 import { Drawer } from "vaul"
+import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
+import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
 import {
   Z_RESTAURANT_SHEET_CONTENT,
   Z_RESTAURANT_SHEET_OVERLAY,
 } from "@/features/restaurant/constants/screenLayers"
-import { markWalkInOfferInfoSeenThisSession } from "@/features/restaurant/utils/walkInOfferInfoSession"
 import { modalImageUrl } from "@/shared/utils/publicImageUrls"
 import {
   SHEET_CLOSE_ICON_OVER_MEDIA_CLASS,
@@ -20,57 +21,73 @@ import {
   vaulSheetContentClassName,
 } from "@/shared/utils/vaulAppSheetShell"
 
-const HERO_SRC = modalImageUrl("Modal-offer-claim-info.png")
+const HERO_SRC = modalImageUrl("bg-modal.jpg")
+
+const PAY_BILL_SUBTITLE = `${formatDiscountPercent(DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT)}% off total bill`
 
 const LIST_ICONS: ReactElement[] = [
-  <Calendar key="cal" size="lg" aria-hidden />,
   <Food key="food" size="lg" aria-hidden />,
-  <CheckFlower key="cf" size="lg" aria-hidden />,
+  <Receipt key="receipt" size="lg" aria-hidden />,
+  <MobilePayment key="payment" size="lg" aria-hidden />,
 ]
 
 const ROWS = [
   {
-    title: "Flexible walk-in offer",
+    title: "Dine as usual",
     subtitle:
-      "A walk-in offer allows you to dine-out without needing a booking. Venues create these offers when they have space tables to fill. If the venue is busy, you may have to wait to get seated.",
+      "Ask for the menu, choose your dishes, and enjoy your meal.",
   },
   {
-    title: "Food only discount",
+    title: "Ask for the receipt",
     subtitle:
-      "The discount applies to food items only. Drinks and set menus are excluded.",
+      "After your meal, request the receipt and let them know you're using Bolt DineOut.",
   },
   {
-    title: "One offer per visit",
-    subtitle: "Only one offer can be redeemed at a time per visit.",
+    title: "Pay bill in the app",
+    subtitle:
+      "Enter the total shown on your receipt, then tap Pay bill to apply your offer and complete the payment.",
   },
 ] as const
 
-export interface RestaurantOfferClaimInfoSheetProps {
+export interface AtVenueNoClaimedOffersSheetProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  restaurantName: string
   /** Portal target (device shell); falls back to default when absent. */
   container?: HTMLElement | null
-  /** Fires when the user taps **Continue** (after the info sheet is shown). */
+  /** Parent should close the sheet; pay flow opens in {@link onAfterClose}. */
   onContinue?: () => void
+  /** Fires once after the close animation when the sheet has finished dismissing. */
+  onAfterClose?: () => void
 }
 
 /**
- * Bottom sheet when the user taps an available (unclaimed) offer banner.
- * Figma: MODAL / Claiming offer - Info (`15750:40007`).
- * Content-sized shell (h-fit) — same family as {@link AtVenueNoClaimedOffersSheet}.
- * **Continue** opens the claim modal (see {@link HomeScreen}).
+ * Pre-pay bottom sheet when the user taps “I'm at the venue” without a claimed offer.
+ * Figma: MODAL / No claimed offers (`16084:49094`).
+ * Content-sized shell (h-fit) — same family as {@link RestaurantReportProblemSheet}.
  */
-export function RestaurantOfferClaimInfoSheet({
+export function AtVenueNoClaimedOffersSheet({
   isOpen,
   onOpenChange,
+  restaurantName,
   container,
   onContinue,
-}: RestaurantOfferClaimInfoSheetProps) {
+  onAfterClose,
+}: AtVenueNoClaimedOffersSheetProps) {
   const titleId = useId()
+  const welcomeTitle = `Welcome to ${restaurantName}`
+  const afterCloseFiredRef = useRef(false)
 
   useEffect(() => {
-    if (isOpen) markWalkInOfferInfoSeenThisSession()
+    if (isOpen) afterCloseFiredRef.current = false
   }, [isOpen])
+
+  const handleContentAnimationEnd = (e: AnimationEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return
+    if (isOpen || afterCloseFiredRef.current) return
+    afterCloseFiredRef.current = true
+    onAfterClose?.()
+  }
 
   return (
     <Drawer.Root
@@ -89,10 +106,9 @@ export function RestaurantOfferClaimInfoSheet({
         <Drawer.Content
           className={vaulSheetContentClassName()}
           style={{ zIndex: Z_RESTAURANT_SHEET_CONTENT }}
+          onAnimationEnd={handleContentAnimationEnd}
         >
-          <Drawer.Title className="sr-only">
-            Bolt DineOut walk-in offers
-          </Drawer.Title>
+          <Drawer.Title className="sr-only">{welcomeTitle}</Drawer.Title>
           <Drawer.Close asChild>
             <button
               type="button"
@@ -104,7 +120,7 @@ export function RestaurantOfferClaimInfoSheet({
           </Drawer.Close>
           <div className="flex max-h-[97vh] flex-col overflow-y-auto overscroll-y-contain">
             <Drawer.Description className="sr-only">
-              Information about Bolt DineOut walk-in offers before you claim.
+              How to dine and pay with Bolt DineOut at {restaurantName}.
             </Drawer.Description>
 
             <div className="relative aspect-[375/250] w-full shrink-0 overflow-hidden bg-special-brand-alt">
@@ -122,12 +138,9 @@ export function RestaurantOfferClaimInfoSheet({
             <div className="flex flex-col gap-2 bg-layer-floor-1 px-6 pb-4 pt-6">
               <h2 id={titleId} className="m-0 p-0">
                 <Typography variant="heading-m-accent" color="primary" as="span">
-                  Bolt DineOut walk-in offers
+                  {welcomeTitle}
                 </Typography>
               </h2>
-              <Typography variant="body-m-regular" color="secondary" as="p">
-                Before you move on, please note the following
-              </Typography>
               <ul className="m-0 mt-2 flex list-none flex-col p-0">
                 {ROWS.map((row, i) => (
                   <li
@@ -166,13 +179,21 @@ export function RestaurantOfferClaimInfoSheet({
                 variant="primary"
                 size="lg"
                 fullWidth
+                aria-label={`Pay bill, ${PAY_BILL_SUBTITLE}`}
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                   onContinue?.()
                 }}
               >
-                Continue
+                <span className="flex flex-col items-center gap-0">
+                  <Typography variant="body-l-accent" color="primary-inverted" as="span">
+                    Pay bill
+                  </Typography>
+                  <Typography variant="body-xs-regular" color="primary-inverted" as="span">
+                    {PAY_BILL_SUBTITLE}
+                  </Typography>
+                </span>
               </Button>
             </div>
           </div>

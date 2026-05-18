@@ -1,6 +1,12 @@
 import { createContext, useContext, useMemo } from "react"
+import { createPortal } from "react-dom"
 import { Toaster, toast } from "sonner"
+import { DeviceShellContext } from "@/shared/context/deviceShellContext"
 import { SnackbarInsetController } from "@/shared/snackbar/SnackbarInsetContext"
+import {
+  SNACKBAR_SCREEN_MARGIN_BOTTOM_PX,
+  SNACKBAR_SCREEN_MARGIN_X_PX,
+} from "@/shared/snackbar/snackbarInset"
 import { resolveSnackbarDismiss } from "@/shared/snackbar/resolveSnackbarDismiss"
 import { SnackbarToast } from "@/shared/snackbar/SnackbarToast"
 import type {
@@ -20,8 +26,10 @@ export function useSnackbar(): SnackbarState {
 }
 
 /**
- * App snackbars: `--snackbar-bottom-inset` + `--snackbar-toaster-gap` (see `index.css`),
+ * App snackbars: `--snackbar-bottom-inset` + screen margins (see `index.css`),
  * GSAP entry/exit on the panel ({@link SnackbarToast}), Sonner for stacking only.
+ * Toaster is portaled into {@link DeviceShellContext} `portalRoot` so `position: fixed`
+ * shares the device shell containing block (same as pay flow / footer anchors).
  */
 export function SnackbarProvider({
   children,
@@ -29,6 +37,10 @@ export function SnackbarProvider({
   placement = "bottom-center",
   expand = false,
 }: SnackbarProviderProps) {
+  const { portalRoot } = useContext(DeviceShellContext)
+  const toasterHost =
+    portalRoot ?? (typeof document !== "undefined" ? document.body : null)
+
   const value = useMemo<SnackbarState>(
     () => ({
       add(content: SnackbarContent) {
@@ -50,29 +62,33 @@ export function SnackbarProvider({
     [],
   )
 
+  const toaster = (
+    <Toaster
+      className="dineout-snackbar-toaster"
+      visibleToasts={maxVisibleSnackbars}
+      position={placement}
+      expand={expand}
+      theme="system"
+      offset={{
+        left: SNACKBAR_SCREEN_MARGIN_X_PX,
+        right: SNACKBAR_SCREEN_MARGIN_X_PX,
+        bottom: SNACKBAR_SCREEN_MARGIN_BOTTOM_PX,
+      }}
+      mobileOffset={{
+        left: SNACKBAR_SCREEN_MARGIN_X_PX,
+        right: SNACKBAR_SCREEN_MARGIN_X_PX,
+        bottom: SNACKBAR_SCREEN_MARGIN_BOTTOM_PX,
+      }}
+      toastOptions={{
+        unstyled: true,
+      }}
+    />
+  )
+
   return (
     <SnackbarContext.Provider value={value}>
       <SnackbarInsetController>
-        <Toaster
-          className="dineout-snackbar-toaster"
-          visibleToasts={maxVisibleSnackbars}
-          position={placement}
-          expand={expand}
-          theme="system"
-          offset={{
-            left: 24,
-            right: 24,
-            bottom: 32,
-          }}
-          mobileOffset={{
-            left: 24,
-            right: 24,
-            bottom: 32,
-          }}
-          toastOptions={{
-            unstyled: true,
-          }}
-        />
+        {toasterHost ? createPortal(toaster, toasterHost) : null}
         {children}
       </SnackbarInsetController>
     </SnackbarContext.Provider>

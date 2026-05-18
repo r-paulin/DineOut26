@@ -4,6 +4,14 @@ import Star from "@bolteu/kalep-react-icons/dist/Star"
 /** Figma rating star fill (place cards + list meta). */
 const RATING_STAR_ICON_CLASS = "shrink-0 text-[#FFB200]"
 
+/** e.g. `200+` → `(200+)`; catalog values already parenthesized pass through. */
+export function formatReviewCountForBadge(raw?: string): string | undefined {
+  const t = raw?.trim()
+  if (!t) return undefined
+  if (t.startsWith("(") && t.endsWith(")")) return t
+  return `(${t})`
+}
+
 export interface OfferCardImageRatingBadgeProps {
   rating: string
   /** XL / map-opened: e.g. `(200+)`, shown after the score per Figma M badge. */
@@ -29,6 +37,8 @@ export function OfferCardImageRatingBadge({
   density = "compact",
   staticComfortable = false,
 }: OfferCardImageRatingBadgeProps) {
+  const formattedReviewCount = formatReviewCountForBadge(reviewCount)
+
   if (density === "comfortable") {
     const pill = (
       <div className="flex w-max shrink-0 flex-nowrap items-center gap-1 rounded bg-layer-floor-1 px-2 py-0.5 shadow-[0_0.1rem_0.15rem_rgba(0,0,0,0.16)]">
@@ -41,16 +51,16 @@ export function OfferCardImageRatingBadge({
         >
           {rating}
         </Typography>
-        {reviewCount ? (
+        {formattedReviewCount ?
           <Typography
             as="span"
             variant="body-s-regular"
             color="secondary"
             inlineStyle={{ letterSpacing: "-0.00525rem", lineHeight: "1.25rem" }}
           >
-            {reviewCount}
+            {formattedReviewCount}
           </Typography>
-        ) : null}
+        : null}
       </div>
     )
     if (staticComfortable) {
@@ -62,7 +72,7 @@ export function OfferCardImageRatingBadge({
   }
 
   return (
-    <div className="absolute right-2 bottom-2 z-[1] flex h-5 items-center gap-1 rounded bg-layer-floor-1 pl-1 pr-1.5">
+    <div className="absolute right-2 bottom-2 z-[1] flex min-h-5 items-center gap-1 rounded bg-layer-floor-1 py-0.5 pl-1 pr-1.5">
       <Star
         size="xs"
         width={12}
@@ -78,6 +88,16 @@ export function OfferCardImageRatingBadge({
       >
         {rating}
       </Typography>
+      {formattedReviewCount ?
+        <Typography
+          as="span"
+          variant="body-xs-regular"
+          color="secondary"
+          inlineStyle={{ letterSpacing: 0, lineHeight: "1rem" }}
+        >
+          {formattedReviewCount}
+        </Typography>
+      : null}
     </div>
   )
 }

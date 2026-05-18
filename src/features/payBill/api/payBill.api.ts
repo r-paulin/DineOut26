@@ -2,6 +2,7 @@ import {
   discountAmountCompound,
   finalAmountCompound,
 } from "@/features/payBill/utils/discountCalc"
+import { createPaymentCode } from "@/features/payBill/utils/paymentCodeDisplay"
 
 export interface PayBillPaymentRequest {
   offerId: string
@@ -14,6 +15,7 @@ export interface PayBillPaymentRequest {
 
 export interface PayBillPaymentResult {
   transactionId: string
+  paymentCode: string
   paidAt: string
   paidAmount: number
   discountAmount: number
@@ -38,8 +40,9 @@ export function payBillMock(
         req.discountAddPercent,
       )
       const transactionId = `TXN-${Date.now().toString(36).toUpperCase()}`
+      const paymentCode = createPaymentCode()
       const paidAt = new Date().toISOString()
-      resolve({ transactionId, paidAt, paidAmount, discountAmount })
+      resolve({ transactionId, paymentCode, paidAt, paidAmount, discountAmount })
     }, 900)
   })
 }

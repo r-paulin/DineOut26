@@ -7,7 +7,7 @@ import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 export type PaymentConfirmationPhase = "celebration" | "revealed"
 
 const ENTRANCE_S = 0.6
-const HOLD_AFTER_ENTRANCE_S = 2
+const HOLD_AFTER_ENTRANCE_S = 1
 const SHEET_IN_S = 0.75
 const TITLE_HIDE_S = 0.2
 const HERO_MORPH_S = 0.75
@@ -16,6 +16,13 @@ const HERO_MORPH_S = 0.75
 export const PAY_SUCCESS_CHECKMARK_FINAL_PX = 124
 const HERO_FINAL_SCALE = PAY_SUCCESS_CHECKMARK_FINAL_PX / 180
 
+/** Matches `--heading-s-line-height` (30px) + small buffer for celebration title slot. */
+const CELEBRATION_TITLE_SLOT_MIN_PX = 40
+
+function measureCelebrationTitleSlotPx(el: HTMLElement): number {
+  return Math.max(el.scrollHeight, CELEBRATION_TITLE_SLOT_MIN_PX)
+}
+
 /** Space reserved for the receipt sheet — matches `max-h-[min(72vh,calc(var(--app-h)*0.72))]`. */
 function getConfirmSheetInsetPx(sheet: HTMLElement): number {
   const appH = readAppHeightPx()
@@ -23,7 +30,8 @@ function getConfirmSheetInsetPx(sheet: HTMLElement): number {
     typeof window !== "undefined"
       ? Math.min(window.innerHeight * 0.72, appH * 0.72)
       : appH * 0.72
-  return Math.min(sheet.offsetHeight, viewportCap)
+  const measured = Math.max(sheet.offsetHeight, sheet.getBoundingClientRect().height)
+  return Math.min(measured, viewportCap)
 }
 
 export interface UsePaymentConfirmationRevealArgs {
@@ -31,6 +39,7 @@ export interface UsePaymentConfirmationRevealArgs {
   heroBandRef: RefObject<HTMLElement | null>
   imgWrapRef: RefObject<HTMLElement | null>
   titleCelebrationRef: RefObject<HTMLElement | null>
+  titleSlotRef: RefObject<HTMLElement | null>
   sheetRef: RefObject<HTMLElement | null>
 }
 
@@ -39,14 +48,15 @@ export interface UsePaymentConfirmationRevealResult {
 }
 
 /**
- * Large centered check on green → sheet up + hero band compresses →
- * smooth checkmark scale down → compact title fades in with opacity only.
+ * Large centered check on green → 1s hold → sheet up + hero band compresses →
+ * checkmark scales down; title hides and its slot collapses.
  */
 export function usePaymentConfirmationReveal({
   rootRef,
   heroBandRef,
   imgWrapRef,
   titleCelebrationRef,
+  titleSlotRef,
   sheetRef,
 }: UsePaymentConfirmationRevealArgs): UsePaymentConfirmationRevealResult {
   const [phase, setPhase] = useState<PaymentConfirmationPhase>("celebration")
@@ -56,20 +66,23 @@ export function usePaymentConfirmationReveal({
     const heroBand = heroBandRef.current
     const imgWrap = imgWrapRef.current
     const titleCelebration = titleCelebrationRef.current
+    const titleSlot = titleSlotRef.current
     const sheet = sheetRef.current
     if (
       !root ||
       !heroBand ||
       !imgWrap ||
       !titleCelebration ||
+      !titleSlot ||
       !sheet
     ) {
       return
     }
 
-    const sheetInsetPx = getConfirmSheetInsetPx(sheet)
+    const measureSheetInset = () => getConfirmSheetInsetPx(sheet)
 
     if (prefersReducedMotion()) {
+      const sheetInsetPx = measureSheetInset()
       gsap.set(heroBand, { bottom: sheetInsetPx })
       gsap.set(sheet, { yPercent: 0 })
       gsap.set(imgWrap, {
@@ -80,6 +93,7 @@ export function usePaymentConfirmationReveal({
         force3D: true,
       })
       gsap.set(titleCelebration, { display: "none" })
+      gsap.set(titleSlot, { height: 0, marginTop: 0, overflow: "hidden" })
       queueMicrotask(() => {
         setPhase("revealed")
       })
@@ -88,6 +102,12 @@ export function usePaymentConfirmationReveal({
 
     gsap.set(heroBand, { bottom: 0 })
     gsap.set(sheet, { yPercent: 100 })
+    const titleSlotHeightPx = measureCelebrationTitleSlotPx(titleCelebration)
+    gsap.set(titleSlot, {
+      height: titleSlotHeightPx,
+      marginTop: 0,
+      overflow: "hidden",
+    })
     gsap.set(titleCelebration, { autoAlpha: 0 })
     gsap.set(imgWrap, {
       opacity: 0,
@@ -100,9 +120,11 @@ export function usePaymentConfirmationReveal({
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         onComplete: () => {
+          const sheetInsetPx = measureSheetInset()
           gsap.set(heroBand, { bottom: sheetInsetPx })
           gsap.set(sheet, { yPercent: 0 })
           gsap.set(titleCelebration, { display: "none" })
+          gsap.set(titleSlot, { height: 0, marginTop: 0, overflow: "hidden" })
           gsap.set(imgWrap, { clearProps: "opacity" })
           queueMicrotask(() => {
             setPhase("revealed")
@@ -117,28 +139,51 @@ export function usePaymentConfirmationReveal({
         ease: "power2.out",
         force3D: true,
       })
-      tl.to(titleCelebration, {
-        autoAlpha: 1,
-        duration: ENTRANCE_S,
-        ease: "power2.out",
-      }, 0.08)
+      tl.to(
+        titleCelebration,
+        {
+          autoAlpha: 1,
+          duration: ENTRANCE_S,
+          ease: "power2.out",
+        },
+        0.08,
+      )
 
       tl.to({}, { duration: HOLD_AFTER_ENTRANCE_S })
 
       tl.add("sheetStart")
-      tl.to(
-        heroBand,
-        { bottom: sheetInsetPx, duration: SHEET_IN_S, ease: "power2.out" },
-        "sheetStart",
-      )
-      tl.to(
-        sheet,
-        { yPercent: 0, duration: SHEET_IN_S, ease: "power2.out" },
+      tl.call(
+        () => {
+          const sheetInsetPx = measureSheetInset()
+          gsap.to(heroBand, {
+            bottom: sheetInsetPx,
+            duration: SHEET_IN_S,
+            ease: "power2.out",
+            overwrite: "auto",
+          })
+          gsap.to(sheet, {
+            yPercent: 0,
+            duration: SHEET_IN_S,
+            ease: "power2.out",
+            overwrite: "auto",
+          })
+        },
+        [],
         "sheetStart",
       )
       tl.to(
         titleCelebration,
         { autoAlpha: 0, duration: TITLE_HIDE_S, ease: "power2.out" },
+        "sheetStart",
+      )
+      tl.to(
+        titleSlot,
+        {
+          height: 0,
+          marginTop: 0,
+          duration: TITLE_HIDE_S,
+          ease: "power2.out",
+        },
         "sheetStart",
       )
       tl.to(
@@ -165,12 +210,14 @@ export function usePaymentConfirmationReveal({
       gsap.set(sheet, { clearProps: "all" })
       gsap.set(imgWrap, { clearProps: "all" })
       gsap.set(titleCelebration, { clearProps: "all" })
+      gsap.set(titleSlot, { clearProps: "all" })
     }
   }, [
     rootRef,
     heroBandRef,
     imgWrapRef,
     titleCelebrationRef,
+    titleSlotRef,
     sheetRef,
   ])
 

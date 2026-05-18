@@ -67,7 +67,7 @@ export function PaySuccessScreen({ onAdvance }: PaySuccessScreenProps) {
           />
         </div>
         <Typography
-          variant="heading-l-accent"
+          variant="heading-s-accent"
           color="primary-inverted"
           align="center"
           as="p"

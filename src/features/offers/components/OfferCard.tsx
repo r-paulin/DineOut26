@@ -37,6 +37,12 @@ export function OfferCard({ offer, dimmed, onClick }: OfferCardProps) {
 function offerCardCarouselAriaLabel(offer: OfferCardModel): string {
   const parts = [offer.name]
   if (offer.campaign.discountLabel) parts.push(offer.campaign.discountLabel)
+  const reviewCount = offer.reviewCount?.trim().replace(/^\(|\)$/g, "")
+  if (reviewCount) {
+    parts.push(`${offer.rating}, ${reviewCount} reviews`)
+  } else {
+    parts.push(offer.rating)
+  }
   parts.push(`${offer.priceRange}, ${offer.area}`)
   return parts.join(". ")
 }
@@ -77,7 +83,10 @@ function OfferCardCarousel({
             restaurantSlug={offer.restaurantSlug ?? offer.id}
           />
         </div>
-        <OfferCardImageRatingBadge rating={offer.rating} />
+        <OfferCardImageRatingBadge
+          rating={offer.rating}
+          reviewCount={offer.reviewCount}
+        />
       </button>
       <div className="mt-2 flex flex-col gap-0.5 w-full">
         <Typography

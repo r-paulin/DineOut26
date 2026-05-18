@@ -29,14 +29,16 @@ export function PaymentSuccessTitle({ variant }: PaymentSuccessTitleProps) {
   }
 
   return (
-    <Typography
-      variant="heading-l-accent"
-      color="primary-inverted"
-      as="p"
-      align="center"
-      inlineStyle={SEMIBOLD}
-    >
-      Payment successful
-    </Typography>
+    <div className="w-full">
+      <Typography
+        variant="heading-s-accent"
+        color="primary-inverted"
+        as="p"
+        align="center"
+        inlineStyle={SEMIBOLD}
+      >
+        Payment successful
+      </Typography>
+    </div>
   )
 }

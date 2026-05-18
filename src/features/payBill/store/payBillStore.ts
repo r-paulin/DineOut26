@@ -13,6 +13,7 @@ export interface PayBillStoreState {
   tip: number | null
   intentSnackbar: PayBillSnackbarIntent
   transactionId: string | null
+  paymentCode: string | null
   paidAt: string | null
   paidAmount: number | null
   discountAmount: number | null
@@ -28,6 +29,7 @@ export interface PayBillStoreState {
   setIntentSnackbar: (intent: PayBillSnackbarIntent) => void
   setPostPayment: (payload: {
     transactionId: string
+    paymentCode: string
     paidAt: string
     paidAmount: number
     discountAmount: number
@@ -55,6 +57,7 @@ const initial = (): Omit<
   tip: null,
   intentSnackbar: null,
   transactionId: null,
+  paymentCode: null,
   paidAt: null,
   paidAmount: null,
   discountAmount: null,
@@ -79,6 +82,7 @@ export const usePayBillStore = create<PayBillStoreState>((set) => ({
   setPostPayment: (payload) =>
     set({
       transactionId: payload.transactionId,
+      paymentCode: payload.paymentCode,
       paidAt: payload.paidAt,
       paidAmount: payload.paidAmount,
       discountAmount: payload.discountAmount,

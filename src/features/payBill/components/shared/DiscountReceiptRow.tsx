@@ -19,22 +19,24 @@ export function DiscountReceiptRow({
   onInfoClick,
 }: DiscountReceiptRowProps) {
   return (
-    <ReceiptItem
-      label={`Discount ${percent}%`}
-      amount={formatEurMajor(-discountEur)}
-      variant="regular"
-      labelColor="secondary"
-      labelTypographyVariant="body-m-regular"
-      labelSuffix={
-        <button
-          type="button"
-          className="inline-flex border-none bg-transparent p-0"
-          aria-label={infoAriaLabel}
-          onClick={onInfoClick}
-        >
-          <InfoCircleOutlined size="sm" className="text-secondary" aria-hidden />
-        </button>
-      }
-    />
+    <div className="border-y border-solid border-separator py-2">
+      <ReceiptItem
+        label={`Discount ${percent}%`}
+        amount={formatEurMajor(-discountEur)}
+        variant="regular"
+        labelColor="secondary"
+        labelTypographyVariant="body-m-regular"
+        labelSuffix={
+          <button
+            type="button"
+            className="inline-flex border-none bg-transparent p-0"
+            aria-label={infoAriaLabel}
+            onClick={onInfoClick}
+          >
+            <InfoCircleOutlined size="sm" className="text-secondary" aria-hidden />
+          </button>
+        }
+      />
+    </div>
   )
 }

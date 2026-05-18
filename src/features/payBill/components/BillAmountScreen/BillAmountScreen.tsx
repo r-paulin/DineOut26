@@ -196,7 +196,7 @@ export function BillAmountScreen({
 
       <div
         data-snackbar-anchor=""
-        className="relative z-10 flex shrink-0 flex-col items-center gap-[11px] bg-layer-floor-1 pb-3 pt-0"
+        className="relative z-10 flex shrink-0 flex-col items-center gap-[11px] bg-layer-floor-1 pb-[max(1.5rem,var(--safe-area-bottom))] pt-0"
       >
         <div className="flex w-full flex-col items-center gap-3 px-6">
           <Button

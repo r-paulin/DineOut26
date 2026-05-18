@@ -1,20 +1,30 @@
-const mem: Record<string, string> = {}
-Object.defineProperty(globalThis, "localStorage", {
-  value: {
-    getItem: (k: string) => mem[k] ?? null,
+function createStorageMock(store: Record<string, string>) {
+  return {
+    getItem: (k: string) => store[k] ?? null,
     setItem: (k: string, v: string) => {
-      mem[k] = v
+      store[k] = v
     },
     removeItem: (k: string) => {
-      delete mem[k]
+      delete store[k]
     },
     clear: () => {
-      for (const k of Object.keys(mem)) delete mem[k]
+      for (const k of Object.keys(store)) delete store[k]
     },
-    key: (i: number) => Object.keys(mem)[i] ?? null,
+    key: (i: number) => Object.keys(store)[i] ?? null,
     get length() {
-      return Object.keys(mem).length
+      return Object.keys(store).length
     },
-  },
+  }
+}
+
+const localMem: Record<string, string> = {}
+Object.defineProperty(globalThis, "localStorage", {
+  value: createStorageMock(localMem),
+  configurable: true,
+})
+
+const sessionMem: Record<string, string> = {}
+Object.defineProperty(globalThis, "sessionStorage", {
+  value: createStorageMock(sessionMem),
   configurable: true,
 })

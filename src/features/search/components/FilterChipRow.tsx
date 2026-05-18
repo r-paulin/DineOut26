@@ -19,9 +19,9 @@ const ROW_ORDER: FilterKey[] = [
   "date",
   "offer",
   "openNow",
-  "price",
   "cuisine",
   "amenity",
+  "price",
 ]
 
 /**

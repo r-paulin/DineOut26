@@ -2,7 +2,7 @@ import {
   USER_LOCATION_IMG_BASE,
   USER_LOCATION_IMG_POINT,
   USER_LOCATION_IMG_RADAR,
-} from "@/features/map/userLocationFigmaAssets"
+} from "@/features/map/userLocationAssets"
 
 /**
  * Figma `15806:67698` — layered “My Location” (base + radar + point), 64px.

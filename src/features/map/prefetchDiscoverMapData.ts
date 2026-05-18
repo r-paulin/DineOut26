@@ -4,7 +4,7 @@ import {
   USER_LOCATION_IMG_BASE,
   USER_LOCATION_IMG_POINT,
   USER_LOCATION_IMG_RADAR,
-} from "@/features/map/userLocationFigmaAssets"
+} from "@/features/map/userLocationAssets"
 import { createLogger } from "@/shared/utils/logger"
 
 const prefetchLog = createLogger("map.prefetch")
@@ -93,8 +93,8 @@ async function prefetchVectorTilesAroundMockUser(): Promise<void> {
   )
 }
 
-/** Decode Figma “My Location” layers before the map chunk paints. */
-export function prefetchUserLocationFigmaAssets(): void {
+/** Warm cache for bundled “My Location” layers before the map chunk paints. */
+export function prefetchUserLocationAssets(): void {
   for (const src of [
     USER_LOCATION_IMG_BASE,
     USER_LOCATION_IMG_RADAR,
@@ -115,7 +115,7 @@ export function prefetchUserLocationFigmaAssets(): void {
  * Vecrīga. Call as early as possible (e.g. from `main.tsx`).
  */
 export function scheduleDiscoverMapWarmup(): void {
-  prefetchUserLocationFigmaAssets()
+  prefetchUserLocationAssets()
   prefetchDiscoverMapStyleJson()
   const runVectorPrefetch = () => {
     void prefetchVectorTilesAroundMockUser()

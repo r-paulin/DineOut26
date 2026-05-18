@@ -1,9 +1,13 @@
 export {
+  AtVenueNoClaimedOffersSheet,
   RestaurantAbout,
   RestaurantDetailScreen,
   RestaurantOfferClaimInfoSheet,
 } from "./components"
-export type { RestaurantOfferClaimInfoSheetProps } from "./components"
+export type {
+  AtVenueNoClaimedOffersSheetProps,
+  RestaurantOfferClaimInfoSheetProps,
+} from "./components"
 export { getRestaurantDetailDemo } from "./data/restaurantDetailDemo"
 export {
   getRestaurantLogoCandidates,

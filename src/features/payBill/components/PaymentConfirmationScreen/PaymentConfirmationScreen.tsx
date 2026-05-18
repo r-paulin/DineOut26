@@ -4,13 +4,8 @@ import paySuccessCheckmarkUrl from "@/features/payBill/assets/pay-success-checkm
 import { PaymentConfirmationNavbar } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationNavbar"
 import { PaymentConfirmationSummarySheet } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationSummarySheet"
 import { PaymentSuccessTitle } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentSuccessTitle"
-import {
-  usePaymentConfirmationReveal,
-} from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
-import {
-  discountSecondEur,
-} from "@/features/payBill/utils/discountCalc"
-import { formatPaymentCodeDisplay } from "@/features/payBill/utils/paymentCodeDisplay"
+import { usePaymentConfirmationReveal } from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
+import { discountSecondEur } from "@/features/payBill/utils/discountCalc"
 import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
 import { AppInfoBottomSheet } from "@/shared/components/AppInfoBottomSheet"
 
@@ -19,12 +14,7 @@ export interface PaymentConfirmationScreenProps {
   paidAmount: number
   receiptTotal: number
   tip: number | null
-  discountAmount: number
-  cashbackAmount: number
-  paymentMethod: "bolt_balance" | "card"
-  cardLast4?: string
-  transactionId: string
-  paidAt: string
+  paymentCode: string
   offer: ClaimedOffer | null
   portalContainer?: HTMLElement | null
   onDismiss: () => void
@@ -49,7 +39,7 @@ export function PaymentConfirmationScreen({
   paidAmount,
   receiptTotal,
   tip,
-  transactionId,
+  paymentCode,
   offer,
   portalContainer,
   onDismiss,
@@ -59,6 +49,7 @@ export function PaymentConfirmationScreen({
   const heroBandRef = useRef<HTMLDivElement>(null)
   const imgWrapRef = useRef<HTMLDivElement>(null)
   const titleCelebrationRef = useRef<HTMLDivElement>(null)
+  const titleSlotRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
 
   const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
@@ -68,13 +59,13 @@ export function PaymentConfirmationScreen({
     heroBandRef,
     imgWrapRef,
     titleCelebrationRef,
+    titleSlotRef,
     sheetRef,
   })
 
-  const { discountAddPercent: d2 } = effectivePayDiscountPercents(offer)
-  const secondDiscEur = discountSecondEur(receiptTotal, tip, 0, d2)
-  const paymentCode = formatPaymentCodeDisplay(offer, transactionId)
-
+  const { discountPercent: d1, discountAddPercent: d2 } =
+    effectivePayDiscountPercents(offer)
+  const secondDiscEur = discountSecondEur(receiptTotal, tip, d1, d2)
   const revealed = phase === "revealed"
 
   return (
@@ -100,15 +91,24 @@ export function PaymentConfirmationScreen({
               <img {...CHECKMARK_IMG_PROPS} width={180} height={180} />
             </div>
 
-            <div className="relative h-[3.5rem] w-full max-w-md shrink-0">
+            <div
+              ref={titleSlotRef}
+              className="relative w-full max-w-md shrink-0 overflow-hidden"
+            >
               <div
                 ref={titleCelebrationRef}
-                className="absolute inset-0 flex items-center justify-center"
+                className="w-full text-center"
                 aria-hidden={revealed}
               >
                 <PaymentSuccessTitle variant="large" />
               </div>
             </div>
+
+            {revealed ?
+              <p className="sr-only" aria-live="polite">
+                Payment successful
+              </p>
+            : null}
           </div>
         </div>
 

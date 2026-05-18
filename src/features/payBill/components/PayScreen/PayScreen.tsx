@@ -257,6 +257,7 @@ export function PayScreen({
       })
       setPost({
         transactionId: res.transactionId,
+        paymentCode: res.paymentCode,
         paidAt: res.paidAt,
         paidAmount: res.paidAmount,
         discountAmount: res.discountAmount,
@@ -388,7 +389,13 @@ export function PayScreen({
                 />
               : null}
             </div>
-            <div className="mt-2 border-t border-solid border-separator pt-2">
+            <div
+              className={
+                d2 > 0 ?
+                  "mt-2 pt-2"
+                : "mt-2 border-t border-solid border-separator pt-2"
+              }
+            >
               <ReceiptItem
                 label="Total"
                 amount={formatEurMajor(finalAmt)}

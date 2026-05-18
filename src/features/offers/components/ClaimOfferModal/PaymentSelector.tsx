@@ -20,7 +20,7 @@ const SEMIBOLD = {
 const PROMO_TRANSITION_MS = 300
 
 const PAYMENT_OPTION_LABEL_CLASS =
-  "flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4 hover:bg-active-neutral-secondary"
+  "flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4"
 
 /**
  * Payment method radios + DineOut-only inline promo (Figma MODAL / Claiming offer).

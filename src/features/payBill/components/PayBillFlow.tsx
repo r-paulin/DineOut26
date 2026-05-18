@@ -39,6 +39,7 @@ export function PayBillFlow({
   const billAmount = usePayBillStore((s) => s.billAmount)
   const tip = usePayBillStore((s) => s.tip)
   const txn = usePayBillStore((s) => s.transactionId)
+  const paymentCode = usePayBillStore((s) => s.paymentCode)
   const paidAt = usePayBillStore((s) => s.paidAt)
   const paidAmount = usePayBillStore((s) => s.paidAmount)
   const discountAmount = usePayBillStore((s) => s.discountAmount)
@@ -122,6 +123,7 @@ export function PayBillFlow({
         : step === "confirmation" &&
           billAmount != null &&
           txn &&
+          paymentCode &&
           paidAt &&
           paidAmount != null &&
           discountAmount != null &&
@@ -131,12 +133,7 @@ export function PayBillFlow({
             paidAmount={paidAmount}
             receiptTotal={billAmount}
             tip={tip}
-            discountAmount={discountAmount}
-            cashbackAmount={entry.offer?.cashbackAmount ?? 2.5}
-            paymentMethod={paymentMethodUi}
-            cardLast4="1692"
-            transactionId={txn}
-            paidAt={paidAt}
+            paymentCode={paymentCode}
             offer={entry.offer}
             portalContainer={portalContainer}
             onDismiss={exitAfterPayment}

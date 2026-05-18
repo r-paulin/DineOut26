@@ -85,16 +85,12 @@ export function PaymentConfirmationSummarySheet({
             />
           : null}
           {hasDiscount ?
-            <>
-              <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
-              <DiscountReceiptRow
-                percent={discountPercentSecond}
-                discountEur={secondDiscEur}
-                infoAriaLabel="DineOut benefit info"
-                onInfoClick={onDineOutBenefitInfo}
-              />
-              <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
-            </>
+            <DiscountReceiptRow
+              percent={discountPercentSecond}
+              discountEur={secondDiscEur}
+              infoAriaLabel="DineOut benefit info"
+              onInfoClick={onDineOutBenefitInfo}
+            />
           : null}
         </div>
 

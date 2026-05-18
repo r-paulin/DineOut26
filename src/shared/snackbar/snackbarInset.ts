@@ -4,8 +4,9 @@ import {
   readNavLayoutOffsetPx,
 } from "@/features/offers/utils/bottomSheetLayout"
 
-/** Matches `--snackbar-toaster-gap` in `tokens.css` / `index.css`. */
-export const SNACKBAR_TOASTER_GAP_PX = 48
+/** Matches `--snackbar-screen-margin-bottom` in `tokens.css`. */
+export const SNACKBAR_SCREEN_MARGIN_X_PX = 24
+export const SNACKBAR_SCREEN_MARGIN_BOTTOM_PX = 32
 
 export const SNACKBAR_ANCHOR_SELECTOR = "[data-snackbar-anchor]"
 

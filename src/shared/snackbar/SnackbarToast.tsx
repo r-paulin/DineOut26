@@ -113,7 +113,7 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
       className={joinClassNames(
         "relative w-full max-w-full rounded-lg bg-neutral-primary px-4 py-3",
         "bolt-font-body-s-regular text-primary-inverted",
-        "min-w-60 shadow-[0_1px_1.5px_rgba(47,49,61,0.04),0_4px_4px_rgba(47,49,61,0.08),0_8px_8px_rgba(47,49,61,0.08)]",
+        "min-w-0 w-full shadow-[0_1px_1.5px_rgba(47,49,61,0.04),0_4px_4px_rgba(47,49,61,0.08),0_8px_8px_rgba(47,49,61,0.08)]",
         stackedLayout ? "flex flex-col gap-2" : "flex items-center gap-4",
       )}
     >

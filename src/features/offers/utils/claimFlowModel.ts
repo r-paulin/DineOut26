@@ -1,4 +1,4 @@
-import type { ClaimOfferModalOffer } from "@/features/offers/offers.types"
+import type { ClaimedOffer, ClaimOfferModalOffer } from "@/features/offers/offers.types"
 import type { RestaurantDetailModel } from "@/features/restaurant/restaurantDetail.types"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 
@@ -9,6 +9,19 @@ export function findOfferCardById(
   for (const tabId of Object.keys(model.offersByTabId)) {
     const found = model.offersByTabId[tabId]?.find((c) => c.id === offerId)
     if (found) return found
+  }
+  return undefined
+}
+
+/** First claim for `restaurantSlug` whose offer still appears on the detail model. */
+export function findActiveClaimForRestaurant(
+  restaurantSlug: string,
+  model: RestaurantDetailModel,
+  claimedByOfferId: Readonly<Record<string, ClaimedOffer>>,
+): ClaimedOffer | undefined {
+  for (const claim of Object.values(claimedByOfferId)) {
+    if (claim.restaurantSlug !== restaurantSlug) continue
+    if (findOfferCardById(model, claim.offerId)) return claim
   }
   return undefined
 }
