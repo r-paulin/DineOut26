@@ -17,6 +17,9 @@ import {
 
 export type ClaimPromoSheetHeroVariant = "offer-image" | "success-badge" | "none"
 
+/** `fill` = long forms; `fit` = short content (post-claim success). */
+export type ClaimPromoSheetHeight = "fit" | "fill"
+
 export interface ClaimPromoSheetShellProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -28,6 +31,7 @@ export interface ClaimPromoSheetShellProps {
   hero?: ClaimPromoSheetHeroVariant
   heroImageSrc?: string
   surfaceClass?: "bg-layer-floor-1" | "bg-layer-floor-2"
+  sheetHeight?: ClaimPromoSheetHeight
   footer?: ReactNode
   children: ReactNode
 }
@@ -80,10 +84,12 @@ export function ClaimPromoSheetShell({
   hero = "none",
   heroImageSrc,
   surfaceClass = "bg-layer-floor-2",
+  sheetHeight = "fill",
   footer,
   children,
 }: ClaimPromoSheetShellProps) {
   const titleId = useId()
+  const isFit = sheetHeight === "fit"
 
   return (
     <Drawer.Root
@@ -102,7 +108,7 @@ export function ClaimPromoSheetShell({
         <Drawer.Content
           className={[
             vaulSheetContentClassName(),
-            "flex max-h-[97vh] flex-col",
+            isFit ? "h-fit max-h-[97vh] flex flex-col" : "flex max-h-[97vh] flex-col",
             surfaceClass,
           ].join(" ")}
           style={{ zIndex: zContent }}
@@ -115,8 +121,6 @@ export function ClaimPromoSheetShell({
               {description}
             </Drawer.Description>
           : null}
-
-          <PromoSheetHero hero={hero} heroImageSrc={heroImageSrc} />
 
           <Drawer.Close asChild>
             <button
@@ -132,7 +136,13 @@ export function ClaimPromoSheetShell({
             </button>
           </Drawer.Close>
 
-          <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain">
+          <div
+            className={[
+              "touch-pan-y overflow-y-auto overscroll-y-contain",
+              isFit ? "min-h-0 max-h-[calc(97vh-5rem)]" : "min-h-0 flex-1",
+            ].join(" ")}
+          >
+            <PromoSheetHero hero={hero} heroImageSrc={heroImageSrc} />
             {children}
           </div>
 

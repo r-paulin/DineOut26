@@ -73,12 +73,6 @@ export function ClaimOfferModal({
   const [guestSheetOpen, setGuestSheetOpen] = useState(false)
   const [timeSheetOpen, setTimeSheetOpen] = useState(false)
   const [slotList, setSlotList] = useState<string[]>([])
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  if (isOpen && !drawerOpen) {
-    setDrawerOpen(true)
-  } else if (!isOpen && drawerOpen) {
-    setDrawerOpen(false)
-  }
 
   const buttonSubtitle = useClaimOfferButtonSubtitle(
     paymentMethod,
@@ -87,7 +81,6 @@ export function ClaimOfferModal({
 
   const handleDrawerOpenChange = useCallback(
     (open: boolean) => {
-      setDrawerOpen(open)
       if (!open) {
         onOpenChange(false)
         onClose()
@@ -154,7 +147,7 @@ export function ClaimOfferModal({
   return (
   <>
     <ClaimPromoSheetShell
-      open={drawerOpen}
+      open={isOpen}
       onOpenChange={handleDrawerOpenChange}
       container={container}
       zOverlay={Z_CLAIM_MODAL_OVERLAY}

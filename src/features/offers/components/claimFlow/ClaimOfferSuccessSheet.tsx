@@ -64,6 +64,7 @@ export function ClaimOfferSuccessSheet({
       title={title}
       description="How to use your claimed offer"
       hero="success-badge"
+      sheetHeight="fit"
       footer={
         <Button type="button" variant="primary" size="lg" fullWidth onClick={onDone}>
           Done

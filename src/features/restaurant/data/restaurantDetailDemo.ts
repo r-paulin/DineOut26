@@ -10,6 +10,7 @@ import type {
   RestaurantTimedOffer,
 } from "@/features/offers/data/restaurantOffers.types"
 import { DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT } from "@/features/offers/constants/dineOutStackablePromo"
+import { formatOfferClaimCardTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
 import {
   computeOfferCardCampaign,
 } from "@/features/offers/utils/offerCampaign"
@@ -297,7 +298,10 @@ function offersForDateTab(
       tags: ["enabled"],
       discountPercent: pct,
       restaurantName,
-      title: `Claim ${pct}% discount on menu`,
+      title: formatOfferClaimCardTitle(
+        pct,
+        o.window.kind === "all-day",
+      ),
       date: day,
       timeWindow,
       closingLine: `Offer window closes ${o.window.kind === "all-day" ? (wh.workingHoursEnd ?? "23:59") : o.window.end}`,

@@ -45,6 +45,12 @@ describe("formatOfferBannerTitle", () => {
   it("formats discount headline", () => {
     expect(formatOfferBannerTitle(20)).toBe("20% discount on menu")
   })
+
+  it("uses Daily menu for 10% all-day", () => {
+    expect(formatOfferBannerTitle(10, true)).toBe(
+      "10% discount on Daily menu",
+    )
+  })
 })
 
 describe("roundMaxSavingEurUp", () => {

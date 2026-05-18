@@ -1,3 +1,4 @@
+import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { formatOfferBannerValidityTime } from "@/features/restaurant/utils/formatOfferBannerValidityTime"
@@ -56,8 +57,11 @@ export function roundMaxSavingEurUp(eur: number): number {
   return Math.ceil(eur)
 }
 
-export function formatOfferBannerTitle(discountPercent: number): string {
-  return `${discountPercent}% discount on menu`
+export function formatOfferBannerTitle(
+  discountPercent: number,
+  isAllDay = false,
+): string {
+  return formatOfferDiscountTitle(discountPercent, isAllDay)
 }
 
 export function formatOfferBannerMinMaxLine(
@@ -178,7 +182,10 @@ export function buildOfferBannerContent({
     }
   }
 
-  const headline = formatOfferBannerTitle(displayDiscount)
+  const headline = formatOfferBannerTitle(
+    displayDiscount,
+    Boolean(offer.isAllDay),
+  )
   const dataLines = buildAvailableDataLines(offer, minMax)
 
   if (state === "expired") {
