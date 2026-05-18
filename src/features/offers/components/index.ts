@@ -2,10 +2,23 @@ export { BottomSheet } from "./BottomSheet"
 export type { BottomSheetProps } from "./BottomSheet"
 export {
   ClaimOfferModal,
+  ClaimOfferPrimaryButton,
   GuestPickerSheet,
   PaymentSelector,
   TimeSlotSheet,
 } from "./ClaimOfferModal"
+export type { ClaimOfferPrimaryButtonProps } from "./ClaimOfferModal"
+export {
+  ClaimOfferSuccessSheet,
+  ClaimPromoSheetShell,
+  OfferDetailsSheet,
+} from "./claimFlow"
+export type {
+  ClaimOfferSuccessSheetProps,
+  ClaimPromoSheetHeroVariant,
+  ClaimPromoSheetShellProps,
+  OfferDetailsSheetProps,
+} from "./claimFlow"
 export type {
   ClaimOfferModalProps,
   GuestPickerSheetProps,

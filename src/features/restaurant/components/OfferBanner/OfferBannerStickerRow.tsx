@@ -18,12 +18,25 @@ export interface OfferBannerStickerRowProps {
   claim?: ClaimedOffer
 }
 
+function stickerTone(
+  sticker: OfferBannerSticker,
+  claimed: boolean,
+): { iconClass: string; textColor: "primary-inverted" | "primary" | "tertiary" } {
+  if (claimed) {
+    return { iconClass: "text-primary-inverted", textColor: "primary-inverted" }
+  }
+  if (sticker.kind === "locked" || sticker.kind === "expired") {
+    return { iconClass: "text-tertiary", textColor: "primary" }
+  }
+  return { iconClass: "text-primary", textColor: "primary" }
+}
+
 export function OfferBannerStickerRow({
   sticker,
   claimed = false,
   claim,
 }: OfferBannerStickerRowProps) {
-  const iconClass = claimed ? "text-primary-inverted" : "text-primary"
+  const { iconClass, textColor } = stickerTone(sticker, claimed)
 
   if (sticker.kind === "countdown" && claim) {
     return (
@@ -41,11 +54,7 @@ export function OfferBannerStickerRow({
       : sticker.kind === "locked" ?
         <Lock className={`${STICKER_ICON_CLASS} ${iconClass}`} aria-hidden />
       : <Time className={`${STICKER_ICON_CLASS} ${iconClass}`} aria-hidden />}
-      <Typography
-        variant="body-xs-regular"
-        color={claimed ? "primary-inverted" : "primary"}
-        as="p"
-      >
+      <Typography variant="body-xs-regular" color={textColor} as="p">
         {sticker.kind === "scarcity" ||
         sticker.kind === "expired" ||
         sticker.kind === "locked" ?

@@ -5,12 +5,12 @@ import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import { useEffect, useId, type ReactElement } from "react"
 import { Drawer } from "vaul"
+import { CLAIM_PROMO_HERO_SRC } from "@/features/offers/constants/claimFlowHero"
 import {
   Z_RESTAURANT_SHEET_CONTENT,
   Z_RESTAURANT_SHEET_OVERLAY,
 } from "@/features/restaurant/constants/screenLayers"
 import { markWalkInOfferInfoSeenThisSession } from "@/features/restaurant/utils/walkInOfferInfoSession"
-import { modalImageUrl } from "@/shared/utils/publicImageUrls"
 import {
   SHEET_CLOSE_ICON_OVER_MEDIA_CLASS,
   SHEET_CLOSE_OVER_MEDIA_CLASS,
@@ -19,8 +19,6 @@ import {
   VAUL_SHEET_OVERLAY_CLASS,
   vaulSheetContentClassName,
 } from "@/shared/utils/vaulAppSheetShell"
-
-const HERO_SRC = modalImageUrl("Modal-offer-claim-info.png")
 
 const LIST_ICONS: ReactElement[] = [
   <Calendar key="cal" size="lg" aria-hidden />,
@@ -109,7 +107,7 @@ export function RestaurantOfferClaimInfoSheet({
 
             <div className="relative aspect-[375/250] w-full shrink-0 overflow-hidden bg-special-brand-alt">
               <img
-                src={HERO_SRC}
+                src={CLAIM_PROMO_HERO_SRC}
                 alt=""
                 width={393}
                 height={262}

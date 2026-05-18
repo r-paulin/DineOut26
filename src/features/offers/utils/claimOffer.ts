@@ -20,6 +20,8 @@ export interface ClaimOfferInput extends ClaimData {
   offerWindowBaseDate?: Date
   /** Figma offer list row; defaults from {@link formatClaimedOfferMenuLabel}. */
   offerDetailLabel?: string
+  minOrderEur?: number
+  maxSavingEur?: number
 }
 
 /**
@@ -81,6 +83,8 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
     discountPercent: input.discountPercent,
     offerDetailLabel:
       input.offerDetailLabel ?? formatClaimedOfferMenuLabel(input.discountPercent),
+    minOrderEur: input.minOrderEur,
+    maxSavingEur: input.maxSavingEur,
     promoText: input.promoText,
     restaurantSlug: input.restaurantSlug,
     offerId: input.offerId,

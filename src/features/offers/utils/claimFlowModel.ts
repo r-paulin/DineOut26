@@ -42,5 +42,9 @@ export function mapOfferCardToClaimModalOffer(
     workingHoursStart: card.workingHoursStart ?? "12:00",
     workingHoursEnd: card.workingHoursEnd ?? "23:00",
     paymentPromoText: card.paymentPromoText,
+    timeWindow: card.timeWindow,
+    minOrderEur: card.minOrderEur,
+    maxSavingEur: card.maxSavingEur,
+    remainingCount: card.remainingCount,
   }
 }

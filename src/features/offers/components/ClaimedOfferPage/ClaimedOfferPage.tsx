@@ -25,10 +25,6 @@ const MOTION_S = 0.6
 const STAGGER_PANEL_AFTER_SCRIM_S = 0
 const STAGGER_SCRIM_AFTER_PANEL_EXIT_S = 0
 
-function cancelDialogPortalRoot(): HTMLElement | undefined {
-  return typeof document !== "undefined" ? document.body : undefined
-}
-
 export interface ClaimedOfferPageProps {
   restaurant: {
     name: string
@@ -51,7 +47,7 @@ export interface ClaimedOfferPageProps {
   onCancelOffer: () => void
   /** When user chose Bolt DineOut at claim time, opens the in-app pay bill flow (parent provides navigation). */
   onPayWithBoltDineOut?: () => void
-  /** Portal target for other overlays; cancel {@link Dialog} uses `document.body` so it stacks above this full-screen layer. */
+  /** Reserved for nested overlays; cancel dialog portals into this page root. */
   portalContainer?: HTMLElement | null
 }
 
@@ -70,6 +66,9 @@ export function ClaimedOfferPage({
   const onCloseRef = useRef(onClose)
   const onCancelOfferRef = useRef(onCancelOffer)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [cancelDialogPortal, setCancelDialogPortal] = useState<HTMLElement | null>(
+    null,
+  )
   const { expired, countdownHms } = useOfferCountdown(claim.offerWindowCloses)
   const showDineOutFooter = claim.paymentMethod === "dineout"
 
@@ -94,6 +93,10 @@ export function ClaimedOfferPage({
     onCloseRef.current = onClose
     onCancelOfferRef.current = onCancelOffer
   }, [onClose, onCancelOffer])
+
+  useLayoutEffect(() => {
+    setCancelDialogPortal(rootRef.current)
+  }, [cancelDialogOpen])
 
   const handleAnimatedClose = useCallback(() => {
     runExit()
@@ -189,7 +192,7 @@ export function ClaimedOfferPage({
         onRequestClose={() => setCancelDialogOpen(false)}
         title="Are you sure?"
         variant="alert"
-        portalContainer={cancelDialogPortalRoot()}
+        portalContainer={cancelDialogPortal ?? undefined}
       >
         <Dialog.Content>
           <div className="mx-auto flex w-full min-w-[26vw] max-w-[15.75rem] flex-col gap-4 pb-4">

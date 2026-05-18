@@ -126,4 +126,9 @@ export interface ClaimOfferModalOffer {
   workingHoursStart: string
   workingHoursEnd: string
   paymentPromoText?: string
+  /** Meta line fragment for availability row on offer details. */
+  timeWindow: string
+  minOrderEur?: number
+  maxSavingEur?: number
+  remainingCount?: number
 }
