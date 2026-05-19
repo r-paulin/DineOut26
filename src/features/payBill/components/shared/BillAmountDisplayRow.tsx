@@ -7,7 +7,7 @@ import {
 } from "@/features/payBill/utils/payBillNumericDisplay"
 
 const NATIVE_INPUT_CLASS =
-  "absolute inset-0 z-[1] min-h-[72px] w-full cursor-text border-none bg-transparent p-0 text-left text-base leading-normal text-transparent shadow-none outline-none outline-offset-0 ring-0 [caret-color:transparent] focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+  "absolute inset-0 z-[1] min-h-[72px] w-full cursor-text border-none bg-transparent p-0 text-left text-base leading-normal text-transparent shadow-none outline-none outline-offset-0 ring-0 [caret-color:transparent] [-moz-outline:none] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 
 export interface BillAmountDisplayRowProps {
   display: { text: string; dim: boolean }
@@ -56,8 +56,7 @@ export function BillAmountDisplayRow({
   return (
     <div
       className={[
-        "relative flex min-h-[72px] w-full cursor-text items-center justify-center gap-0.5 outline-none",
-        nativeInput ? "focus-within:ring-2 focus-within:ring-action-primary" : "",
+        "relative flex min-h-[72px] w-full cursor-text items-center justify-center gap-0.5 outline-none focus-within:outline-none focus-within:ring-0",
         className,
       ]
         .filter(Boolean)

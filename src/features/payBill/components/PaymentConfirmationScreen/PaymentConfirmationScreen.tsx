@@ -81,7 +81,7 @@ export function PaymentConfirmationScreen({
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <div
           ref={heroBandRef}
-          className="absolute inset-x-0 top-0 z-20 flex items-center justify-center px-6"
+          className="absolute inset-x-0 top-0 z-10 flex items-center justify-center overflow-hidden px-6"
         >
           <div className="flex flex-col items-center gap-4">
             <div
@@ -115,7 +115,7 @@ export function PaymentConfirmationScreen({
         <div
           ref={sheetRef}
           data-snackbar-anchor=""
-          className="absolute inset-x-0 bottom-0 z-10 max-h-[min(72vh,calc(var(--app-h)*0.72))] overflow-hidden rounded-t-[var(--sheet-radius)] bg-layer-floor-1 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]"
+          className="absolute inset-x-0 bottom-0 z-20 max-h-[min(72vh,calc(var(--app-h)*0.72))] overflow-hidden rounded-t-[var(--sheet-radius)] bg-layer-floor-1 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]"
         >
           <PaymentConfirmationSummarySheet
             paymentCode={paymentCode}

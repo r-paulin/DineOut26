@@ -17,7 +17,7 @@ import {
   narrowCheckoutPaymentOptionId,
   type CheckoutPaymentOptionId,
 } from "@/features/payBill/constants/checkoutPaymentOptions"
-import { PayBillSavedBadge } from "@/features/payBill/components/PayScreen/PayBillSavedBadge"
+import { PayBillPayHero } from "@/features/payBill/components/PayScreen/PayBillPayHero"
 import { SlidingButton } from "@/features/payBill/components/PayScreen/SlidingButton"
 import { DiscountReceiptRow } from "@/features/payBill/components/shared/DiscountReceiptRow"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
@@ -30,10 +30,6 @@ import {
 } from "@/features/payBill/utils/discountCalc"
 import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
-import {
-  payBillHeroMainPriceStyle,
-  payBillNumericOpentype,
-} from "@/features/payBill/utils/payBillNumericDisplay"
 import { AppInfoBottomSheet } from "@/shared/components/AppInfoBottomSheet"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
 import { CardDivider } from "@/shared/components/CardDivider"
@@ -238,7 +234,6 @@ export function PayScreen({
   const fromCard = Math.max(0, round2(finalAmt - fromBalance))
   const hideCardRow = fromCard <= 0
 
-  const showStrikeSubtotal = subtotal > finalAmt
   const savedEur = round2(subtotal - finalAmt)
 
   const onSlideComplete = useCallback(async () => {
@@ -315,45 +310,16 @@ export function PayScreen({
         <span className="size-6 shrink-0" aria-hidden />
       </header>
 
-      <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto bg-layer-floor-1">
-          <section className="flex w-full shrink-0 flex-col items-center gap-1 px-6 pt-6 pb-5">
-            <p className="m-0 flex w-full max-w-[min(100%,22rem)] flex-col items-center gap-1 text-center">
-              <Typography
-                variant="body-l-regular"
-                color="secondary"
-                as="span"
-                align="center"
-              >
-                <span>You&apos;ll pay</span>
-                {showStrikeSubtotal ?
-                  <>
-                    {" "}
-                    <span
-                      className="[text-decoration-skip-ink:none] line-through tabular-nums"
-                      style={payBillNumericOpentype}
-                    >
-                      {formatEurMajor(subtotal)}
-                    </span>
-                  </>
-                : null}
-              </Typography>
-              <span
-                className="text-primary tabular-nums"
-                style={payBillHeroMainPriceStyle}
-              >
-                {formatEurMajor(finalAmt)}
-              </span>
-            </p>
-            {savedEur > 0 ?
-              <div className="mt-1 mb-2">
-                <PayBillSavedBadge savedAmountEur={savedEur} />
-              </div>
-            : null}
-          </section>
+      <main className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-layer-floor-1">
+        <PayBillPayHero
+          subtotal={subtotal}
+          finalAmt={finalAmt}
+          savedEur={savedEur}
+        />
 
-          <CardDivider />
+        <CardDivider />
 
-          <section className="flex shrink-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pt-6 pb-8 shadow-[var(--elevation-1)]">
+        <section className="flex shrink-0 grow-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pt-6 pb-8 shadow-[var(--elevation-1)]">
             <div className="mb-2">
               <Typography variant="heading-s-accent" color="primary" as="h2">
                 Summary

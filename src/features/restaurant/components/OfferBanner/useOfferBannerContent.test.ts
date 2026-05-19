@@ -119,6 +119,7 @@ describe("buildOfferBannerContent", () => {
       kind: "scarcity",
       text: "Limited availability — 2 left",
     })
+    expect(c.outerShellTone).toBe("danger")
   })
 
   it("locked: disabled Claim now and lock sticker", () => {

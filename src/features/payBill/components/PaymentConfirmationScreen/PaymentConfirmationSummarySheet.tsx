@@ -31,7 +31,10 @@ export function PaymentConfirmationSummarySheet({
   const hasDiscount = discountPercentSecond > 0
 
   return (
-    <div className="flex max-h-[min(72vh,calc(var(--app-h)*0.72))] min-h-0 flex-col overflow-y-auto px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-6">
+    <div
+      data-confirm-sheet-body=""
+      className="flex max-h-[min(72vh,calc(var(--app-h)*0.72))] min-h-0 flex-col overflow-y-auto px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-6"
+    >
       <div className="flex shrink-0 flex-col gap-2 rounded-lg bg-layer-floor-0-grouped px-6 py-3 text-center">
         <Typography variant="body-s-regular" color="secondary" as="p">
           Payment code

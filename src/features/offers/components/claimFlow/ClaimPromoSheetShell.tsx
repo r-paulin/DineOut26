@@ -1,6 +1,6 @@
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import { CLAIM_SUCCESS_HERO_SRC } from "@/features/offers/constants/claimFlowHero"
-import { useId, type ReactNode } from "react"
+import { useId, type AnimationEvent, type ReactNode } from "react"
 import { Drawer } from "vaul"
 import {
   Z_RESTAURANT_SHEET_CONTENT,
@@ -11,7 +11,9 @@ import {
   SHEET_CLOSE_OVER_MEDIA_CLASS,
 } from "@/shared/utils/sheetCloseButtonClass"
 import {
+  VAUL_SHEET_FOOTER_CLASS,
   VAUL_SHEET_OVERLAY_CLASS,
+  VAUL_SHEET_SCROLL_BODY_CLASS,
   vaulSheetContentClassName,
 } from "@/shared/utils/vaulAppSheetShell"
 
@@ -33,6 +35,9 @@ export interface ClaimPromoSheetShellProps {
   surfaceClass?: "bg-layer-floor-1" | "bg-layer-floor-2"
   sheetHeight?: ClaimPromoSheetHeight
   footer?: ReactNode
+  /** When false, footer has no top border (e.g. welcome / at-venue sheets). */
+  footerBordered?: boolean
+  onContentAnimationEnd?: (e: AnimationEvent<HTMLDivElement>) => void
   children: ReactNode
 }
 
@@ -86,10 +91,13 @@ export function ClaimPromoSheetShell({
   surfaceClass = "bg-layer-floor-2",
   sheetHeight = "fill",
   footer,
+  footerBordered = true,
+  onContentAnimationEnd,
   children,
 }: ClaimPromoSheetShellProps) {
   const titleId = useId()
   const isFit = sheetHeight === "fit"
+  const hasPinnedFooter = footer != null
 
   return (
     <Drawer.Root
@@ -107,11 +115,11 @@ export function ClaimPromoSheetShell({
         />
         <Drawer.Content
           className={[
-            vaulSheetContentClassName(),
-            isFit ? "h-fit max-h-[97vh] flex flex-col" : "flex max-h-[97vh] flex-col",
+            vaulSheetContentClassName("default", hasPinnedFooter ? "fill" : isFit ? "fit" : "fill"),
             surfaceClass,
           ].join(" ")}
           style={{ zIndex: zContent }}
+          onAnimationEnd={onContentAnimationEnd}
         >
           <Drawer.Title id={titleId} className="sr-only">
             {title}
@@ -138,9 +146,13 @@ export function ClaimPromoSheetShell({
 
           <div
             className={[
-              "touch-pan-y overflow-y-auto overscroll-y-contain",
-              isFit ? "min-h-0 max-h-[calc(97vh-5rem)]" : "min-h-0 flex-1",
-            ].join(" ")}
+              VAUL_SHEET_SCROLL_BODY_CLASS,
+              isFit && !hasPinnedFooter ?
+                "max-h-[calc(min(97dvh,var(--app-h,100dvh))-5rem)]"
+              : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
             <PromoSheetHero hero={hero} heroImageSrc={heroImageSrc} />
             {children}
@@ -149,7 +161,12 @@ export function ClaimPromoSheetShell({
           {footer ?
             <div
               data-snackbar-anchor=""
-              className="shrink-0 border-t border-separator bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-3"
+              className={[
+                VAUL_SHEET_FOOTER_CLASS,
+                footerBordered ? "" : "border-t-0 pt-4",
+              ]
+                .filter(Boolean)
+                .join(" ")}
             >
               {footer}
             </div>

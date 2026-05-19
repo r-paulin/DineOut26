@@ -1,12 +1,12 @@
 import { Typography } from "@bolteu/kalep-react"
 import Lock from "@bolteu/kalep-react-icons/dist/Lock"
-import PercentCircle from "@bolteu/kalep-react-icons/dist/PercentCircle"
+import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { useOfferCountdown } from "@/features/offers/components/ClaimedOfferPage/useOfferCountdown"
 import type { OfferBannerSticker } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
 
-/** Figma `Offer / Sticker` — 8px gap, left-aligned; icon 16×16. */
+/** Figma `16103:17598` Offer / Sticker — 8px gap, 12px horizontal padding. */
 const STICKER_ROW_CLASS =
   "flex w-full items-center justify-start gap-2 px-3 pb-1.5 pt-1"
 
@@ -21,9 +21,15 @@ export interface OfferBannerStickerRowProps {
 function stickerTone(
   sticker: OfferBannerSticker,
   claimed: boolean,
-): { iconClass: string; textColor: "primary-inverted" | "primary" | "tertiary" } {
+): {
+  iconClass: string
+  textColor: "primary-inverted" | "primary" | "tertiary" | "danger-primary"
+} {
   if (claimed) {
     return { iconClass: "text-primary-inverted", textColor: "primary-inverted" }
+  }
+  if (sticker.kind === "scarcity") {
+    return { iconClass: "text-danger-primary", textColor: "danger-primary" }
   }
   if (sticker.kind === "locked" || sticker.kind === "expired") {
     return { iconClass: "text-tertiary", textColor: "primary" }
@@ -47,7 +53,7 @@ export function OfferBannerStickerRow({
   return (
     <div className={STICKER_ROW_CLASS}>
       {sticker.kind === "scarcity" ?
-        <PercentCircle
+        <PercentFlower
           className={`${STICKER_ICON_CLASS} ${iconClass}`}
           aria-hidden
         />

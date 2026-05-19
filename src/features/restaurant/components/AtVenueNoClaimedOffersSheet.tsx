@@ -1,25 +1,12 @@
 import { Button, Typography } from "@bolteu/kalep-react"
-import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import MobilePayment from "@bolteu/kalep-react-icons/dist/MobilePayment"
 import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
 import { useEffect, useId, useRef, type AnimationEvent, type ReactElement } from "react"
-import { Drawer } from "vaul"
+import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
 import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
 import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
-import {
-  Z_RESTAURANT_SHEET_CONTENT,
-  Z_RESTAURANT_SHEET_OVERLAY,
-} from "@/features/restaurant/constants/screenLayers"
 import { modalImageUrl } from "@/shared/utils/publicImageUrls"
-import {
-  SHEET_CLOSE_ICON_OVER_MEDIA_CLASS,
-  SHEET_CLOSE_OVER_MEDIA_CLASS,
-} from "@/shared/utils/sheetCloseButtonClass"
-import {
-  VAUL_SHEET_OVERLAY_CLASS,
-  vaulSheetContentClassName,
-} from "@/shared/utils/vaulAppSheetShell"
 
 const HERO_SRC = modalImageUrl("bg-modal.jpg")
 
@@ -64,7 +51,7 @@ export interface AtVenueNoClaimedOffersSheetProps {
 /**
  * Pre-pay bottom sheet when the user taps “I'm at the venue” without a claimed offer.
  * Figma: MODAL / No claimed offers (`16084:49094`).
- * Content-sized shell (h-fit) — same family as {@link RestaurantReportProblemSheet}.
+ * Scrollable hero + copy; pinned Pay bill CTA (see {@link ClaimPromoSheetShell}).
  */
 export function AtVenueNoClaimedOffersSheet({
   isOpen,
@@ -90,115 +77,71 @@ export function AtVenueNoClaimedOffersSheet({
   }
 
   return (
-    <Drawer.Root
+    <ClaimPromoSheetShell
       open={isOpen}
       onOpenChange={onOpenChange}
-      dismissible
-      repositionInputs={false}
-      snapPoints={[]}
-      container={container ?? undefined}
-    >
-      <Drawer.Portal>
-        <Drawer.Overlay
-          className={VAUL_SHEET_OVERLAY_CLASS}
-          style={{ zIndex: Z_RESTAURANT_SHEET_OVERLAY }}
-        />
-        <Drawer.Content
-          className={vaulSheetContentClassName()}
-          style={{ zIndex: Z_RESTAURANT_SHEET_CONTENT }}
-          onAnimationEnd={handleContentAnimationEnd}
+      container={container}
+      title={welcomeTitle}
+      description={`How to dine and pay with Bolt DineOut at ${restaurantName}.`}
+      hero="offer-image"
+      heroImageSrc={HERO_SRC}
+      sheetHeight="fill"
+      surfaceClass="bg-layer-floor-1"
+      footerBordered={false}
+      onContentAnimationEnd={handleContentAnimationEnd}
+      footer={
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          fullWidth
+          aria-label={`Pay bill, ${PAY_BILL_SUBTITLE}`}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onContinue?.()
+          }}
         >
-          <Drawer.Title className="sr-only">{welcomeTitle}</Drawer.Title>
-          <Drawer.Close asChild>
-            <button
-              type="button"
-              className={SHEET_CLOSE_OVER_MEDIA_CLASS}
-              aria-label="Close"
+          <span className="flex flex-col items-center gap-0">
+            <Typography variant="body-l-accent" color="primary-inverted" as="span">
+              Pay bill
+            </Typography>
+            <Typography variant="body-xs-regular" color="primary-inverted" as="span">
+              {PAY_BILL_SUBTITLE}
+            </Typography>
+          </span>
+        </Button>
+      }
+    >
+      <div className="flex flex-col gap-2 bg-layer-floor-1 px-6 pb-4 pt-6">
+        <h2 id={titleId} className="m-0 p-0">
+          <Typography variant="heading-m-accent" color="primary" as="span">
+            {welcomeTitle}
+          </Typography>
+        </h2>
+        <ul className="m-0 mt-2 flex list-none flex-col p-0">
+          {ROWS.map((row, i) => (
+            <li
+              key={row.title}
+              className="border-b border-separator py-[10px] last:border-b-0"
             >
-              <Cross size="xs" className={SHEET_CLOSE_ICON_OVER_MEDIA_CLASS} aria-hidden />
-            </button>
-          </Drawer.Close>
-          <div className="flex max-h-[97vh] flex-col overflow-y-auto overscroll-y-contain">
-            <Drawer.Description className="sr-only">
-              How to dine and pay with Bolt DineOut at {restaurantName}.
-            </Drawer.Description>
-
-            <div className="relative aspect-[375/250] w-full shrink-0 overflow-hidden bg-special-brand-alt">
-              <img
-                src={HERO_SRC}
-                alt=""
-                width={393}
-                height={262}
-                decoding="async"
-                draggable={false}
-                className="absolute inset-0 size-full object-cover"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2 bg-layer-floor-1 px-6 pb-4 pt-6">
-              <h2 id={titleId} className="m-0 p-0">
-                <Typography variant="heading-m-accent" color="primary" as="span">
-                  {welcomeTitle}
-                </Typography>
-              </h2>
-              <ul className="m-0 mt-2 flex list-none flex-col p-0">
-                {ROWS.map((row, i) => (
-                  <li
-                    key={row.title}
-                    className="border-b border-separator py-[10px] last:border-b-0"
-                  >
-                    <div className="flex gap-3">
-                      <span className="shrink-0 text-action-primary">
-                        {LIST_ICONS[i]}
-                      </span>
-                      <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <Typography
-                          as="span"
-                          variant="body-m-accent"
-                          color="primary"
-                        >
-                          {row.title}
-                        </Typography>
-                        <Typography
-                          as="span"
-                          variant="body-s-regular"
-                          color="secondary"
-                        >
-                          {row.subtitle}
-                        </Typography>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="shrink-0 bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-4">
-              <Button
-                type="button"
-                variant="primary"
-                size="lg"
-                fullWidth
-                aria-label={`Pay bill, ${PAY_BILL_SUBTITLE}`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onContinue?.()
-                }}
-              >
-                <span className="flex flex-col items-center gap-0">
-                  <Typography variant="body-l-accent" color="primary-inverted" as="span">
-                    Pay bill
-                  </Typography>
-                  <Typography variant="body-xs-regular" color="primary-inverted" as="span">
-                    {PAY_BILL_SUBTITLE}
-                  </Typography>
+              <div className="flex gap-3">
+                <span className="shrink-0 text-action-primary">
+                  {LIST_ICONS[i]}
                 </span>
-              </Button>
-            </div>
-          </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <Typography as="span" variant="body-m-accent" color="primary">
+                    {row.title}
+                  </Typography>
+                  <Typography as="span" variant="body-s-regular" color="secondary">
+                    {row.subtitle}
+                  </Typography>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </ClaimPromoSheetShell>
   )
 }

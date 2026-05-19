@@ -6,6 +6,7 @@ import {
   buildOfferBannerContent,
   buildStaticOfferBannerContent,
   type OfferBannerContext,
+  type OfferBannerOuterShellTone,
 } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import {
@@ -89,7 +90,7 @@ function OfferBannerStatic({
   )
 
   const shell = (
-    <OfferBannerShell outerClaimed={false}>
+    <OfferBannerShell outerClaimed={false} outerShellTone="neutral">
       <OfferBannerCard content={content} />
     </OfferBannerShell>
   )
@@ -182,7 +183,10 @@ function OfferBannerInteractive({
       aria-label={content.ariaLabel}
       onClick={onActivate}
     >
-      <OfferBannerShell outerClaimed={content.outerClaimed}>
+      <OfferBannerShell
+        outerClaimed={content.outerClaimed}
+        outerShellTone={content.outerShellTone}
+      >
         <OfferBannerCard content={content} />
         {content.sticker ?
           <OfferBannerStickerRow
@@ -196,16 +200,27 @@ function OfferBannerInteractive({
   )
 }
 
+function offerBannerShellClass(
+  outerClaimed: boolean,
+  outerShellTone: OfferBannerOuterShellTone,
+): string {
+  if (outerClaimed) return "bg-special-brand-alt"
+  if (outerShellTone === "danger") return "bg-danger-secondary"
+  return "bg-neutral-secondary"
+}
+
 function OfferBannerShell({
   outerClaimed,
+  outerShellTone,
   children,
 }: {
   outerClaimed: boolean
+  outerShellTone: OfferBannerOuterShellTone
   children: ReactNode
 }) {
   return (
     <div
-      className={`flex w-full min-w-0 flex-col overflow-hidden rounded-[12px] ${outerClaimed ? "bg-special-brand-alt" : "bg-neutral-secondary"}`}
+      className={`flex w-full min-w-0 flex-col overflow-hidden rounded-[12px] ${offerBannerShellClass(outerClaimed, outerShellTone)}`}
     >
       {children}
     </div>

@@ -35,8 +35,13 @@ export type OfferBannerSticker =
 
 export type OfferBannerImageVariant = "claimed" | "unclaimed"
 
+/** Figma `16103:17598` — limited-availability banners use danger-tinted shell. */
+export type OfferBannerOuterShellTone = "neutral" | "danger"
+
 export type OfferBannerContent = {
   outerClaimed: boolean
+  /** Background for the outer shell when not claimed. */
+  outerShellTone: OfferBannerOuterShellTone
   innerClaimed: boolean
   headline: string
   dataLines: OfferBannerDataLine[]
@@ -155,6 +160,7 @@ export function buildOfferBannerContent({
         offer.restaurantName?.trim() || "Restaurant"
       return {
         outerClaimed: true,
+        outerShellTone: "neutral",
         innerClaimed: true,
         headline,
         dataLines: [
@@ -170,6 +176,7 @@ export function buildOfferBannerContent({
     const headline = formatOfferBannerArrivalLine(claim)
     return {
       outerClaimed: true,
+      outerShellTone: "neutral",
       innerClaimed: true,
       headline,
       dataLines: [
@@ -191,6 +198,7 @@ export function buildOfferBannerContent({
   if (state === "expired") {
     return {
       outerClaimed: false,
+      outerShellTone: "neutral",
       innerClaimed: false,
       headline,
       dataLines,
@@ -204,6 +212,7 @@ export function buildOfferBannerContent({
   if (hasOtherClaimAtVenue) {
     return {
       outerClaimed: false,
+      outerShellTone: "neutral",
       innerClaimed: false,
       headline,
       dataLines,
@@ -217,6 +226,7 @@ export function buildOfferBannerContent({
   if (windowPhase === "active") {
     return {
       outerClaimed: false,
+      outerShellTone: "neutral",
       innerClaimed: false,
       headline,
       dataLines,
@@ -237,6 +247,7 @@ export function buildOfferBannerContent({
 
   return {
     outerClaimed: false,
+    outerShellTone: availabilitySticker ? "danger" : "neutral",
     innerClaimed: false,
     headline,
     dataLines,
@@ -258,6 +269,7 @@ export function buildStaticOfferBannerContent({
 }: BuildStaticOfferBannerContentArgs): OfferBannerContent {
   return {
     outerClaimed: false,
+    outerShellTone: "neutral",
     innerClaimed: false,
     headline: title,
     dataLines:
