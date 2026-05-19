@@ -11,7 +11,7 @@ export type OfferBannerContext = "restaurant" | "home"
 export type OfferBannerDataLine = {
   text: string
   emphasis: "regular" | "accent"
-  tone?: "primary" | "secondary"
+  tone?: "primary" | "secondary" | "action-primary"
 }
 
 export type OfferBannerActionKind = "claim-now" | "pre-book-now" | "claimed"
@@ -95,20 +95,19 @@ export function formatOfferBannerArrivalLine(claim: ClaimedOffer): string {
   return `${claim.arrivalDate} · ${claim.arrivalTime}`
 }
 
-function resolveMinMax(
-  offer: RestaurantOfferCardModel,
-  claim: ClaimedOffer | undefined,
-  minOrderEur?: number,
-  maxSavingEur?: number,
-): { min: number; max: number } {
-  return {
-    min: minOrderEur ?? offer.minOrderEur ?? claim?.minOrderEur ?? DEFAULT_MIN_ORDER_EUR,
-    max:
-      maxSavingEur ??
-      offer.maxSavingEur ??
-      claim?.maxSavingEur ??
-      DEFAULT_MAX_SAVING_EUR,
-  }
+/** Claimed banner secondary line (Figma) — e.g. "30% discount". */
+export function formatOfferBannerClaimedDiscountLine(
+  discountPercent: number,
+): string {
+  return `${discountPercent}% discount`
+}
+
+/** Home claimed detail line — e.g. "30% discount · Today · 19:00". */
+export function formatOfferBannerHomeClaimedDetailLine(
+  claim: ClaimedOffer,
+  discountPercent: number,
+): string {
+  return `${formatOfferBannerClaimedDiscountLine(discountPercent)} · ${formatOfferBannerArrivalLine(claim)}`
 }
 
 export interface BuildOfferBannerContentArgs {
@@ -143,12 +142,7 @@ export function buildOfferBannerContent({
   displayDiscount,
   windowPhase,
   hasOtherClaimAtVenue,
-  minOrderEur,
-  maxSavingEur,
 }: BuildOfferBannerContentArgs): OfferBannerContent {
-  const minMax = resolveMinMax(offer, claim, minOrderEur, maxSavingEur)
-  const minMaxLine = formatOfferBannerMinMaxLine(minMax.min, minMax.max)
-
   if (state === "claimed" && claim) {
     if (context === "home") {
       const headline =
@@ -159,8 +153,10 @@ export function buildOfferBannerContent({
         innerClaimed: true,
         headline,
         dataLines: [
-          { text: formatOfferBannerArrivalLine(claim), emphasis: "accent" },
-          { text: minMaxLine, emphasis: "regular", tone: "secondary" },
+          {
+            text: formatOfferBannerHomeClaimedDetailLine(claim, displayDiscount),
+            emphasis: "accent",
+          },
         ],
         action: { kind: "claimed", label: "Claimed", disabled: false },
         sticker: { kind: "countdown" },
@@ -175,7 +171,11 @@ export function buildOfferBannerContent({
       innerClaimed: true,
       headline,
       dataLines: [],
-      action: { kind: "claimed", label: "Claimed", disabled: false },
+      action: {
+        kind: "claimed",
+        label: formatOfferBannerClaimedDiscountLine(displayDiscount),
+        disabled: false,
+      },
       sticker: { kind: "countdown" },
       imageVariant: "claimed",
       ariaLabel: headline,

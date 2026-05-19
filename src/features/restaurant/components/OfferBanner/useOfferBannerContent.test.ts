@@ -6,6 +6,8 @@ import {
   buildStaticOfferBannerContent,
   formatLimitedAvailabilityLabel,
   formatOfferBannerArrivalLine,
+  formatOfferBannerClaimedDiscountLine,
+  formatOfferBannerHomeClaimedDetailLine,
   formatOfferBannerMinMaxLine,
   formatOfferBannerTitle,
   roundMaxSavingEurUp,
@@ -157,7 +159,7 @@ describe("buildOfferBannerContent", () => {
     })
   })
 
-  it("restaurant claimed uses arrival headline without secondary lines", () => {
+  it("restaurant claimed shows arrival headline and discount on secondary line", () => {
     const c = buildOfferBannerContent({
       state: "claimed",
       offer: baseOffer,
@@ -169,6 +171,11 @@ describe("buildOfferBannerContent", () => {
     })
     expect(c.headline).toBe(formatOfferBannerArrivalLine(claim))
     expect(c.dataLines).toEqual([])
+    expect(c.action).toEqual({
+      kind: "claimed",
+      label: formatOfferBannerClaimedDiscountLine(30),
+      disabled: false,
+    })
     expect(c.sticker).toEqual({ kind: "countdown" })
   })
 
@@ -183,7 +190,10 @@ describe("buildOfferBannerContent", () => {
       hasOtherClaimAtVenue: false,
     })
     expect(c.headline).toBe("3 Pavāru Restorāns")
-    expect(c.dataLines[0]?.text).toBe(formatOfferBannerArrivalLine(claim))
+    expect(c.dataLines).toHaveLength(1)
+    expect(c.dataLines[0]?.text).toBe(
+      formatOfferBannerHomeClaimedDetailLine(claim, 30),
+    )
   })
 })
 

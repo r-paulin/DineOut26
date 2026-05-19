@@ -57,7 +57,8 @@ export function OfferBannerCard({ content }: OfferBannerCardProps) {
 
 function OfferBannerDataLineRow({ line }: { line: OfferBannerDataLine }) {
   const color =
-    line.tone ?? (line.emphasis === "accent" ? "primary" : "secondary")
+    line.tone ??
+    (line.emphasis === "accent" ? "primary" : "secondary")
   return (
     <Typography
       variant={line.emphasis === "accent" ? "body-s-accent" : "body-s-regular"}
