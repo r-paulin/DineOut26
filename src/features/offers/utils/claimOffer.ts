@@ -1,6 +1,7 @@
 import type { ClaimData, ClaimedOffer } from "@/features/offers/offers.types"
 import { formatClaimedOfferMenuLabel } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
 import { parseHHMMToMinutes } from "@/features/offers/utils/offerTimePicker"
+import { toLocalYmd } from "@/features/offers/utils/offerScheduleLocal"
 
 export interface ClaimOfferInput extends ClaimData {
   offerId: string
@@ -18,6 +19,8 @@ export interface ClaimOfferInput extends ClaimData {
   discountAddPercent?: number
   /** Local calendar day for offer-window end; defaults to today at call time. */
   offerWindowBaseDate?: Date
+  /** Local `YYYY-MM-DD` for the offer tab day; defaults from `offerWindowBaseDate`. */
+  offerScheduleYmd?: string
   /** Figma offer list row; defaults from {@link formatClaimedOfferMenuLabel}. */
   offerDetailLabel?: string
   minOrderEur?: number
@@ -73,6 +76,10 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
     input.discountAddPercent ??
     (input.paymentMethod === "dineout" ? 40 : 0)
 
+  const offerWindowBaseDate = input.offerWindowBaseDate ?? new Date()
+  const offerScheduleYmd =
+    input.offerScheduleYmd ?? toLocalYmd(offerWindowBaseDate)
+
   return {
     pin,
     offerWindowCloses,
@@ -89,6 +96,7 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
     restaurantSlug: input.restaurantSlug,
     offerId: input.offerId,
     claimedAt,
+    offerScheduleYmd,
     cashbackAmount: input.cashbackAmount ?? 2.5,
     tipPresetAmounts: input.tipPresetAmounts ?? [5, 10, 15, 20],
     discountAddPercent,

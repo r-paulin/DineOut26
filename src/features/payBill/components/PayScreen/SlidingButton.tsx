@@ -15,12 +15,8 @@ export interface SlidingButtonProps {
 
 /** Slider handle — matches comfortable touch target inside 56px track. */
 const THUMB_PX = 48
-/** Space between handle edge and label block (Figma / swipe-button style). */
-const LABEL_GAP_PX = 8
 /** Release at or past this fraction of travel counts as confirm. */
 const COMPLETE_RATIO = 0.85
-
-const labelInsetStart = THUMB_PX + LABEL_GAP_PX
 
 /**
  * Slide-to-confirm: full-width Kalep-styled track, thumb translateX only (no double offset),
@@ -326,33 +322,30 @@ export function SlidingButton({
         disabled ? "opacity-70" : "hover:brightness-[1.02] active:brightness-[0.98]",
       ].join(" ")}
     >
-      <div ref={railRef} className="relative h-full min-w-0 flex-1">
-        <div
-          ref={labelsRef}
-          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pr-3 text-center transition-none"
-          style={{
-            opacity: disabled ? 0.55 : 1,
-            paddingLeft: labelInsetStart,
+      <div
+        ref={labelsRef}
+        className="pointer-events-none absolute inset-0 z-0 flex flex-col items-center justify-center text-center transition-none"
+        style={{ opacity: disabled ? 0.55 : 1 }}
+      >
+        <Typography
+          variant="body-l-accent"
+          color="primary-inverted"
+          as="span"
+          inlineStyle={{
+            fontVariationSettings: "'wght' var(--font-weight-semibold)",
           }}
         >
-          <Typography
-            variant="body-l-accent"
-            color="primary-inverted"
-            as="span"
-            inlineStyle={{
-              fontVariationSettings: "'wght' var(--font-weight-semibold)",
-            }}
-          >
-            {label}
-          </Typography>
-          {sublabel ?
-            <span className="opacity-80">
-              <Typography variant="body-xs-regular" color="primary-inverted" as="span">
-                {sublabel}
-              </Typography>
-            </span>
-          : null}
-        </div>
+          {label}
+        </Typography>
+        {sublabel ?
+          <span className="opacity-80">
+            <Typography variant="body-xs-regular" color="primary-inverted" as="span">
+              {sublabel}
+            </Typography>
+          </span>
+        : null}
+      </div>
+      <div ref={railRef} className="relative z-[1] h-full min-w-0 flex-1">
         <div
           ref={thumbRef}
           role="slider"

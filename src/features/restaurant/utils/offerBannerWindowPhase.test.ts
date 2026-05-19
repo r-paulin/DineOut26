@@ -62,19 +62,53 @@ describe("getOfferBannerWindowPhase", () => {
 })
 
 describe("hasOtherClaimAtVenue", () => {
+  const nowMs = may18_2026_14_00
+
   it("is false with no claims", () => {
-    expect(hasOtherClaimAtVenue("o1", [])).toBe(false)
+    expect(hasOtherClaimAtVenue("o1", "today", [], nowMs)).toBe(false)
   })
 
   it("is false when only this offer is claimed", () => {
     expect(
-      hasOtherClaimAtVenue("o1", [{ offerId: "o1", claimedAt: 1 }]),
+      hasOtherClaimAtVenue(
+        "o1",
+        "today",
+        [{ offerId: "o1", claimedAt: 1, scheduleYmd: "2026-05-18" }],
+        nowMs,
+      ),
     ).toBe(false)
   })
 
-  it("is true when another offer is claimed", () => {
+  it("is true when another offer is claimed on the same day", () => {
     expect(
-      hasOtherClaimAtVenue("o2", [{ offerId: "o1", claimedAt: 1 }]),
+      hasOtherClaimAtVenue(
+        "o2",
+        "today",
+        [{ offerId: "o1", claimedAt: 1, scheduleYmd: "2026-05-18" }],
+        nowMs,
+      ),
+    ).toBe(true)
+  })
+
+  it("is false when another offer is claimed on a different day", () => {
+    expect(
+      hasOtherClaimAtVenue(
+        "o2",
+        "2026-05-19",
+        [{ offerId: "o1", claimedAt: 1, scheduleYmd: "2026-05-18" }],
+        nowMs,
+      ),
+    ).toBe(false)
+  })
+
+  it("falls back to claimedAt local day when scheduleYmd is missing", () => {
+    expect(
+      hasOtherClaimAtVenue(
+        "o2",
+        "today",
+        [{ offerId: "o1", claimedAt: may18_2026_14_00 }],
+        nowMs,
+      ),
     ).toBe(true)
   })
 })

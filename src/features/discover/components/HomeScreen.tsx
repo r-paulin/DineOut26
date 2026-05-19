@@ -15,7 +15,6 @@ import {
   BottomSheet,
   ClaimOfferModal,
   ClaimedOfferPage,
-  ClaimedOfferPayBillInfoSheet,
   ClaimOfferSuccessSheet,
   MapPlaceCardOpened,
   OfferDetailsSheet,
@@ -33,7 +32,10 @@ import {
 import { buildMapMarkersFromOffers, MapViewFab } from "@/features/map"
 import { filterOffersByTimePreset } from "@/features/offers/utils/offerCampaign"
 import { filterOfferCardsForDiscover } from "@/features/discover/utils/filterDiscoverOffers"
-import { offerWindowBaseDateFromSchedule } from "@/features/offers/utils/offerScheduleLocal"
+import {
+  offerWindowBaseDateFromSchedule,
+  resolveScheduleYmd,
+} from "@/features/offers/utils/offerScheduleLocal"
 import {
   FilterSheet,
   SearchFullscreen,
@@ -228,13 +230,9 @@ export function HomeScreen() {
   >({})
   const [claimedView, setClaimedView] = useState<ClaimedOffer | null>(null)
   const [payBillEntry, setPayBillEntry] = useState<PayBillFlowEntry | null>(null)
-  const [claimedPayInfoOpen, setClaimedPayInfoOpen] = useState(false)
-  const [pendingPayBillEntry, setPendingPayBillEntry] =
-    useState<PayBillFlowEntry | null>(null)
   const [atVenueNoClaimPayInfoOpen, setAtVenueNoClaimPayInfoOpen] = useState(false)
   const [pendingAtVenuePayBillEntry, setPendingAtVenuePayBillEntry] =
     useState<PayBillFlowEntry | null>(null)
-  const hasSeenClaimedPayInfoRef = useRef(false)
   const continueAtVenuePayAfterCloseRef = useRef(false)
   const { portalRoot } = useDeviceShell()
   const snackbar = useSnackbar()
@@ -249,14 +247,24 @@ export function HomeScreen() {
 
   const restaurantDetailModel = baseRestaurantDetail
 
-  const userClaims: readonly UserClaim[] = useMemo(
-    () =>
-      Object.values(claimedByOfferId).map((c) => ({
+  const userClaims: readonly UserClaim[] = useMemo(() => {
+    const now = new Date()
+    return Object.values(claimedByOfferId).map((c) => {
+      let scheduleYmd = c.offerScheduleYmd
+      if (scheduleYmd == null) {
+        const model = getRestaurantDetailDemo(c.restaurantSlug)
+        const card = findOfferCardById(model, c.offerId)
+        if (card?.offerScheduleDate != null) {
+          scheduleYmd = resolveScheduleYmd(card.offerScheduleDate, now)
+        }
+      }
+      return {
         offerId: c.offerId,
         claimedAt: c.claimedAt,
-      })),
-    [claimedByOfferId],
-  )
+        scheduleYmd,
+      }
+    })
+  }, [claimedByOfferId, catalogSnapshot])
 
   const latestClaimedOfferForHome = useMemo(() => {
     const list = Object.values(claimedByOfferId)
@@ -395,6 +403,10 @@ export function HomeScreen() {
           card.offerScheduleDate,
           now,
         ),
+        offerScheduleYmd:
+          card.offerScheduleDate != null ?
+            resolveScheduleYmd(card.offerScheduleDate, now)
+          : undefined,
       })
       setClaimedByOfferId((prev) => ({ ...prev, [card.id]: claimed }))
       setPendingClaimOffer(null)
@@ -521,34 +533,13 @@ export function HomeScreen() {
   const handlePayFromClaimedOffer = useCallback(() => {
     if (!claimedView) return
     const detail = getRestaurantDetailDemo(claimedView.restaurantSlug)
-    const entry: PayBillFlowEntry = {
+    setClaimedView(null)
+    setPayBillEntry({
       restaurantName: detail.name,
       restaurantSlug: claimedView.restaurantSlug,
       offer: claimedView,
-    }
-    setClaimedView(null)
-    if (hasSeenClaimedPayInfoRef.current) {
-      setPayBillEntry(entry)
-      return
-    }
-    setPendingPayBillEntry(entry)
-    setClaimedPayInfoOpen(true)
+    })
   }, [claimedView, catalogSnapshot])
-
-  const handleClaimedPayInfoContinue = useCallback(() => {
-    if (!pendingPayBillEntry) return
-    hasSeenClaimedPayInfoRef.current = true
-    setPayBillEntry(pendingPayBillEntry)
-    setPendingPayBillEntry(null)
-    setClaimedPayInfoOpen(false)
-  }, [pendingPayBillEntry])
-
-  const handleClaimedPayInfoOpenChange = useCallback((open: boolean) => {
-    setClaimedPayInfoOpen(open)
-    if (!open) {
-      setPendingPayBillEntry(null)
-    }
-  }, [])
 
   const handleOpenPayBill = useCallback(() => {
     if (!restaurantDetailSlug || !baseRestaurantDetail) return
@@ -876,14 +867,6 @@ export function HomeScreen() {
           onContinue={handleInfoContinue}
         />
       : null}
-      {claimedPayInfoOpen ? (
-        <ClaimedOfferPayBillInfoSheet
-          isOpen
-          onOpenChange={handleClaimedPayInfoOpenChange}
-          container={portalRoot}
-          onContinue={handleClaimedPayInfoContinue}
-        />
-      ) : null}
       {pendingAtVenuePayBillEntry && baseRestaurantDetail ? (
         <AtVenueNoClaimedOffersSheet
           isOpen={atVenueNoClaimPayInfoOpen}

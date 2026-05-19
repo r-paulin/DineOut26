@@ -26,4 +26,14 @@ describe("claimOffer offerWindowBaseDate", () => {
     })
     expect(claimed.offerWindowCloses).toBe(direct)
   })
+
+  it("stores offerScheduleYmd from the offer calendar day", () => {
+    const baseDate = new Date(2026, 4, 21, 12, 0, 0, 0)
+    const claimed = claimOffer({
+      ...baseClaim,
+      offerWindowBaseDate: baseDate,
+      offerScheduleYmd: "2026-05-21",
+    })
+    expect(claimed.offerScheduleYmd).toBe("2026-05-21")
+  })
 })

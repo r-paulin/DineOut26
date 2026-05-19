@@ -15,6 +15,8 @@ export type BannerState = OfferState
 export interface UserClaim {
   offerId: string
   claimedAt: number
+  /** Local `YYYY-MM-DD` for the offer day; scopes one-offer-per-venue-per-day. */
+  scheduleYmd?: string
 }
 
 export interface OfferForBanner {

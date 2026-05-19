@@ -133,7 +133,8 @@ function OfferBannerInteractive({
   const offerForBanner = toOfferForBanner(offer)
   const windowPhase = getOfferBannerWindowPhase(offerForBanner, nowMs)
   const blocked =
-    state === "available" && hasOtherClaimAtVenue(offer.id, userClaims)
+    state === "available" &&
+    hasOtherClaimAtVenue(offer.id, offer.offerScheduleDate, userClaims, nowMs)
 
   const content = useMemo(
     () =>

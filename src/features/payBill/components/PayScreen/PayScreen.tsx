@@ -315,9 +315,8 @@ export function PayScreen({
         <span className="size-6 shrink-0" aria-hidden />
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-layer-floor-1">
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          <div className="flex min-h-0 w-full flex-1 shrink-0 flex-col items-center justify-center gap-1 px-6 py-8">
+      <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto bg-layer-floor-1">
+          <section className="flex w-full shrink-0 flex-col items-center gap-1 px-6 pt-6 pb-5">
             <p className="m-0 flex w-full max-w-[min(100%,22rem)] flex-col items-center gap-1 text-center">
               <Typography
                 variant="body-l-regular"
@@ -346,13 +345,15 @@ export function PayScreen({
               </span>
             </p>
             {savedEur > 0 ?
-              <PayBillSavedBadge savedAmountEur={savedEur} />
+              <div className="mt-1 mb-2">
+                <PayBillSavedBadge savedAmountEur={savedEur} />
+              </div>
             : null}
-          </div>
+          </section>
 
           <CardDivider />
 
-          <div className="flex shrink-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pb-6 pt-6 shadow-[var(--elevation-1)]">
+          <section className="flex shrink-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pt-6 pb-8 shadow-[var(--elevation-1)]">
             <div className="mb-2">
               <Typography variant="heading-s-accent" color="primary" as="h2">
                 Summary
@@ -394,7 +395,7 @@ export function PayScreen({
               <ReceiptItem
                 label="Total"
                 amount={formatEurMajor(finalAmt)}
-                variant="bold"
+                variant="total"
               />
             </div>
 
@@ -452,22 +453,21 @@ export function PayScreen({
                 </div>
               : null}
             </div>
-          </div>
-        </div>
+          </section>
+      </main>
 
-        <div
-          data-snackbar-anchor=""
-          className="shrink-0 border-t border-solid border-separator bg-layer-floor-1 px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
-        >
-          <SlidingButton
-            label="Pay bill"
-            sublabel="Slide to confirm"
-            isLoading={payLoading}
-            disabled={payLoading}
-            onComplete={onSlideComplete}
-          />
-        </div>
-      </div>
+      <footer
+        data-snackbar-anchor=""
+        className="shrink-0 border-t border-solid border-separator bg-layer-floor-1 px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
+      >
+        <SlidingButton
+          label="Pay bill"
+          sublabel="Slide to confirm"
+          isLoading={payLoading}
+          disabled={payLoading}
+          onComplete={onSlideComplete}
+        />
+      </footer>
 
       <AppInfoBottomSheet
         open={dineOutBenefitSheet}

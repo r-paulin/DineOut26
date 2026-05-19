@@ -1,4 +1,5 @@
 import type { DateValue } from "@/features/search/filters.types"
+import { resolveScheduleYmd } from "@/features/offers/utils/offerScheduleLocal"
 import type { OfferForBanner, UserClaim } from "@/features/restaurant/utils/offerState"
 
 export type OfferBannerWindowPhase = "active" | "prebook"
@@ -10,14 +11,6 @@ function pad2(value: number): string {
 function toLocalYmdFromMs(nowMs: number): string {
   const d = new Date(nowMs)
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
-}
-
-function resolveScheduleYmd(
-  offerScheduleDate: DateValue,
-  nowMs: number,
-): string {
-  if (offerScheduleDate === "today") return toLocalYmdFromMs(nowMs)
-  return offerScheduleDate
 }
 
 function hmToMinutes(hm: string): number | null {
@@ -49,8 +42,9 @@ export function getOfferBannerWindowPhase(
 ): OfferBannerWindowPhase {
   if (!offer.offerScheduleDate || !offer.offerEnd) return "active"
 
+  const now = new Date(nowMs)
   const todayYmd = toLocalYmdFromMs(nowMs)
-  const scheduleYmd = resolveScheduleYmd(offer.offerScheduleDate, nowMs)
+  const scheduleYmd = resolveScheduleYmd(offer.offerScheduleDate, now)
 
   if (scheduleYmd > todayYmd) return "prebook"
   if (scheduleYmd < todayYmd) return "prebook"
@@ -75,10 +69,25 @@ export function getOfferBannerWindowPhase(
   return nowMin >= startMin && nowMin < endMin ? "active" : "prebook"
 }
 
-/** True when the user already claimed a different offer at this venue. */
+/**
+ * True when the user claimed a different offer at this venue on the **same
+ * calendar day** as `offerScheduleDate` (device-local). Claims on other days
+ * do not block pre-booking future offers.
+ */
 export function hasOtherClaimAtVenue(
   offerId: string,
+  offerScheduleDate: DateValue | undefined,
   userClaims: readonly UserClaim[],
+  nowMs: number,
 ): boolean {
-  return userClaims.some((c) => c.offerId !== offerId)
+  const offerDayYmd =
+    offerScheduleDate != null ?
+      resolveScheduleYmd(offerScheduleDate, new Date(nowMs))
+    : toLocalYmdFromMs(nowMs)
+
+  return userClaims.some((c) => {
+    if (c.offerId === offerId) return false
+    const claimDayYmd = c.scheduleYmd ?? toLocalYmdFromMs(c.claimedAt)
+    return claimDayYmd === offerDayYmd
+  })
 }

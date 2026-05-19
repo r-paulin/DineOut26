@@ -1,5 +1,3 @@
 export { ClaimedOfferPage } from "./ClaimedOfferPage"
 export type { ClaimedOfferPageProps } from "./ClaimedOfferPage"
-export { ClaimedOfferPayBillInfoSheet } from "./ClaimedOfferPayBillInfoSheet"
-export type { ClaimedOfferPayBillInfoSheetProps } from "./ClaimedOfferPayBillInfoSheet"
 export { useOfferCountdown } from "./useOfferCountdown"

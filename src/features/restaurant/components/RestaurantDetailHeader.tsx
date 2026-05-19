@@ -24,7 +24,11 @@ export interface RestaurantDetailHeaderProps {
 
 /** Figma: white circular controls — use Kalep static key fill (not `bg-neutral-white`, which is not in the Tailwind palette). */
 const NAV_BTN =
-  "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-static-key-light shadow-[0_0.125rem_0.375rem_rgba(0,0,0,0.16)]"
+  "inline-flex size-10 shrink-0 cursor-pointer appearance-none items-center justify-center rounded-full border-none bg-static-key-light p-0 leading-none shadow-[0_0.125rem_0.375rem_rgba(0,0,0,0.16)] [&_svg]:block [&_svg]:shrink-0"
+
+/** Three-column chrome: fixed 40px side tracks so back/share stay aligned (incl. Firefox mobile). */
+const NAV_ROW =
+  "grid w-full grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] items-center gap-x-2 px-6"
 
 export function RestaurantDetailHeader({
   name,
@@ -63,17 +67,18 @@ export function RestaurantDetailHeader({
         style={{ background: HERO_GRAD }}
         aria-hidden
       />
-      <div className="sticky top-0 z-[2] flex w-full shrink-0 items-center gap-2 px-6 pt-[max(1.5rem,var(--safe-area-top))]">
+      <div className="sticky top-0 z-[2] w-full shrink-0 pt-[max(1.5rem,var(--safe-area-top))]">
+        <div className={NAV_ROW}>
         <button
           type="button"
-          className={`${NAV_BTN} text-static-key-dark`}
+          className={`${NAV_BTN} justify-self-start text-static-key-dark`}
           onClick={onBack}
           aria-label="Back"
         >
-          <ArrowLeft size="md" className="text-static-key-dark" />
+          <ArrowLeft size="md" className="text-static-key-dark" aria-hidden />
         </button>
         <div
-          className="flex min-w-0 flex-1 justify-center overflow-hidden px-2 text-center text-static-key-light"
+          className="flex min-h-10 min-w-0 items-center justify-center overflow-hidden px-2 text-center text-static-key-light"
           style={{ opacity: titleOpacity }}
         >
           <Typography
@@ -88,13 +93,14 @@ export function RestaurantDetailHeader({
         {onShare ?
           <button
             type="button"
-            className={`${NAV_BTN} text-static-key-dark`}
+            className={`${NAV_BTN} justify-self-end text-static-key-dark`}
             onClick={onShare}
             aria-label="Share"
           >
-            <ShareIosOutlined size="md" className="text-static-key-dark" />
+            <ShareIosOutlined size="md" className="text-static-key-dark" aria-hidden />
           </button>
-        : <span className="size-10 shrink-0" aria-hidden />}
+        : <span className="size-10 shrink-0 justify-self-end" aria-hidden />}
+        </div>
       </div>
       <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center px-6 py-6">
         <div className="mb-3 h-16 w-16 shrink-0 overflow-hidden rounded-[12px] border border-white/20 bg-neutral-secondary shadow-md">

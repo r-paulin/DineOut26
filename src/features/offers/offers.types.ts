@@ -89,6 +89,8 @@ export interface ClaimedOffer {
   offerId: string
   /** Unix ms when the claim was recorded (prototype; server would return this). */
   claimedAt: number
+  /** Local `YYYY-MM-DD` for the offer day (one offer per venue per day). */
+  offerScheduleYmd?: string
   /** Cashback line on Pay screen (prototype EUR). */
   cashbackAmount?: number
   /**
