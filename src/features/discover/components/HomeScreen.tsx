@@ -17,7 +17,6 @@ import {
   ClaimedOfferPage,
   ClaimOfferSuccessSheet,
   MapPlaceCardOpened,
-  OfferDetailsSheet,
   SectionOffersListScreen,
   claimOffer,
   findActiveClaimForRestaurant,
@@ -52,9 +51,7 @@ import {
   AtVenueNoClaimedOffersSheet,
   getRestaurantDetailDemo,
   RestaurantDetailScreen,
-  RestaurantOfferClaimInfoSheet,
 } from "@/features/restaurant"
-import { hasSeenWalkInOfferInfoThisSession } from "@/features/restaurant/utils/walkInOfferInfoSession"
 import { getOfferBannerWindowPhase } from "@/features/restaurant/utils/offerBannerWindowPhase"
 import { toOfferForBanner } from "@/features/restaurant/utils/offerState"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
@@ -214,13 +211,8 @@ export function HomeScreen() {
   const mapCardOverlayRef = useRef<HTMLDivElement>(null)
   const [measuredMapFloatingOverlayPx, setMeasuredMapFloatingOverlayPx] =
     useState(0)
-  const [offerClaimModalOfferId, setOfferClaimModalOfferId] = useState<
-    string | null
-  >(null)
   /** Resolved offer for {@link ClaimOfferModal}; avoids re-looking up by id (can fail across demo rebuilds). */
   const [pendingClaimOffer, setPendingClaimOffer] =
-    useState<ClaimOfferModalOffer | null>(null)
-  const [offerDetailsOffer, setOfferDetailsOffer] =
     useState<ClaimOfferModalOffer | null>(null)
   const [postClaimSuccess, setPostClaimSuccess] = useState<ClaimedOffer | null>(
     null,
@@ -350,34 +342,7 @@ export function HomeScreen() {
         })
         return
       }
-      const offerPayload = mapOfferCardToClaimModalOffer(card)
-      setOfferClaimModalOfferId(null)
-      setOfferDetailsOffer(null)
-      setPendingClaimOffer(offerPayload)
-    },
-    [baseRestaurantDetail, restaurantDetailSlug, snackbar],
-  )
-
-  const openOfferDetails = useCallback(
-    (id: string) => {
-      if (!restaurantDetailSlug || !baseRestaurantDetail) {
-        snackbar.add({
-          description: "Something went wrong. Try again.",
-          timeout: 4000,
-        })
-        return
-      }
-      const card = findOfferCardById(baseRestaurantDetail, id)
-      if (!card) {
-        snackbar.add({
-          description: "Could not find this offer. Try again.",
-          timeout: 4000,
-        })
-        return
-      }
-      setOfferClaimModalOfferId(null)
-      setPendingClaimOffer(null)
-      setOfferDetailsOffer(mapOfferCardToClaimModalOffer(card))
+      setPendingClaimOffer(mapOfferCardToClaimModalOffer(card))
     },
     [baseRestaurantDetail, restaurantDetailSlug, snackbar],
   )
@@ -410,83 +375,79 @@ export function HomeScreen() {
       })
       setClaimedByOfferId((prev) => ({ ...prev, [card.id]: claimed }))
       setPendingClaimOffer(null)
-      setOfferDetailsOffer(null)
       setPostClaimSuccess(claimed)
     },
     [restaurantDetailSlug],
   )
 
-  const handleOfferAvailablePress = useCallback(
-    (id: string) => {
-      if (hasSeenWalkInOfferInfoThisSession()) {
-        openOfferDetails(id)
-        return
+  const tryInstantClaim = useCallback(
+    (card: RestaurantOfferCardModel): boolean => {
+      const phase = getOfferBannerWindowPhase(toOfferForBanner(card), Date.now())
+      if (phase === "prebook") return false
+
+      const scheduleOpts =
+        card.offerScheduleDate != null ?
+          { offerScheduleDate: card.offerScheduleDate }
+        : undefined
+      const cfg = getTimePickerConfig(
+        {
+          isAllDay: Boolean(card.isAllDay),
+          offerStart: card.offerStart ?? "12:00",
+          offerEnd: card.offerEnd ?? "23:00",
+          workingHoursStart: card.workingHoursStart ?? "12:00",
+          workingHoursEnd: card.workingHoursEnd ?? "23:00",
+        },
+        new Date(),
+        scheduleOpts,
+      )
+      if (cfg.mode === "slots" && (!cfg.slots || cfg.slots.length === 0)) {
+        snackbar.add({
+          description: "This offer is no longer available to claim.",
+          timeout: 4000,
+        })
+        return true
       }
-      setOfferClaimModalOfferId(id)
+      completeClaim(
+        {
+          arrivalTime: cfg.initialValue,
+          guestCount: 2,
+          paymentMethod: "dineout",
+        },
+        card,
+      )
+      return true
     },
-    [openOfferDetails],
+    [completeClaim, snackbar],
   )
 
-  const handleInfoContinue = useCallback(() => {
-    const id = offerClaimModalOfferId
-    if (!id) return
-    setOfferClaimModalOfferId(null)
-    openOfferDetails(id)
-  }, [offerClaimModalOfferId, openOfferDetails])
-
-  const handleOfferDetailsContinue = useCallback(() => {
-    if (!offerDetailsOffer || !baseRestaurantDetail) return
-    const card = findOfferCardById(baseRestaurantDetail, offerDetailsOffer.id)
-    if (!card) {
-      snackbar.add({
-        description: "Could not find this offer. Try again.",
-        timeout: 4000,
-      })
-      return
-    }
-    const phase = getOfferBannerWindowPhase(toOfferForBanner(card), Date.now())
-    if (phase === "prebook") {
-      beginClaimOfferFlow(card.id)
-      return
-    }
-
-    const scheduleOpts =
-      card.offerScheduleDate != null ?
-        { offerScheduleDate: card.offerScheduleDate }
-      : undefined
-    const cfg = getTimePickerConfig(
-      {
-        isAllDay: Boolean(card.isAllDay),
-        offerStart: card.offerStart ?? "12:00",
-        offerEnd: card.offerEnd ?? "23:00",
-        workingHoursStart: card.workingHoursStart ?? "12:00",
-        workingHoursEnd: card.workingHoursEnd ?? "23:00",
-      },
-      new Date(),
-      scheduleOpts,
-    )
-    if (cfg.mode === "slots" && (!cfg.slots || cfg.slots.length === 0)) {
-      snackbar.add({
-        description: "This offer is no longer available to claim.",
-        timeout: 4000,
-      })
-      return
-    }
-    completeClaim(
-      {
-        arrivalTime: cfg.initialValue,
-        guestCount: 2,
-        paymentMethod: "dineout",
-      },
-      card,
-    )
-  }, [
-    baseRestaurantDetail,
-    beginClaimOfferFlow,
-    completeClaim,
-    offerDetailsOffer,
-    snackbar,
-  ])
+  const handleOfferAvailablePress = useCallback(
+    (id: string) => {
+      if (!restaurantDetailSlug || !baseRestaurantDetail) {
+        snackbar.add({
+          description: "Something went wrong. Try again.",
+          timeout: 4000,
+        })
+        return
+      }
+      const card = findOfferCardById(baseRestaurantDetail, id)
+      if (!card) {
+        snackbar.add({
+          description: "Could not find this offer. Try again.",
+          timeout: 4000,
+        })
+        return
+      }
+      if (tryInstantClaim(card)) return
+      beginClaimOfferFlow(id)
+    },
+    [
+      baseRestaurantDetail,
+      beginClaimOfferFlow,
+      restaurantDetailSlug,
+      snackbar,
+      tryInstantClaim,
+    ],
+  )
 
   const handleClaimed = useCallback(
     (data: ClaimData) => {
@@ -523,9 +484,7 @@ export function HomeScreen() {
       })
     }
     setClaimedView(null)
-    setOfferClaimModalOfferId(null)
     setPendingClaimOffer(null)
-    setOfferDetailsOffer(null)
     setPostClaimSuccess(null)
     closeRestaurantDetail()
   }, [claimedView, closeRestaurantDetail])
@@ -780,7 +739,6 @@ export function HomeScreen() {
           userClaims={userClaims}
           claimedOffersById={claimedByOfferId}
           onBack={() => {
-            setOfferClaimModalOfferId(null)
             setPendingClaimOffer(null)
             setClaimedView(null)
             closeRestaurantDetail()
@@ -829,18 +787,6 @@ export function HomeScreen() {
           portalContainer={portalRoot}
         />
       ) : null}
-      {offerDetailsOffer ?
-        <OfferDetailsSheet
-          key={offerDetailsOffer.id}
-          isOpen
-          offer={offerDetailsOffer}
-          onOpenChange={(open) => {
-            if (!open) setOfferDetailsOffer(null)
-          }}
-          onContinue={handleOfferDetailsContinue}
-          container={portalRoot}
-        />
-      : null}
       {postClaimSuccess ?
         <ClaimOfferSuccessSheet
           key={postClaimSuccess.offerId}
@@ -852,19 +798,6 @@ export function HomeScreen() {
           }}
           onDone={handlePostClaimSuccessDone}
           container={portalRoot}
-        />
-      : null}
-      {restaurantDetailSlug &&
-      offerClaimModalOfferId != null &&
-      pendingClaimOffer == null &&
-      offerDetailsOffer == null ?
-        <RestaurantOfferClaimInfoSheet
-          isOpen
-          onOpenChange={(open) => {
-            if (!open) setOfferClaimModalOfferId(null)
-          }}
-          container={portalRoot}
-          onContinue={handleInfoContinue}
         />
       : null}
       {pendingAtVenuePayBillEntry && baseRestaurantDetail ? (

@@ -65,7 +65,6 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
         window: { kind: "range", start: "12:00", end: "15:00" },
         remainingSpots: 7,
       },
-      { discountPercent: 10, window: { kind: "all-day" }, remainingSpots: 12 },
     ],
     phone: "+371 20 370 537",
     address: "Torņa iela 4, Rīga",
@@ -115,14 +114,13 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       {
         discountPercent: 20,
         window: { kind: "range", start: "19:00", end: "23:00" },
-        remainingSpots: 3,
+        remainingSpots: 1,
       },
       {
         discountPercent: 15,
         window: { kind: "range", start: "10:00", end: "17:00" },
         remainingSpots: 5,
       },
-      { discountPercent: 10, window: { kind: "all-day" }, remainingSpots: 9 },
     ],
     phone: "+371 20 235 504",
     address: "Jauniela 27, Rīga",
@@ -170,10 +168,10 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     tagDescription:
       "Captures its core identity — local sourcing with a contemporary twist",
     timedOffers: [
-      { discountPercent: 15, window: { kind: "all-day" }, remainingSpots: 10 },
       {
         discountPercent: 30,
         window: { kind: "range", start: "10:00", end: "13:00" },
+        remainingSpots: 1,
       },
     ],
     phone: "+371 67 130 675",
@@ -225,7 +223,11 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     tags: "Park Terrace · City Views · Fine Dining",
     tagDescription: "The setting is its biggest differentiator",
     timedOffers: [
-      { discountPercent: 20, window: { kind: "all-day" }, remainingSpots: 2 },
+      {
+        discountPercent: 20,
+        window: { kind: "range", start: "12:00", end: "15:00" },
+        remainingSpots: 1,
+      },
       {
         discountPercent: 10,
         window: { kind: "range", start: "12:00", end: "15:00" },
@@ -283,7 +285,6 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
         window: { kind: "range", start: "18:00", end: "21:00" },
         remainingSpots: 1,
       },
-      { discountPercent: 15, window: { kind: "all-day" }, remainingSpots: 6 },
     ],
     phone: "+371 20 112 102",
     address: "Jelgavas iela 42/8, Rīga",
@@ -330,11 +331,10 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     tags: "Medieval Vault · Historic · Traditional",
     tagDescription: "The 1293 vault is the whole experience",
     timedOffers: [
-      { discountPercent: 25, window: { kind: "all-day" }, remainingSpots: 9 },
       {
         discountPercent: 10,
         window: { kind: "range", start: "17:00", end: "20:00" },
-        remainingSpots: 3,
+        remainingSpots: 1,
       },
     ],
     phone: "+371 25 769 877",

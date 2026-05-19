@@ -1,6 +1,13 @@
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import { CLAIM_SUCCESS_HERO_SRC } from "@/features/offers/constants/claimFlowHero"
-import { useId, type AnimationEvent, type ReactNode } from "react"
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useState,
+  type AnimationEvent,
+  type ReactNode,
+} from "react"
 import { Drawer } from "vaul"
 import {
   Z_RESTAURANT_SHEET_CONTENT,
@@ -98,6 +105,20 @@ export function ClaimPromoSheetShell({
   const titleId = useId()
   const isFit = sheetHeight === "fit"
   const hasPinnedFooter = footer != null
+  const [motionActive, setMotionActive] = useState(open)
+
+  const handleContentAnimationEnd = useCallback(
+    (e: AnimationEvent<HTMLDivElement>) => {
+      if (e.target !== e.currentTarget) return
+      setMotionActive(false)
+      onContentAnimationEnd?.(e)
+    },
+    [onContentAnimationEnd],
+  )
+
+  useEffect(() => {
+    if (open) setMotionActive(true)
+  }, [open])
 
   return (
     <Drawer.Root
@@ -117,9 +138,13 @@ export function ClaimPromoSheetShell({
           className={[
             vaulSheetContentClassName("default", hasPinnedFooter ? "fill" : isFit ? "fit" : "fill"),
             surfaceClass,
-          ].join(" ")}
+            "transform-gpu",
+            motionActive ? "will-change-transform" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           style={{ zIndex: zContent }}
-          onAnimationEnd={onContentAnimationEnd}
+          onAnimationEnd={handleContentAnimationEnd}
         >
           <Drawer.Title id={titleId} className="sr-only">
             {title}

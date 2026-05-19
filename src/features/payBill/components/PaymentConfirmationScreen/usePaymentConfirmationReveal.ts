@@ -11,7 +11,7 @@ import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 export type PaymentConfirmationPhase = "celebration" | "revealed"
 
 const ENTRANCE_S = 0.6
-const HOLD_AFTER_ENTRANCE_S = 1
+const HOLD_AFTER_ENTRANCE_S = 2
 const SHEET_IN_S = 0.75
 const TITLE_HIDE_S = 0.2
 const HERO_MORPH_S = 0.75

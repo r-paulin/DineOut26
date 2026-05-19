@@ -2,6 +2,8 @@ import { Typography } from "@bolteu/kalep-react"
 import { useSnackbar } from "@/shared/snackbar"
 import ChevronDown from "@bolteu/kalep-react-icons/dist/ChevronDown"
 import { useCallback, useMemo, useRef, useState } from "react"
+import { ClaimModalDisclaimer } from "@/features/offers/components/ClaimOfferModal/ClaimModalDisclaimer"
+import { ClaimModalOfferDetails } from "@/features/offers/components/ClaimOfferModal/ClaimModalOfferDetails"
 import { ClaimOfferPrimaryButton } from "@/features/offers/components/ClaimOfferModal/ClaimOfferPrimaryButton"
 import { useClaimOfferButtonSubtitle } from "@/features/offers/components/ClaimOfferModal/useClaimOfferButtonSubtitle"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
@@ -15,7 +17,6 @@ import {
   Z_CLAIM_MODAL_CONTENT,
   Z_CLAIM_MODAL_OVERLAY,
 } from "@/features/restaurant/constants/screenLayers"
-import { CLAIM_PROMO_HERO_SRC } from "@/features/offers/constants/claimFlowHero"
 import { GuestPickerSheet } from "./GuestPickerSheet"
 import { PaymentSelector } from "./PaymentSelector"
 import { TimeSlotSheet } from "./TimeSlotSheet"
@@ -47,7 +48,7 @@ function toOfferTimeConfig(o: ClaimOfferModalOffer): OfferTimeConfig {
 }
 
 /**
- * Pre-book claim form (Figma `16081:16299`). Recalculates slot lists when the time picker opens.
+ * Claim form (Figma `16123:18118`). Recalculates slot lists when the time picker opens.
  */
 export function ClaimOfferModal({
   isOpen,
@@ -78,6 +79,8 @@ export function ClaimOfferModal({
     paymentMethod,
     offer.discountPercent,
   )
+
+  const guestChipLabel = guestCount === 1 ? "1 guest" : `${guestCount} guests`
 
   const handleDrawerOpenChange = useCallback(
     (open: boolean) => {
@@ -145,115 +148,116 @@ export function ClaimOfferModal({
   )
 
   return (
-  <>
-    <ClaimPromoSheetShell
-      open={isOpen}
-      onOpenChange={handleDrawerOpenChange}
-      container={container}
-      zOverlay={Z_CLAIM_MODAL_OVERLAY}
-      zContent={Z_CLAIM_MODAL_CONTENT}
-      title={`${offer.title} — ${offer.restaurantName}`}
-      description={`Claim ${offer.title} at ${offer.restaurantName}.`}
-      hero="offer-image"
-      heroImageSrc={CLAIM_PROMO_HERO_SRC}
-      footer={
-        <ClaimOfferPrimaryButton
-          subtitle={buttonSubtitle}
-          onClick={handleClaim}
+    <>
+      <ClaimPromoSheetShell
+        open={isOpen}
+        onOpenChange={handleDrawerOpenChange}
+        container={container}
+        zOverlay={Z_CLAIM_MODAL_OVERLAY}
+        zContent={Z_CLAIM_MODAL_CONTENT}
+        title="Claim discount"
+        description={`Claim discount at ${offer.restaurantName}.`}
+        hero="none"
+        sheetHeight="fill"
+        surfaceClass="bg-layer-floor-2"
+        footer={
+          <ClaimOfferPrimaryButton
+            subtitle={buttonSubtitle}
+            onClick={handleClaim}
+          />
+        }
+      >
+        <div className="px-6 pb-3 pt-10">
+          <Typography
+            variant="heading-m-accent"
+            color="primary"
+            as="h2"
+            inlineStyle={SEMIBOLD}
+          >
+            Claim discount
+          </Typography>
+        </div>
+
+        <input
+          ref={timeInputRef}
+          type="time"
+          className="pointer-events-none fixed left-0 top-0 size-0 opacity-0"
+          tabIndex={-1}
+          aria-hidden
+          step={60}
+          min={nativeCfg.mode === "native" ? nativeCfg.minTime : undefined}
+          max={nativeCfg.mode === "native" ? nativeCfg.maxTime : undefined}
+          value={arrivalTime}
+          onChange={(e) => setArrivalTime(e.target.value)}
         />
-      }
-    >
-      <div className="flex flex-col gap-3 px-6 pb-3 pt-6">
-        <Typography
-          variant="heading-m-accent"
-          color="primary"
-          as="h2"
-          inlineStyle={SEMIBOLD}
-        >
-          {offer.title}
-        </Typography>
-        <Typography variant="body-m-regular" color="primary" as="p">
-          {offer.restaurantName}
-        </Typography>
-      </div>
 
-      <input
-        ref={timeInputRef}
-        type="time"
-        className="pointer-events-none fixed left-0 top-0 size-0 opacity-0"
-        tabIndex={-1}
-        aria-hidden
-        step={60}
-        min={nativeCfg.mode === "native" ? nativeCfg.minTime : undefined}
-        max={nativeCfg.mode === "native" ? nativeCfg.maxTime : undefined}
+        <div className="flex flex-col">
+          <button
+            type="button"
+            className={PICKER_ROW_CLASS}
+            onClick={handleArrivalRowPress}
+          >
+            <Typography as="span" variant="body-m-regular" color="primary">
+              When will you arrive?
+            </Typography>
+            <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-lg bg-neutral-secondary px-3 py-2">
+              <Typography
+                as="span"
+                variant="body-m-accent"
+                color="primary"
+                inlineStyle={SEMIBOLD}
+                noWrap
+              >
+                {arrivalTime}
+              </Typography>
+              <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={PICKER_ROW_CLASS}
+            onClick={() => setGuestSheetOpen(true)}
+          >
+            <Typography as="span" variant="body-m-regular" color="primary">
+              How many guests?
+            </Typography>
+            <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-lg bg-neutral-secondary px-3 py-2">
+              <Typography
+                as="span"
+                variant="body-m-accent"
+                color="primary"
+                inlineStyle={SEMIBOLD}
+                noWrap
+              >
+                {guestChipLabel}
+              </Typography>
+              <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
+            </span>
+          </button>
+        </div>
+
+        <PaymentSelector value={paymentMethod} onChange={setPaymentMethod} />
+
+        <ClaimModalOfferDetails offer={offer} />
+        <ClaimModalDisclaimer />
+      </ClaimPromoSheetShell>
+
+      <TimeSlotSheet
+        isOpen={timeSheetOpen}
+        onOpenChange={setTimeSheetOpen}
+        slots={slotList}
         value={arrivalTime}
-        onChange={(e) => setArrivalTime(e.target.value)}
+        onChange={setArrivalTime}
+        container={container}
       />
-
-      <div className="flex flex-col">
-        <button
-          type="button"
-          className={PICKER_ROW_CLASS}
-          onClick={handleArrivalRowPress}
-        >
-          <Typography as="span" variant="body-m-regular" color="primary">
-            When will you arrive?
-          </Typography>
-          <span className="flex min-w-0 shrink-0 items-center gap-1 rounded-lg bg-neutral-secondary px-3 py-2">
-            <Typography
-              as="span"
-              variant="body-m-accent"
-              color="primary"
-              inlineStyle={SEMIBOLD}
-              noWrap
-            >
-              {arrivalTime}
-            </Typography>
-            <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={PICKER_ROW_CLASS}
-          onClick={() => setGuestSheetOpen(true)}
-        >
-          <Typography as="span" variant="body-m-regular" color="primary">
-            How many guests?
-          </Typography>
-          <span className="flex min-w-0 shrink-0 items-center gap-1 rounded-lg bg-neutral-secondary px-3 py-2">
-            <Typography
-              as="span"
-              variant="body-m-accent"
-              color="primary"
-              inlineStyle={SEMIBOLD}
-              noWrap
-            >
-              {guestCount === 1 ? "1 guest" : `${guestCount} guests`}
-            </Typography>
-            <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
-          </span>
-        </button>
-      </div>
-
-      <PaymentSelector value={paymentMethod} onChange={setPaymentMethod} />
-    </ClaimPromoSheetShell>
-
-    <TimeSlotSheet
-      isOpen={timeSheetOpen}
-      onOpenChange={setTimeSheetOpen}
-      slots={slotList}
-      value={arrivalTime}
-      onChange={setArrivalTime}
-      container={container}
-    />
-    <GuestPickerSheet
-      isOpen={guestSheetOpen}
-      onOpenChange={setGuestSheetOpen}
-      value={guestCount}
-      onChange={setGuestCount}
-      container={container}
-    />
-  </>
+      <GuestPickerSheet
+        isOpen={guestSheetOpen}
+        onOpenChange={setGuestSheetOpen}
+        value={guestCount}
+        onChange={setGuestCount}
+        container={container}
+      />
+    </>
   )
 }

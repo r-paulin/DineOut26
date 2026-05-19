@@ -1,5 +1,6 @@
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
+import { shouldShowScarcitySticker } from "@/features/offers/data/selectPrimaryTimedOffer"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { formatOfferBannerValidityTime } from "@/features/restaurant/utils/formatOfferBannerValidityTime"
 import type { OfferBannerWindowPhase } from "@/features/restaurant/utils/offerBannerWindowPhase"
@@ -124,18 +125,12 @@ export interface BuildOfferBannerContentArgs {
 
 function buildAvailableDataLines(
   offer: RestaurantOfferCardModel,
-  minMax: { min: number; max: number },
 ): OfferBannerDataLine[] {
   return [
     {
       text: formatOfferBannerScheduleLine(offer.date, offer.timeWindow),
       emphasis: "regular",
       tone: "primary",
-    },
-    {
-      text: formatOfferBannerMinMaxLine(minMax.min, minMax.max),
-      emphasis: "regular",
-      tone: "secondary",
     },
   ]
 }
@@ -179,9 +174,7 @@ export function buildOfferBannerContent({
       outerShellTone: "neutral",
       innerClaimed: true,
       headline,
-      dataLines: [
-        { text: minMaxLine, emphasis: "regular", tone: "secondary" },
-      ],
+      dataLines: [],
       action: { kind: "claimed", label: "Claimed", disabled: false },
       sticker: { kind: "countdown" },
       imageVariant: "claimed",
@@ -193,7 +186,7 @@ export function buildOfferBannerContent({
     displayDiscount,
     Boolean(offer.isAllDay),
   )
-  const dataLines = buildAvailableDataLines(offer, minMax)
+  const dataLines = buildAvailableDataLines(offer)
 
   if (state === "expired") {
     return {
@@ -238,10 +231,10 @@ export function buildOfferBannerContent({
   }
 
   const availabilitySticker =
-    offer.remainingCount != null && offer.remainingCount > 0 ?
+    shouldShowScarcitySticker(offer.remainingCount) ?
       {
         kind: "scarcity" as const,
-        text: formatLimitedAvailabilityLabel(offer.remainingCount),
+        text: formatLimitedAvailabilityLabel(offer.remainingCount!),
       }
     : null
 
@@ -251,7 +244,7 @@ export function buildOfferBannerContent({
     innerClaimed: false,
     headline,
     dataLines,
-    action: { kind: "pre-book-now", label: "Pre-book now", disabled: false },
+    action: { kind: "claim-now", label: "Claim now", disabled: false },
     sticker: availabilitySticker,
     imageVariant: "unclaimed",
     ariaLabel: headline,

@@ -1,4 +1,5 @@
 import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.data"
+import { clampRemainingSpotsForDisplay } from "@/features/offers/data/selectPrimaryTimedOffer"
 import {
   getOffersAllRestaurants,
   getOffersDinner,
@@ -284,7 +285,7 @@ function offersForDateTab(
   const tabSuffix = tabId === "today" ? "today" : tabId.replace(/-/g, "")
   const wh = demoWorkingHoursFromMonday()
 
-  const cards: RestaurantOfferCardModel[] = timed.map((o, i) => {
+  return timed.map((o, i) => {
     const pct = o.discountPercent
     const timeWindow =
       o.window.kind === "all-day" ?
@@ -305,10 +306,7 @@ function offersForDateTab(
       date: day,
       timeWindow,
       closingLine: `Offer window closes ${o.window.kind === "all-day" ? (wh.workingHoursEnd ?? "23:59") : o.window.end}`,
-      remainingCount:
-        o.remainingSpots != null && o.remainingSpots > 0 ?
-          o.remainingSpots
-        : undefined,
+      remainingCount: clampRemainingSpotsForDisplay(o.remainingSpots),
       minOrderEur: pct >= 30 ? 10 : 5,
       maxSavingEur: Math.ceil((pct * 10) / 3),
       restaurantImage: restaurantImageForOfferIndex(base, i),
@@ -317,8 +315,6 @@ function offersForDateTab(
       ...claimTimeFieldsFromOffer(o, wh),
     }
   })
-
-  return cards
 }
 
 /**

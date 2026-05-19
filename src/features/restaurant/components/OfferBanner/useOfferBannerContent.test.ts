@@ -80,7 +80,7 @@ describe("formatLimitedAvailabilityLabel", () => {
 })
 
 describe("buildOfferBannerContent", () => {
-  it("active window: Claim now, no sticker, min/max lines", () => {
+  it("active window: Claim now, no sticker, schedule line only", () => {
     const c = buildOfferBannerContent({
       state: "available",
       offer: baseOffer,
@@ -91,7 +91,8 @@ describe("buildOfferBannerContent", () => {
       hasOtherClaimAtVenue: false,
     })
     expect(c.headline).toBe("30% discount on menu")
-    expect(c.dataLines[1]?.text).toBe("Min. order 10.00€ · Max. saving 40€")
+    expect(c.dataLines).toHaveLength(1)
+    expect(c.dataLines[0]?.text).toContain("Today")
     expect(c.action).toEqual({
       kind: "claim-now",
       label: "Claim now",
@@ -100,7 +101,7 @@ describe("buildOfferBannerContent", () => {
     expect(c.sticker).toBeNull()
   })
 
-  it("prebook: Pre-book now with availability sticker", () => {
+  it("prebook: Claim now with availability sticker", () => {
     const c = buildOfferBannerContent({
       state: "available",
       offer: baseOffer,
@@ -111,8 +112,8 @@ describe("buildOfferBannerContent", () => {
       hasOtherClaimAtVenue: false,
     })
     expect(c.action).toEqual({
-      kind: "pre-book-now",
-      label: "Pre-book now",
+      kind: "claim-now",
+      label: "Claim now",
       disabled: false,
     })
     expect(c.sticker).toEqual({
@@ -156,7 +157,7 @@ describe("buildOfferBannerContent", () => {
     })
   })
 
-  it("restaurant claimed uses arrival headline and min/max", () => {
+  it("restaurant claimed uses arrival headline without secondary lines", () => {
     const c = buildOfferBannerContent({
       state: "claimed",
       offer: baseOffer,
@@ -167,7 +168,7 @@ describe("buildOfferBannerContent", () => {
       hasOtherClaimAtVenue: false,
     })
     expect(c.headline).toBe(formatOfferBannerArrivalLine(claim))
-    expect(c.dataLines[0]?.text).toContain("Min. order")
+    expect(c.dataLines).toEqual([])
     expect(c.sticker).toEqual({ kind: "countdown" })
   })
 
