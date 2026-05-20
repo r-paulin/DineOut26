@@ -78,7 +78,7 @@ export interface ClaimedOffer {
   guestCount: number
   paymentMethod: PaymentMethod
   discountPercent: number
-  /** Claimed-offer details row (Figma `15753:13182`), e.g. "30% discount on menu". */
+  /** Claimed-offer details row (Figma `15753:13182`), e.g. "30% discount on food". */
   offerDetailLabel?: string
   /** Minimum order for banner copy, e.g. `10` → "Min. order 10.00€". */
   minOrderEur?: number

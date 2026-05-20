@@ -532,6 +532,17 @@ export function HomeScreen() {
     )
   }, [snackbar])
 
+  const handleCardCashClaimedDone = useCallback(() => {
+    const offerId = claimedView?.offerId
+    if (offerId) {
+      setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
+    }
+    setClaimedView(null)
+    setPendingClaimOffer(null)
+    closeRestaurantDetail()
+    handlePayBillPaidDone()
+  }, [claimedView, closeRestaurantDetail, handlePayBillPaidDone])
+
   const filterBarProps = {
     getChipLabel,
     isChipActive,
@@ -758,6 +769,7 @@ export function HomeScreen() {
           onClose={handleClaimedOfferClose}
           onCancelOffer={handleCancelClaimedOffer}
           onPayWithBoltDineOut={handlePayFromClaimedOffer}
+          onCardCashDone={handleCardCashClaimedDone}
           portalContainer={portalRoot}
         />
       ) : null}

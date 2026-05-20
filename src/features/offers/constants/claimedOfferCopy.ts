@@ -7,3 +7,6 @@ export const CLAIMED_OFFER_WELCOME_INSTRUCTION =
 
 export const CLAIMED_OFFER_PIN_LABEL =
   "Show this PIN to the waiter when you arrive" as const
+
+/** Figma `16167:23901` — card/cash claimed offer fixed footer CTA. */
+export const CLAIMED_OFFER_CARD_CASH_DONE_LABEL = "Mark as paid" as const

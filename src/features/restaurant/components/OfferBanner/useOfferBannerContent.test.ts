@@ -18,7 +18,7 @@ const baseOffer: RestaurantOfferCardModel = {
   expiresAt: Number.MAX_SAFE_INTEGER,
   tags: ["enabled"],
   discountPercent: 30,
-  title: "Claim 30% discount on menu",
+  title: "Claim 30% discount on food",
   date: "Today",
   timeWindow: "Arrive between 10:00 - 17:00",
   restaurantImage: "/x.jpg",
@@ -45,13 +45,11 @@ const claim: ClaimedOffer = {
 
 describe("formatOfferBannerTitle", () => {
   it("formats discount headline", () => {
-    expect(formatOfferBannerTitle(20)).toBe("20% discount on menu")
+    expect(formatOfferBannerTitle(20)).toBe("20% discount on food")
   })
 
-  it("uses Daily menu for 10% all-day", () => {
-    expect(formatOfferBannerTitle(10, true)).toBe(
-      "10% discount on Daily menu",
-    )
+  it("uses food copy for 10% all-day", () => {
+    expect(formatOfferBannerTitle(10, true)).toBe("10% discount on food")
   })
 })
 
@@ -92,7 +90,7 @@ describe("buildOfferBannerContent", () => {
       windowPhase: "active",
       hasOtherClaimAtVenue: false,
     })
-    expect(c.headline).toBe("30% discount on menu")
+    expect(c.headline).toBe("30% discount on food")
     expect(c.dataLines).toHaveLength(1)
     expect(c.dataLines[0]?.text).toContain("Today")
     expect(c.action).toEqual({

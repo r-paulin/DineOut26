@@ -6,6 +6,7 @@ import { ClaimedOfferCancelRow } from "@/features/offers/components/ClaimedOffer
 import { ClaimedOfferDetailsSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDetailsSection"
 import { ClaimedOfferDisclaimer } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDisclaimer"
 import { ClaimedOfferHeroSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferHeroSection"
+import { ClaimedOfferCardCashFooter } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferCardCashFooter"
 import { ClaimedOfferPayFooter } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferPayFooter"
 import { ClaimedOfferVenueSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferVenueSection"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
@@ -49,6 +50,8 @@ export interface ClaimedOfferPageProps {
   onCancelOffer: () => void
   /** When user chose Bolt DineOut at claim time, opens the in-app pay bill flow (parent provides navigation). */
   onPayWithBoltDineOut?: () => void
+  /** Card/cash: parent dismisses to home after venue payment (same outcome as pay flow Done). */
+  onCardCashDone?: () => void
   /** Reserved for nested overlays; cancel dialog portals into this page root. */
   portalContainer?: HTMLElement | null
 }
@@ -62,16 +65,19 @@ export function ClaimedOfferPage({
   onClose,
   onCancelOffer,
   onPayWithBoltDineOut,
+  onCardCashDone,
   portalContainer,
 }: ClaimedOfferPageProps) {
   const onCloseRef = useRef(onClose)
   const onCancelOfferRef = useRef(onCancelOffer)
+  const onCardCashDoneRef = useRef(onCardCashDone)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancelDialogPortal, setCancelDialogPortal] = useState<HTMLElement | null>(
     portalContainer ?? null,
   )
   const expired = useOfferExpired(claim.offerWindowCloses)
   const showDineOutFooter = claim.paymentMethod === "dineout"
+  const showCardCashFooter = claim.paymentMethod === "card_or_cash"
 
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
     {
@@ -93,7 +99,8 @@ export function ClaimedOfferPage({
   useLayoutEffect(() => {
     onCloseRef.current = onClose
     onCancelOfferRef.current = onCancelOffer
-  }, [onClose, onCancelOffer])
+    onCardCashDoneRef.current = onCardCashDone
+  }, [onClose, onCancelOffer, onCardCashDone])
 
   useEffect(() => {
     const active = document.activeElement
@@ -122,8 +129,15 @@ export function ClaimedOfferPage({
     }
   }, [onPayWithBoltDineOut])
 
+  const handleCardCashDone = useCallback(() => {
+    if (!onCardCashDoneRef.current) return
+    runExit(() => {
+      onCardCashDoneRef.current?.()
+    })
+  }, [runExit])
+
   const lightBodyBottomPad =
-    showDineOutFooter ?
+    showDineOutFooter || showCardCashFooter ?
       claimedOfferLayout.lightBodyPadWithFooter
     : claimedOfferLayout.lightBodyPadNoFooter
 
@@ -206,6 +220,11 @@ export function ClaimedOfferPage({
             discountPercent={claim.discountPercent}
             expired={expired}
             onPay={handlePay}
+          />
+        : showCardCashFooter ?
+          <ClaimedOfferCardCashFooter
+            expired={expired}
+            onDone={handleCardCashDone}
           />
         : null}
       </div>
