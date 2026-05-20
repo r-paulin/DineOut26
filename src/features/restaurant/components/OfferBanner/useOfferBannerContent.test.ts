@@ -159,7 +159,7 @@ describe("buildOfferBannerContent", () => {
     })
   })
 
-  it("restaurant claimed shows arrival headline and discount on secondary line", () => {
+  it("restaurant claimed shows discount headline, date secondary, Active action", () => {
     const c = buildOfferBannerContent({
       state: "claimed",
       offer: baseOffer,
@@ -169,14 +169,23 @@ describe("buildOfferBannerContent", () => {
       windowPhase: "active",
       hasOtherClaimAtVenue: false,
     })
-    expect(c.headline).toBe(formatOfferBannerArrivalLine(claim))
-    expect(c.dataLines).toEqual([])
+    expect(c.headline).toBe(formatOfferBannerClaimedDiscountLine(30))
+    expect(c.dataLines).toEqual([
+      {
+        text: formatOfferBannerArrivalLine(claim),
+        emphasis: "regular",
+        tone: "primary",
+      },
+    ])
     expect(c.action).toEqual({
       kind: "claimed",
-      label: formatOfferBannerClaimedDiscountLine(30),
+      label: "Active",
       disabled: false,
     })
     expect(c.sticker).toEqual({ kind: "countdown" })
+    expect(c.ariaLabel).toBe(
+      `${formatOfferBannerClaimedDiscountLine(30)}, ${formatOfferBannerArrivalLine(claim)}`,
+    )
   })
 
   it("home claimed uses restaurant name", () => {

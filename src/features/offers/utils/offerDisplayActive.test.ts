@@ -4,7 +4,12 @@ import type { RestaurantTimedOffer } from "@/features/offers/data/restaurantOffe
 import {
   OFFER_ICON_PRE_START_GRACE_MINUTES,
   campaignTimeWindowDisplayActive,
+  getOfferCampaignDiscountTextClass,
+  getOfferCampaignIconChipClass,
+  getOfferCampaignIconClass,
+  getOfferCampaignPillClass,
   isTimedOfferDisplayActive,
+  offerBadgeIconClass,
   parseCampaignTimeWindowLabel,
   restaurantTimedOfferDisplayActiveNow,
   timedOfferWindowDisplayActiveAtMinutes,
@@ -114,5 +119,39 @@ describe("campaignTimeWindowDisplayActive", () => {
       campaignTimeWindowDisplayActive("12:00–15:00", at(11, 45)),
     ).toBe(true)
     expect(campaignTimeWindowDisplayActive("All day", at(3, 0))).toBe(true)
+  })
+})
+
+describe("offer campaign visual classes", () => {
+  it("cardBadge uses split pill; white icon on red segment (Figma 16159:22611)", () => {
+    expect(getOfferCampaignPillClass("cardBadge")).toBe("bg-neutral-primary")
+    expect(getOfferCampaignIconClass("cardBadge", true)).toContain(
+      "text-static-key-light",
+    )
+    expect(getOfferCampaignIconChipClass("cardBadge", true, false)).toBeNull()
+    expect(getOfferCampaignIconClass("cardBadge", false)).toContain(
+      "static-content-secondary-light",
+    )
+  })
+
+  it("mapPin uses white pill; selected uses danger primary", () => {
+    expect(getOfferCampaignPillClass("mapPin")).toBe("bg-layer-floor-1")
+    expect(getOfferCampaignPillClass("mapPinSelected")).toBe("bg-danger-primary")
+    expect(getOfferCampaignIconClass("mapPin", true)).toContain(
+      "text-danger-primary",
+    )
+    expect(getOfferCampaignIconClass("mapPin", false)).toContain("text-tertiary")
+    expect(getOfferCampaignIconClass("mapPinSelected", true)).toContain(
+      "text-static-key-light",
+    )
+    expect(getOfferCampaignDiscountTextClass("mapPinSelected")).toContain(
+      "text-static-key-light",
+    )
+  })
+
+  it("offerBadgeIconClass delegates to cardBadge", () => {
+    expect(offerBadgeIconClass(true)).toBe(
+      getOfferCampaignIconClass("cardBadge", true),
+    )
   })
 })

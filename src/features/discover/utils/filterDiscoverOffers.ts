@@ -44,6 +44,31 @@ function minutesInOfferHalfOpen(m: number, w: TimedOfferWindow): boolean {
   return m >= a0 && m < a1
 }
 
+/**
+ * Strict “live now” for a single window vs `now` (half-open; no pre-start grace).
+ * Matches discover Live now / Open now filtering.
+ */
+export function isTimedOfferWindowLiveAt(now: Date, window: TimedOfferWindow): boolean {
+  const m = now.getHours() * 60 + now.getMinutes()
+  return minutesInOfferHalfOpen(m, window)
+}
+
+export function isTimedOfferLiveNow(
+  offer: RestaurantTimedOffer,
+  now: Date,
+): boolean {
+  return isTimedOfferWindowLiveAt(now, offer.window)
+}
+
+/** Empty-state trigger: Live now, Open now (Today), or Price — not cuisine/amenity/date alone. */
+export function isDiscoverEmptyTriggerFilter(state: FilterState): boolean {
+  return (
+    getEffectiveOfferForDiscover(state) === "live" ||
+    (state.date === "today" && state.openNow) ||
+    state.price != null
+  )
+}
+
 function offersActiveAtMinutes(
   offers: RestaurantTimedOffer[],
   minutesFromMidnight: number,

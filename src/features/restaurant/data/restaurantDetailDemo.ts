@@ -359,21 +359,6 @@ export function getRestaurantDetailDemo(slug: string): RestaurantDetailModel {
     cuisineTags: row.cuisine || "European, Drinks",
     offerDateTabs: tabs,
     offersByTabId,
-    benefits: [
-      {
-        id: "b1",
-        imageUrl: "/images/benefit-discount-badge.png",
-        title: "40% discount for your first 2 orders.",
-        subtitle: "Valid when paying through DineOut",
-      },
-      {
-        id: "b2",
-        imageUrl: "/images/benefit-visa-10eur-badge.png",
-        title: "Save 5€ with Visa",
-        subtitle:
-          "Applies when you pay through the Bolt Food app using a Visa card",
-      },
-    ],
     venueGalleryCycles: [
       { tall: row.primaryImage, top: row.sideTop, bottom: row.sideBottom },
       { tall: row.sideTop, top: row.primaryImage, bottom: row.sideBottom },

@@ -1,5 +1,5 @@
 export interface MapPinTailProps {
-  /** Selected map pin (Figma 15809:12977) — tail matches dark pill. */
+  /** Selected map pin (Figma `16081:13158`) — tail matches red pill. */
   selected?: boolean
 }
 
@@ -8,7 +8,7 @@ export function MapPinTail({ selected }: MapPinTailProps) {
   return (
     <div
       className={`relative z-[1] -mt-0.5 h-2 w-4 ${
-        selected ? "text-neutral-primary" : "text-[var(--layer-floor-1)]"
+        selected ? "text-danger-primary" : "text-[var(--layer-floor-1)]"
       }`}
       aria-hidden
     >

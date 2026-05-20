@@ -1,5 +1,5 @@
 import type { ClaimData, ClaimedOffer } from "@/features/offers/offers.types"
-import { formatClaimedOfferMenuLabel } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
+import { formatClaimedOfferFoodLabel } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
 import { parseHHMMToMinutes } from "@/features/offers/utils/offerTimePicker"
 import { toLocalYmd } from "@/features/offers/utils/offerScheduleLocal"
 
@@ -21,7 +21,7 @@ export interface ClaimOfferInput extends ClaimData {
   offerWindowBaseDate?: Date
   /** Local `YYYY-MM-DD` for the offer tab day; defaults from `offerWindowBaseDate`. */
   offerScheduleYmd?: string
-  /** Figma offer list row; defaults from {@link formatClaimedOfferMenuLabel}. */
+  /** Figma offer list row; defaults from {@link formatClaimedOfferFoodLabel}. */
   offerDetailLabel?: string
   minOrderEur?: number
   maxSavingEur?: number
@@ -31,8 +31,11 @@ export interface ClaimOfferInput extends ClaimData {
  * PIN is generated only here (prototype stand-in for server randomisation).
  * UI must never invent digits outside this helper.
  */
+/** Prototype PIN — use server randomness in production. */
 export function generateClaimPin(): string {
-  return String(Math.floor(Math.random() * 10000)).padStart(4, "0")
+  const bytes = new Uint32Array(1)
+  crypto.getRandomValues(bytes)
+  return String(bytes[0]! % 10000).padStart(4, "0")
 }
 
 /**
@@ -89,7 +92,7 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
     paymentMethod: input.paymentMethod,
     discountPercent: input.discountPercent,
     offerDetailLabel:
-      input.offerDetailLabel ?? formatClaimedOfferMenuLabel(input.discountPercent),
+      input.offerDetailLabel ?? formatClaimedOfferFoodLabel(input.discountPercent),
     minOrderEur: input.minOrderEur,
     maxSavingEur: input.maxSavingEur,
     promoText: input.promoText,

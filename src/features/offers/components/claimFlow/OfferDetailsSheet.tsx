@@ -35,7 +35,7 @@ function offerDetailsPrimaryActionLabel(
 }
 
 /**
- * Pre-claim offer details (Figma `16081:15861`). Primary action opens pre-book form or instant claim.
+ * Pre-claim offer details (Figma `16081:15861`). Primary action opens the claim form.
  */
 export function OfferDetailsSheet({
   isOpen,

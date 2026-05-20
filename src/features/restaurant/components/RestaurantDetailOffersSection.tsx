@@ -36,7 +36,7 @@ export interface RestaurantDetailOffersSectionProps {
  * Tab content uses stacked absolutely-positioned panels translated on tab
  * change (iOS-style slide). The visible viewport height follows only the
  * **active** panel so empty dates do not inherit the height of taller sibling
- * panels (which would leave a large blank gap before "More benefits").
+ * panels (which would leave a large blank gap before the venue section).
  */
 export function RestaurantDetailOffersSection({
   tabs,
@@ -67,7 +67,7 @@ export function RestaurantDetailOffersSection({
   )
 
   return (
-    <section className="flex w-full flex-col gap-4 pb-3" aria-label="Offers">
+    <section className="flex w-full flex-col gap-4 pb-3 pt-6" aria-label="Offers">
       <div className="px-6">
         <Typography variant="heading-s-accent" color="primary" as="h2">
           Offers

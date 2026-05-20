@@ -1,13 +1,15 @@
 import type { RestaurantTimedOffer } from "@/features/offers/data/restaurantOffers.types"
-import { isTimedOfferDisplayActive } from "@/features/offers/utils/offerDisplayActive"
+import { isTimedOfferLiveNow } from "@/features/discover/utils/filterDiscoverOffers"
 import { formatTimeWindowLabel } from "@/features/offers/utils/offerCampaign"
+
+export type BadgeStackMode = "default" | "liveNow"
 
 export type TimedOfferBadgeRow =
   | {
       kind: "offer"
       discountLabel: string
       timeWindow: string
-      /** Green Offer icon vs muted `content/secondary-inverted` (15m pre-start grace). */
+      /** White circle + red PercentFlower when true (Figma `16159:22611`). */
       iconActive: boolean
     }
   | {
@@ -31,19 +33,31 @@ function sortTimedOffersForBadges(
 /**
  * Up to three map/list badge rows: concrete `-% · time` rows, then `+N offers`
  * when more than two timed offers exist (Figma `_Place / Card` stack).
+ *
+ * - `default`: all offers; icons always active (claimable — no grey).
+ * - `liveNow`: only strict-live windows; icons active on visible rows.
  */
 export function buildTimedOfferBadgeModels(
   offers: readonly RestaurantTimedOffer[],
   now: Date = new Date(),
+  mode: BadgeStackMode = "default",
 ): TimedOfferBadgeRow[] {
   if (offers.length === 0) return []
-  const sorted = sortTimedOffersForBadges(offers)
+
+  const sorted =
+    mode === "liveNow" ?
+      sortTimedOffersForBadges(offers).filter((o) => isTimedOfferLiveNow(o, now))
+    : sortTimedOffersForBadges(offers)
+
+  if (sorted.length === 0) return []
+
+  const iconActiveFor = (_offer: RestaurantTimedOffer): boolean => true
 
   const offerRow = (offer: RestaurantTimedOffer): TimedOfferBadgeRow => ({
     kind: "offer",
     discountLabel: `-${offer.discountPercent}%`,
     timeWindow: formatTimeWindowLabel(offer.window),
-    iconActive: isTimedOfferDisplayActive(offer, now),
+    iconActive: iconActiveFor(offer),
   })
 
   if (sorted.length <= 3) {
@@ -59,7 +73,7 @@ export function buildTimedOfferBadgeModels(
     {
       kind: "overflow",
       count: overflow,
-      iconActive: hidden.some((o) => isTimedOfferDisplayActive(o, now)),
+      iconActive: true,
     },
   ]
 }

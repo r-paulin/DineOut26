@@ -279,6 +279,7 @@ export function MapLayer({
           onLoad={() => {
             const map = getMapInstance(mapRef)
             if (map) {
+              // Bind before first paint so Liberty POI sprite misses get placeholders early.
               attachMissingStyleImageHandler(map)
               scheduleMapResize(map)
               syncMapInteractionHandlers(map)

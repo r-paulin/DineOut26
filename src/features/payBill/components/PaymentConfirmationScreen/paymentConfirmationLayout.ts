@@ -1,5 +1,13 @@
 import { readAppHeightPx } from "@/features/offers/utils/bottomSheetLayout"
 
+/**
+ * Reserved space for the absolutely-positioned nav row above the hero band.
+ * Tracks `PaymentConfirmationNavbar`: `pt = max(1.5rem, safe-area-top)`,
+ * close button height = 2.5rem, `pb-3` = 0.75rem.
+ */
+export const PAY_CONFIRM_NAV_RESERVE =
+  "calc(max(1.5rem, var(--safe-area-top)) + 3.25rem)"
+
 /** Matches PaymentConfirmationSummarySheet `max-h-[min(72vh,calc(var(--app-h)*0.72))]`. */
 export function getConfirmSheetViewportCapPx(): number {
   const appH = readAppHeightPx()

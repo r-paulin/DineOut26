@@ -30,7 +30,13 @@ import {
 } from "@/features/offers"
 import { buildMapMarkersFromOffers, MapViewFab } from "@/features/map"
 import { filterOffersByTimePreset } from "@/features/offers/utils/offerCampaign"
-import { filterOfferCardsForDiscover } from "@/features/discover/utils/filterDiscoverOffers"
+import {
+  filterOfferCardsForDiscover,
+  getEffectiveOfferForDiscover,
+  isDiscoverEmptyTriggerFilter,
+} from "@/features/discover/utils/filterDiscoverOffers"
+import { removeClaimedOfferById } from "@/features/offers/utils/claimedOfferState"
+import { formatClaimedArrivalDate } from "@/features/offers/utils/formatClaimedArrivalDate"
 import {
   offerWindowBaseDateFromSchedule,
   resolveScheduleYmd,
@@ -46,14 +52,13 @@ import { AdminPlacesScreen } from "@/features/restaurants/components/AdminPlaces
 import { useRestaurantCatalogSnapshot } from "@/features/restaurants/restaurantCatalogRuntime"
 import { findOfferByRestaurantId } from "@/features/offers/utils/findOfferByRestaurantId"
 import { PayBillFlow } from "@/features/payBill"
+import { createPostPaymentHomeSnackbar } from "@/features/payBill/constants/postPaymentHomeSnackbar"
 import type { PayBillFlowEntry } from "@/features/payBill/payBill.types"
 import {
   AtVenueNoClaimedOffersSheet,
   getRestaurantDetailDemo,
   RestaurantDetailScreen,
 } from "@/features/restaurant"
-import { getOfferBannerWindowPhase } from "@/features/restaurant/utils/offerBannerWindowPhase"
-import { toOfferForBanner } from "@/features/restaurant/utils/offerState"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { MapSurfaceErrorBoundary } from "./MapSurfaceErrorBoundary"
 import type {
@@ -80,6 +85,7 @@ export function HomeScreen() {
     toggleOpenNowToday,
     clearOpenNowFilter,
     setOpenAtTime,
+    resetAllFilters,
     getChipLabel,
     isChipActive,
     isChipLocked,
@@ -159,6 +165,11 @@ export function HomeScreen() {
     ],
     [offersToday, offersDinner, offersNearYou, offersAllRestaurants],
   )
+  const liveNowFilter =
+    getEffectiveOfferForDiscover(filterState) === "live"
+  const showFilteredEmpty =
+    mergedDiscoverOffers.length === 0 &&
+    isDiscoverEmptyTriggerFilter(filterState)
   const mapMarkers = useMemo(
     () => buildMapMarkersFromOffers(mergedDiscoverOffers),
     [mergedDiscoverOffers],
@@ -200,6 +211,10 @@ export function HomeScreen() {
     },
     [runWithMapPlaceCardFilterSkeleton, setOpenAtTime],
   )
+
+  const resetAllFiltersWithSkeleton = useCallback(() => {
+    runWithMapPlaceCardFilterSkeleton(() => resetAllFilters())
+  }, [resetAllFilters, runWithMapPlaceCardFilterSkeleton])
 
   useEffect(() => {
     if (!focusRestaurantId) return
@@ -351,12 +366,14 @@ export function HomeScreen() {
     (data: ClaimData, card: RestaurantOfferCardModel) => {
       if (!restaurantDetailSlug) return
       const now = new Date()
+      const baseDate =
+        offerWindowBaseDateFromSchedule(card.offerScheduleDate, now) ?? now
       const claimed = claimOffer({
         ...data,
         offerId: card.id,
         restaurantSlug: restaurantDetailSlug,
         discountPercent: card.discountPercent,
-        arrivalDateLabel: card.date,
+        arrivalDateLabel: formatClaimedArrivalDate(baseDate),
         promoText: card.paymentPromoText,
         minOrderEur: card.minOrderEur,
         maxSavingEur: card.maxSavingEur,
@@ -364,10 +381,7 @@ export function HomeScreen() {
         workingHoursEnd: card.workingHoursEnd ?? "23:00",
         offerEnd:
           card.isAllDay ? (card.workingHoursEnd ?? "23:00") : (card.offerEnd ?? "23:00"),
-        offerWindowBaseDate: offerWindowBaseDateFromSchedule(
-          card.offerScheduleDate,
-          now,
-        ),
+        offerWindowBaseDate: baseDate,
         offerScheduleYmd:
           card.offerScheduleDate != null ?
             resolveScheduleYmd(card.offerScheduleDate, now)
@@ -378,46 +392,6 @@ export function HomeScreen() {
       setPostClaimSuccess(claimed)
     },
     [restaurantDetailSlug],
-  )
-
-  const tryInstantClaim = useCallback(
-    (card: RestaurantOfferCardModel): boolean => {
-      const phase = getOfferBannerWindowPhase(toOfferForBanner(card), Date.now())
-      if (phase === "prebook") return false
-
-      const scheduleOpts =
-        card.offerScheduleDate != null ?
-          { offerScheduleDate: card.offerScheduleDate }
-        : undefined
-      const cfg = getTimePickerConfig(
-        {
-          isAllDay: Boolean(card.isAllDay),
-          offerStart: card.offerStart ?? "12:00",
-          offerEnd: card.offerEnd ?? "23:00",
-          workingHoursStart: card.workingHoursStart ?? "12:00",
-          workingHoursEnd: card.workingHoursEnd ?? "23:00",
-        },
-        new Date(),
-        scheduleOpts,
-      )
-      if (cfg.mode === "slots" && (!cfg.slots || cfg.slots.length === 0)) {
-        snackbar.add({
-          description: "This offer is no longer available to claim.",
-          timeout: 4000,
-        })
-        return true
-      }
-      completeClaim(
-        {
-          arrivalTime: cfg.initialValue,
-          guestCount: 2,
-          paymentMethod: "dineout",
-        },
-        card,
-      )
-      return true
-    },
-    [completeClaim, snackbar],
   )
 
   const handleOfferAvailablePress = useCallback(
@@ -437,16 +411,9 @@ export function HomeScreen() {
         })
         return
       }
-      if (tryInstantClaim(card)) return
       beginClaimOfferFlow(id)
     },
-    [
-      baseRestaurantDetail,
-      beginClaimOfferFlow,
-      restaurantDetailSlug,
-      snackbar,
-      tryInstantClaim,
-    ],
+    [baseRestaurantDetail, beginClaimOfferFlow, restaurantDetailSlug, snackbar],
   )
 
   const handleClaimed = useCallback(
@@ -476,12 +443,7 @@ export function HomeScreen() {
   const handleCancelClaimedOffer = useCallback(() => {
     const offerId = claimedView?.offerId
     if (offerId) {
-      setClaimedByOfferId((prev) => {
-        if (!(offerId in prev)) return prev
-        const next = { ...prev }
-        delete next[offerId]
-        return next
-      })
+      setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
     }
     setClaimedView(null)
     setPendingClaimOffer(null)
@@ -563,12 +525,11 @@ export function HomeScreen() {
   const handlePayBillFlowClose = exitPayFlowToRestaurant
 
   const handlePayBillPaidDone = useCallback(() => {
-    snackbar.add({
-      title: "Thanks for dining with us",
-      description: "Leave a quick review to share your feedback",
-      actions: [{ label: "Leave a review", onClick: () => {} }],
-      timeout: 5000,
-    })
+    snackbar.add(
+      createPostPaymentHomeSnackbar(() => {
+        // Review flow not wired yet; placeholder lives in the toast.
+      }),
+    )
   }, [snackbar])
 
   const filterBarProps = {
@@ -621,6 +582,9 @@ export function HomeScreen() {
     onHomeClaimedOfferPress: handleHomeClaimedOfferPress,
     discoverLayoutEpoch,
     onOpenAdminPlaces: openAdminPlaces,
+    liveNowFilter,
+    showFilteredEmpty,
+    onResetFilters: resetAllFiltersWithSkeleton,
   }
 
   const mapFallback = (
@@ -630,6 +594,10 @@ export function HomeScreen() {
     />
   )
 
+  /** Vaul claim sheets portal into the shell; keep map/sheet inert so focus cannot sit under aria-hidden. */
+  const discoverUnderClaimSheetsInert =
+    pendingClaimOffer != null || postClaimSuccess != null
+
   return (
     <div
       className="relative w-full max-w-[var(--shell-width)] mx-auto bg-layer-floor-1 overflow-x-visible overflow-y-hidden shadow-[0_0.25rem_0.75rem_rgba(0,0,0,0.2)]"
@@ -638,6 +606,10 @@ export function HomeScreen() {
         height: "var(--app-h)",
       }}
     >
+      <div
+        className="contents"
+        {...(discoverUnderClaimSheetsInert ? { inert: true as const } : {})}
+      >
       <MapSurfaceErrorBoundary fallback={mapFallback}>
         <Suspense fallback={mapFallback}>
           <div className="absolute inset-0 z-[1]">
@@ -666,6 +638,7 @@ export function HomeScreen() {
                     filterPending={
                       mapPlaceCardFilterPending && mapPlaceOpen
                     }
+                    liveNowFilter={liveNowFilter}
                     onClose={onClearFocus}
                     onRestaurantPress={openRestaurantDetail}
                   />
@@ -708,6 +681,7 @@ export function HomeScreen() {
       {showBottomNav && !discoverDockActive ? (
         <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
       ) : null}
+      </div>
       {searchOpen ? (
         <SearchFullscreen
           onClose={() => setSearchOpen(false)}
@@ -793,6 +767,7 @@ export function HomeScreen() {
           isOpen
           discountPercent={postClaimSuccess.discountPercent}
           paymentMethod={postClaimSuccess.paymentMethod}
+          restaurantName={baseRestaurantDetail?.name ?? ""}
           onOpenChange={(open) => {
             if (!open) setPostClaimSuccess(null)
           }}

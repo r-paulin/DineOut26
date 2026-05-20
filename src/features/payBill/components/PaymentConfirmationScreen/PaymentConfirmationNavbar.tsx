@@ -15,12 +15,12 @@ export function PaymentConfirmationNavbar({
   onDismiss,
 }: PaymentConfirmationNavbarProps) {
   return (
-    <header className="flex shrink-0 items-center gap-4 px-6 pb-3 pt-[max(1.5rem,var(--safe-area-top))]">
+    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center gap-4 px-6 pb-3 pt-[max(1.5rem,var(--safe-area-top))]">
       <button
         type="button"
         aria-label="Close"
         onClick={onDismiss}
-        className="flex size-10 shrink-0 items-center justify-center rounded-full border-none bg-layer-floor-1 p-0 text-primary shadow-[0px_2px_3px_rgba(0,0,0,0.16)] outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
+        className="pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-full border-none bg-layer-floor-1 p-0 text-primary shadow-[0px_2px_3px_rgba(0,0,0,0.16)] outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
       >
         <Cross size="md" className="text-primary" aria-hidden />
       </button>

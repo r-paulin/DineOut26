@@ -4,7 +4,7 @@ function pad2(n: number): string {
   return String(n).padStart(2, "0")
 }
 
-/** Claimed-offer detail row — Figma `Offer window closes 1:59:23` (no “in”). */
+/** PIN card countdown — Figma `16144:200886` / `Offer window closes 1:59:23` (no “in”). */
 export function formatOfferWindowClosesLabel(
   expired: boolean,
   countdownHms: string,
@@ -108,4 +108,31 @@ export function useOfferCountdown(closeIso: string): {
   }, [closeIso])
 
   return state
+}
+
+/**
+ * Lightweight version of {@link useOfferCountdown} when the consumer only needs
+ * the `expired` boolean. Schedules a single timeout at `closeIso` instead of
+ * re-rendering every second.
+ */
+export function useOfferExpired(closeIso: string): boolean {
+  const [expired, setExpired] = useState(() => compute(closeIso).expired)
+
+  useEffect(() => {
+    const initial = compute(closeIso)
+    setExpired(initial.expired)
+    if (initial.expired) return
+    const end = new Date(closeIso).getTime()
+    if (!Number.isFinite(end)) {
+      setExpired(true)
+      return
+    }
+    const delay = Math.max(0, end - Date.now())
+    const id = window.setTimeout(() => {
+      setExpired(true)
+    }, delay)
+    return () => window.clearTimeout(id)
+  }, [closeIso])
+
+  return expired
 }

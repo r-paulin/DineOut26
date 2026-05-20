@@ -73,14 +73,6 @@ export interface RestaurantOfferCardModel {
   paymentPromoText?: string
 }
 
-export interface RestaurantBenefitRowModel {
-  id: string
-  /** Corner badge image (52×52 area, object-contain). */
-  imageUrl: string
-  title: string
-  subtitle: string
-}
-
 export interface RestaurantVenueInfoRowModel {
   id: "hours" | "menu" | "address" | "phone"
   label: string
@@ -126,7 +118,6 @@ export interface RestaurantDetailModel {
   offerDateTabs: RestaurantOfferDateTab[]
   /** Offers keyed by tab id (same order as tabs). */
   offersByTabId: Record<string, RestaurantOfferCardModel[]>
-  benefits: RestaurantBenefitRowModel[]
   venueGalleryCycles: Array<{ tall: string; top: string; bottom: string }>
   openHoursSummary: string
   /** Weekly grid for the hours sheet (single source with {@link openHoursSummary}). */

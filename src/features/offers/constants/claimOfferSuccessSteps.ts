@@ -46,6 +46,11 @@ function cardOrCashSteps(discountPercent: number): ClaimOfferSuccessStep[] {
         "Ask for the menu, choose your dishes, and enjoy your meal.",
     },
     {
+      title: "Ask for the receipt",
+      subtitle:
+        "After your meal, request the receipt and let them know you're using Bolt DineOut.",
+    },
+    {
       title: "Pay at the venue",
       subtitle: `Make sure the ${pct}% discount is applied to your bill, then pay by card or cash.`,
     },

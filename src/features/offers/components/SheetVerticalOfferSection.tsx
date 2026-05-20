@@ -12,6 +12,7 @@ export interface SheetVerticalOfferSectionProps {
   offers: OfferCardModel[]
   focusRestaurantId?: string | null
   onRestaurantPress?: (slug: string) => void
+  liveNowFilter?: boolean
 }
 
 function offerSlug(o: OfferCardModel) {
@@ -30,6 +31,7 @@ export function SheetVerticalOfferSection({
   offers,
   focusRestaurantId,
   onRestaurantPress,
+  liveNowFilter,
 }: SheetVerticalOfferSectionProps) {
   return (
     <section
@@ -53,6 +55,7 @@ export function SheetVerticalOfferSection({
               dimmed={
                 !!focusRestaurantId && offerSlug(o) !== focusRestaurantId
               }
+              liveNowFilter={liveNowFilter}
               onClick={
                 onRestaurantPress && offerSlug(o)
                   ? () => onRestaurantPress(offerSlug(o))

@@ -1,9 +1,9 @@
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import { CLAIM_SUCCESS_HERO_SRC } from "@/features/offers/constants/claimFlowHero"
+import * as Dialog from "@radix-ui/react-dialog"
 import {
   useCallback,
   useEffect,
-  useId,
   useState,
   type AnimationEvent,
   type ReactNode,
@@ -102,10 +102,20 @@ export function ClaimPromoSheetShell({
   onContentAnimationEnd,
   children,
 }: ClaimPromoSheetShellProps) {
-  const titleId = useId()
   const isFit = sheetHeight === "fit"
   const hasPinnedFooter = footer != null
   const [motionActive, setMotionActive] = useState(open)
+
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) {
+        const active = document.activeElement
+        if (active instanceof HTMLElement) active.blur()
+      }
+      onOpenChange(next)
+    },
+    [onOpenChange],
+  )
 
   const handleContentAnimationEnd = useCallback(
     (e: AnimationEvent<HTMLDivElement>) => {
@@ -123,7 +133,7 @@ export function ClaimPromoSheetShell({
   return (
     <Drawer.Root
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={handleOpenChange}
       dismissible
       repositionInputs={false}
       snapPoints={[]}
@@ -146,13 +156,11 @@ export function ClaimPromoSheetShell({
           style={{ zIndex: zContent }}
           onAnimationEnd={handleContentAnimationEnd}
         >
-          <Drawer.Title id={titleId} className="sr-only">
-            {title}
-          </Drawer.Title>
+          <Dialog.Title className="sr-only">{title}</Dialog.Title>
           {description ?
-            <Drawer.Description className="sr-only">
+            <Dialog.Description className="sr-only">
               {description}
-            </Drawer.Description>
+            </Dialog.Description>
           : null}
 
           <Drawer.Close asChild>

@@ -8,6 +8,7 @@ import type {
 import { OfferBanner } from "@/features/restaurant/components/OfferBanner/OfferBanner"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
+import { DiscoverFilteredEmptyState } from "@/features/discover/components/DiscoverFilteredEmptyState"
 import { OfferCard } from "./OfferCard"
 import { SheetSectionHeader } from "./SheetSectionHeader"
 import { SheetVerticalOfferSection } from "./SheetVerticalOfferSection"
@@ -34,6 +35,9 @@ export interface BottomSheetScrollContentProps {
   onHomeClaimedOfferPress?: () => void
   /** Prototype admin: open merged-catalog editor (localStorage). */
   onOpenAdminPlaces?: () => void
+  liveNowFilter?: boolean
+  showFilteredEmpty?: boolean
+  onResetFilters?: () => void
 }
 
 function offerSlug(o: OfferCardModel) {
@@ -58,6 +62,9 @@ export function BottomSheetScrollContent({
   claimedOffersById = {},
   onHomeClaimedOfferPress,
   onOpenAdminPlaces,
+  liveNowFilter = false,
+  showFilteredEmpty = false,
+  onResetFilters,
 }: BottomSheetScrollContentProps) {
   const isFull = snap === "full"
   const isMin = snap === "minimized"
@@ -124,7 +131,11 @@ export function BottomSheetScrollContent({
           </section>
         ) : null}
 
-        {offersToday.length > 0 ? (
+        {showFilteredEmpty && onResetFilters ?
+          <DiscoverFilteredEmptyState onResetFilters={onResetFilters} />
+        : null}
+
+        {!showFilteredEmpty && offersToday.length > 0 ?
         <section
           className="flex flex-col gap-4 pb-3"
           aria-label="Today's best offers"
@@ -150,6 +161,7 @@ export function BottomSheetScrollContent({
                   dimmed={
                     !!focusRestaurantId && offerSlug(o) !== focusRestaurantId
                   }
+                  liveNowFilter={liveNowFilter}
                   onClick={() => {
                     const slug = offerSlug(o)
                     if (onRestaurantPress && slug) {
@@ -163,9 +175,9 @@ export function BottomSheetScrollContent({
             ))}
           </div>
         </section>
-      ) : null}
+        : null}
 
-      {offersDinner.length > 0 ? (
+        {!showFilteredEmpty && offersDinner.length > 0 ?
         <section
           className="flex flex-col gap-4 pb-3"
           aria-label="Dinner destinations"
@@ -188,6 +200,7 @@ export function BottomSheetScrollContent({
                   dimmed={
                     !!focusRestaurantId && offerSlug(o) !== focusRestaurantId
                   }
+                  liveNowFilter={liveNowFilter}
                   onClick={() => {
                     const slug = offerSlug(o)
                     if (onRestaurantPress && slug) onRestaurantPress(slug)
@@ -197,9 +210,9 @@ export function BottomSheetScrollContent({
             ))}
           </div>
         </section>
-      ) : null}
+        : null}
 
-      {offersNearYou.length > 0 ? (
+        {!showFilteredEmpty && offersNearYou.length > 0 ?
         <section className="flex flex-col gap-4 pb-3" aria-label="Near you">
           <SheetSectionHeader
             title="Near you"
@@ -219,6 +232,7 @@ export function BottomSheetScrollContent({
                   dimmed={
                     !!focusRestaurantId && offerSlug(o) !== focusRestaurantId
                   }
+                  liveNowFilter={liveNowFilter}
                   onClick={() => {
                     const slug = offerSlug(o)
                     if (onRestaurantPress && slug) onRestaurantPress(slug)
@@ -228,9 +242,9 @@ export function BottomSheetScrollContent({
             ))}
           </div>
         </section>
-      ) : null}
+        : null}
 
-        {offersAllRestaurants.length > 0 ? (
+        {!showFilteredEmpty && offersAllRestaurants.length > 0 ?
           <SheetVerticalOfferSection
             sectionAriaLabel="All restaurants"
             title="All restaurants"
@@ -238,9 +252,10 @@ export function BottomSheetScrollContent({
             offers={offersAllRestaurants}
             focusRestaurantId={focusRestaurantId}
             onRestaurantPress={onRestaurantPress}
+            liveNowFilter={liveNowFilter}
           />
-        ) : null}
-        {offersAllRestaurants.length > 0 && onOpenAdminPlaces ?
+        : null}
+        {!showFilteredEmpty && offersAllRestaurants.length > 0 && onOpenAdminPlaces ?
           <div className="pt-1 pb-2 shrink-0">
             <Button
               type="button"

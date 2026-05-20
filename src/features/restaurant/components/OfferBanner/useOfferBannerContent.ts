@@ -164,21 +164,28 @@ export function buildOfferBannerContent({
         ariaLabel: headline,
       }
     }
-    const headline = formatOfferBannerArrivalLine(claim)
+    const headline = formatOfferBannerClaimedDiscountLine(displayDiscount)
+    const scheduleLine = formatOfferBannerArrivalLine(claim)
     return {
       outerClaimed: true,
       outerShellTone: "neutral",
       innerClaimed: true,
       headline,
-      dataLines: [],
+      dataLines: [
+        {
+          text: scheduleLine,
+          emphasis: "regular",
+          tone: "primary",
+        },
+      ],
       action: {
         kind: "claimed",
-        label: formatOfferBannerClaimedDiscountLine(displayDiscount),
+        label: "Active",
         disabled: false,
       },
       sticker: { kind: "countdown" },
       imageVariant: "claimed",
-      ariaLabel: headline,
+      ariaLabel: `${headline}, ${scheduleLine}`,
     }
   }
 

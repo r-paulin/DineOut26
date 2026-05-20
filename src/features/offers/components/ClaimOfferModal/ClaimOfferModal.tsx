@@ -26,7 +26,7 @@ const SEMIBOLD = {
 } as const
 
 const PICKER_ROW_CLASS =
-  "flex w-full flex-row items-center justify-between gap-3 border-0 border-b border-separator bg-transparent px-6 pb-[13px] pt-[14px] text-left transition-colors hover:bg-active-neutral-secondary active:bg-active-neutral-secondary"
+  "flex w-full flex-row items-center justify-between gap-3 border-0 bg-transparent px-6 pb-[13px] pt-[14px] text-left transition-colors hover:bg-active-neutral-secondary active:bg-active-neutral-secondary"
 
 export interface ClaimOfferModalProps {
   isOpen: boolean
@@ -48,7 +48,7 @@ function toOfferTimeConfig(o: ClaimOfferModalOffer): OfferTimeConfig {
 }
 
 /**
- * Claim form (Figma `16123:18118`). Recalculates slot lists when the time picker opens.
+ * Claim form (Figma `16144:19972`). Recalculates slot lists when the time picker opens.
  */
 export function ClaimOfferModal({
   isOpen,
@@ -236,6 +236,8 @@ export function ClaimOfferModal({
             </span>
           </button>
         </div>
+
+        <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
 
         <PaymentSelector value={paymentMethod} onChange={setPaymentMethod} />
 

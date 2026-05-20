@@ -65,8 +65,15 @@ export function RestaurantDetailVenueSection({
           Working hours
         </Typography>
       </div>
-      <div className="flex shrink-0 items-center gap-1 ps-2 text-action-primary">
-        <Typography variant="body-m-accent" color="primary" as="span" noWrap>
+      <div
+        className={`flex shrink-0 items-center gap-1 ps-2 ${isOpen ? "text-action-primary" : ""}`}
+      >
+        <Typography
+          variant="body-m-accent"
+          color={isOpen ? "primary" : "danger-primary"}
+          as="span"
+          noWrap
+        >
           {hoursStatusLabel}
         </Typography>
         <ChevronRight size="lg" className="shrink-0 text-tertiary" aria-hidden />

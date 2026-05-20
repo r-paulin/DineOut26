@@ -37,6 +37,8 @@ export interface UseFiltersReturn {
   isChipLocked: (key: FilterKey) => boolean
   /** Trailing affordance for the open-now row */
   openNowTrailing: "none" | "clear" | "chevron"
+  /** Restores all filter chips to {@link getDefaultFilterState}. */
+  resetAllFilters: () => void
 }
 
 function findOfferLabel(id: OfferValue): string {
@@ -176,6 +178,12 @@ export function useFilters(): UseFiltersReturn {
     setState((prev) => ({ ...prev, openAt: time }))
   }, [])
 
+  const resetAllFilters = useCallback(() => {
+    setState(getDefaultFilterState())
+    setSheetKey(null)
+    log.debug("filter reset all")
+  }, [])
+
   const getChipLabel = useCallback(
     (key: FilterKey): string => {
       switch (key) {
@@ -260,6 +268,7 @@ export function useFilters(): UseFiltersReturn {
     toggleOpenNowToday,
     clearOpenNowFilter,
     setOpenAtTime,
+    resetAllFilters,
     getChipLabel,
     isChipActive,
     isChipLocked,

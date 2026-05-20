@@ -10,6 +10,7 @@ export interface OfferCardProps {
   offer: OfferCardModel
   dimmed?: boolean
   onClick?: () => void
+  liveNowFilter?: boolean
 }
 
 const R12 = "rounded-[12px]"
@@ -25,12 +26,29 @@ const IMAGE_GRAD =
  * Figma `_Place / Card / XS` carousel 15767:53166 (224px) or `_Place / Card / XL` (list row).
  * Image corners: 12px ([Figma XL](https://www.figma.com/design/jPi3dvsMn6oKCqkvNDhyhe/Consumer---Dine-out?node-id=15735-22235)).
  */
-export function OfferCard({ offer, dimmed, onClick }: OfferCardProps) {
+export function OfferCard({
+  offer,
+  dimmed,
+  onClick,
+  liveNowFilter,
+}: OfferCardProps) {
   if (offer.layout === "list") {
-    return <OfferCardList offer={offer} dimmed={dimmed} onClick={onClick} />
+    return (
+      <OfferCardList
+        offer={offer}
+        dimmed={dimmed}
+        onClick={onClick}
+        liveNowFilter={liveNowFilter}
+      />
+    )
   }
   return (
-    <OfferCardCarousel offer={offer} dimmed={dimmed} onClick={onClick} />
+    <OfferCardCarousel
+      offer={offer}
+      dimmed={dimmed}
+      onClick={onClick}
+      liveNowFilter={liveNowFilter}
+    />
   )
 }
 
@@ -51,10 +69,12 @@ function OfferCardCarousel({
   offer,
   dimmed,
   onClick,
+  liveNowFilter,
 }: {
   offer: OfferCardModel
   dimmed?: boolean
   onClick?: () => void
+  liveNowFilter?: boolean
 }) {
   return (
     <article
@@ -81,6 +101,7 @@ function OfferCardCarousel({
           <OfferCardBadges
             campaign={offer.campaign}
             restaurantSlug={offer.restaurantSlug ?? offer.id}
+            liveNowFilter={liveNowFilter}
           />
         </div>
         <OfferCardImageRatingBadge
@@ -130,10 +151,12 @@ function OfferCardList({
   offer,
   dimmed,
   onClick,
+  liveNowFilter,
 }: {
   offer: OfferCardModel
   dimmed?: boolean
   onClick?: () => void
+  liveNowFilter?: boolean
 }) {
   const slides =
     offer.galleryImages && offer.galleryImages.length > 0
@@ -168,6 +191,7 @@ function OfferCardList({
         photos={slides}
         campaign={offer.campaign}
         restaurantSlug={offer.restaurantSlug ?? offer.id}
+        liveNowFilter={liveNowFilter}
       />
       <div className="flex min-w-0 w-full flex-col gap-0.5">
         <Typography

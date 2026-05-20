@@ -19,7 +19,6 @@ export type {
   OfferForBanner,
   OfferState,
   OfferTag,
-  RestaurantBenefitRowModel,
   RestaurantDetailModel,
   RestaurantDetailScreenProps,
   RestaurantOfferCardModel,

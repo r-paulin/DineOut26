@@ -14,6 +14,8 @@ export interface ListItemProps {
   onPress?: () => void
   /** Show 1px bottom separator inset with row horizontal padding (24px). */
   showSeparator?: boolean
+  /** Row horizontal inset; `none` for parent-provided `px-6` sections. */
+  horizontalPadding?: "default" | "none"
   labelColor?: "secondary" | "tertiary" | "danger-primary"
   /** `labelFirst`: small label on top (default). `valueFirst`: primary value on top like PIN rows. */
   lineOrder?: "labelFirst" | "valueFirst"
@@ -25,8 +27,8 @@ export interface ListItemProps {
   "aria-label"?: string
 }
 
-const ROW_HIT =
-  "flex w-full flex-col items-stretch border-none bg-transparent px-6 py-0 text-left text-inherit no-underline decoration-transparent visited:text-inherit"
+const ROW_HIT_BASE =
+  "flex w-full flex-col items-stretch border-none bg-transparent py-0 text-left text-inherit no-underline decoration-transparent visited:text-inherit"
 
 /**
  * Two-line list row: icon, label (body-s secondary) + value (body-m primary), optional chevron.
@@ -40,6 +42,7 @@ export function ListItem({
   interactive = true,
   onPress,
   showSeparator = true,
+  horizontalPadding = "default",
   labelColor = "secondary",
   lineOrder = "labelFirst",
   href,
@@ -97,7 +100,8 @@ export function ListItem({
   )
 
   const isActionable = Boolean(href) || (interactive && Boolean(onPress))
-  const mergedClass = [ROW_HIT, isActionable ? "cursor-pointer" : "", className]
+  const rowHit = `${ROW_HIT_BASE} ${horizontalPadding === "none" ? "px-0" : "px-6"}`
+  const mergedClass = [rowHit, isActionable ? "cursor-pointer" : "", className]
     .filter(Boolean)
     .join(" ")
 

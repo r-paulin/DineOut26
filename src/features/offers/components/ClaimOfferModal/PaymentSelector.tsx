@@ -22,8 +22,11 @@ const PROMO_TRANSITION_MS = 300
 const PAYMENT_OPTION_LABEL_CLASS =
   "flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4"
 
+/** Full-bleed section rule (Figma `16144:19972`). */
+const SECTION_SEPARATOR_CLASS = "h-px w-full shrink-0 bg-separator"
+
 /**
- * Payment method radios + DineOut-only inline promo (Figma MODAL / Claiming offer).
+ * Payment method radios + DineOut-only inline promo (Figma `16144:19972`).
  * Promo slot uses CSS grid `0fr` → `1fr` (same pattern as venue accordions) so height
  * is not tweened via GSAP — avoids measure/clearProps flashes on enter and exit.
  */
@@ -106,7 +109,7 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
             </Typography>
           </div>
         </div>
-        <div className="mt-0 h-px w-full shrink-0 bg-separator" aria-hidden />
+        <div className={SECTION_SEPARATOR_CLASS} aria-hidden />
       </div>
 
       <div className="px-6 pt-0">
@@ -120,7 +123,7 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
             Payment method
           </span>
           <div className="flex w-full flex-col">
-            <div className="w-full border-b border-separator">
+            <div className="w-full">
               <label
                 htmlFor={`${groupName}-dineout`}
                 className={PAYMENT_OPTION_LABEL_CLASS}
@@ -150,7 +153,7 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
         </RadioGroup>
       </div>
 
-      <div className="min-h-0 px-6 pb-8 pt-0">
+      <div className="min-h-0 px-6 pb-3 pt-3">
         <div
           className={promoGridClass}
           style={transitionStyle}
@@ -182,6 +185,8 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
           </div>
         </div>
       </div>
+
+      <div className={SECTION_SEPARATOR_CLASS} aria-hidden />
     </div>
   )
 }

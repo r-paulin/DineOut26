@@ -15,6 +15,7 @@ export interface MapPlaceCardOpenedProps {
   onRestaurantPress?: (slug: string) => void
   /** Brief pulse layout while discover filters apply (close stays usable). */
   filterPending?: boolean
+  liveNowFilter?: boolean
 }
 
 /**
@@ -26,6 +27,7 @@ export function MapPlaceCardOpened({
   onClose,
   onRestaurantPress,
   filterPending = false,
+  liveNowFilter = false,
 }: MapPlaceCardOpenedProps) {
   const view = mapOfferToRestaurantCardView(offer)
   const slug = offer.restaurantSlug ?? offer.id
@@ -81,6 +83,7 @@ export function MapPlaceCardOpened({
               campaign={offer.campaign}
               restaurantSlug={slug}
               density="comfortable"
+              liveNowFilter={liveNowFilter}
             />
           </div>
           {filterPending ? (

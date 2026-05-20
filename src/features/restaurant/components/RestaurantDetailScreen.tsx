@@ -14,9 +14,7 @@ import { useRestaurantHeroStatusPill } from "@/features/restaurant/hooks/useRest
 import type { RestaurantDetailScreenProps } from "@/features/restaurant/restaurantDetail.types"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { toTelHref } from "@/shared/utils/telHref"
-import { RestaurantBenefitPromoSheet } from "./RestaurantBenefitPromoSheet"
 import { RestaurantDetailAtVenueBar } from "./RestaurantDetailAtVenueBar"
-import { RestaurantDetailBenefitsSection } from "./RestaurantDetailBenefitsSection"
 import { RestaurantDetailHeader } from "./RestaurantDetailHeader"
 import { RestaurantDetailOffersSection } from "./RestaurantDetailOffersSection"
 import { RestaurantDetailQuickActions } from "./RestaurantDetailQuickActions"
@@ -93,6 +91,7 @@ export function RestaurantDetailScreen({
   const aboutStackRef = useRef<HTMLDivElement>(null)
   const onBackRef = useRef(onBack)
   const aboutExitingRef = useRef(false)
+  const venueBarExitRef = useRef<(() => void) | null>(null)
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
     {
       motionDurationS: DETAIL_MOTION_S,
@@ -108,10 +107,6 @@ export function RestaurantDetailScreen({
   const [openHoursSheetOpen, setOpenHoursSheetOpen] = useState(false)
   const [menuGalleryOpen, setMenuGalleryOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
-  const [benefitPromoOpen, setBenefitPromoOpen] = useState(false)
-  const [benefitPromoVariant, setBenefitPromoVariant] = useState<
-    "dineout40" | "visa10"
-  >("dineout40")
   const [reportProblemOpen, setReportProblemOpen] = useState(false)
   const { titleOpacity, onScroll } = useRestaurantDetailHeaderTitle()
   const statusPill = useRestaurantHeroStatusPill(model.weeklyOpenHours)
@@ -124,23 +119,21 @@ export function RestaurantDetailScreen({
   const mapsHref = googleMapsSearchUrl(model.address)
   const telHref = toTelHref(model.phone)
 
-  const handleBenefitRowPress = useCallback((benefitId: string) => {
-    if (benefitId === "b1") {
-      setBenefitPromoVariant("dineout40")
-      setBenefitPromoOpen(true)
-    } else if (benefitId === "b2") {
-      setBenefitPromoVariant("visa10")
-      setBenefitPromoOpen(true)
-    }
-  }, [])
-
   useEffect(() => {
     onBackRef.current = onBack
   }, [onBack])
 
   const handleAnimatedBack = useCallback(() => {
+    venueBarExitRef.current?.()
     runExit()
   }, [runExit])
+
+  const registerVenueBarExit = useCallback(
+    (runVenueBarExit: (() => void) | null) => {
+      venueBarExitRef.current = runVenueBarExit
+    },
+    [],
+  )
 
   /**
    * About opens as an in-stack page (same shell as detail): horizontal slide
@@ -322,7 +315,7 @@ export function RestaurantDetailScreen({
             onScroll={handleScroll}
             style={{
               paddingBottom:
-                "calc(env(safe-area-inset-bottom, 0px) + 7rem)",
+                "calc(env(safe-area-inset-bottom, 0px) + 10rem)",
             }}
             aria-hidden={aboutOpen}
           >
@@ -375,6 +368,7 @@ export function RestaurantDetailScreen({
                 }
                 onOpenDetails={openAbout}
               />
+              <RestaurantDetailSectionDivider />
               <RestaurantDetailOffersSection
                 tabs={model.offerDateTabs}
                 offersByTabId={model.offersByTabId}
@@ -382,10 +376,6 @@ export function RestaurantDetailScreen({
                 claimedOffersById={claimedOffersById}
                 onOfferAvailablePress={onOfferAvailablePress}
                 onOfferClaimedPress={onOfferClaimedPress}
-              />
-              <RestaurantDetailBenefitsSection
-                benefits={model.benefits}
-                onBenefitRowPress={handleBenefitRowPress}
               />
             </div>
             <RestaurantDetailSectionDivider />
@@ -476,6 +466,7 @@ export function RestaurantDetailScreen({
             <RestaurantDetailAtVenueBar
               onPress={onPayBill}
               animateIn={!aboutOpen}
+              onExitAnimationRef={registerVenueBarExit}
             />
           : null}
         </div>
@@ -499,12 +490,6 @@ export function RestaurantDetailScreen({
         isOpen={menuGalleryOpen}
         onOpenChange={setMenuGalleryOpen}
         imageUrls={model.menuGalleryImages}
-        container={portalRoot}
-      />
-      <RestaurantBenefitPromoSheet
-        isOpen={benefitPromoOpen}
-        onOpenChange={setBenefitPromoOpen}
-        variant={benefitPromoVariant}
         container={portalRoot}
       />
       <RestaurantReportProblemSheet

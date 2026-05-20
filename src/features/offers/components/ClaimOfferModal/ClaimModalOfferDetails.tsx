@@ -10,13 +10,12 @@ export function ClaimModalOfferDetails({ offer }: { offer: ClaimOfferModalOffer 
   const rows = formatClaimModalOfferDetailRows(offer)
 
   return (
-    <div className="flex flex-col px-6 pb-3 pt-0">
-      <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
-      <div className="pb-1 pt-3">
+    <div className="flex flex-col px-6 pb-3 pt-3">
+      <div className="pb-1">
         <Typography
-          variant="body-s-accent"
+          variant="heading-xs-accent"
           color="primary"
-          as="p"
+          as="h2"
           inlineStyle={SEMIBOLD}
         >
           Offer details

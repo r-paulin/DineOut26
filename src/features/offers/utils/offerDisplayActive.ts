@@ -5,14 +5,89 @@ import type {
   TimedOfferWindow,
 } from "@/features/offers/data/restaurantOffers.types"
 
-/** Minutes before window start when the Offer icon turns green (Figma). */
+/** Minutes before window start when the campaign PercentFlower turns red (Figma). */
 export const OFFER_ICON_PRE_START_GRACE_MINUTES = 15
 
-export const OFFER_ICON_ACTIVE_CLASS =
-  "shrink-0 text-[var(--content-action-primary-inverted)]"
+export type OfferCampaignSurface = "cardBadge" | "mapPin" | "mapPinSelected"
 
-export const OFFER_ICON_INACTIVE_CLASS =
-  "shrink-0 text-[var(--content-secondary-inverted)]"
+const ICON_SHRINK = "shrink-0"
+
+/** Figma `static/content/secondary-light` — inactive PercentFlower on dark badges. */
+const ICON_INACTIVE_ON_DARK_PILL = `${ICON_SHRINK} text-[var(--color-static-content-secondary-light)]`
+
+export function getOfferCampaignPillClass(surface: OfferCampaignSurface): string {
+  if (surface === "mapPinSelected") return "bg-danger-primary"
+  if (surface === "mapPin") return "bg-layer-floor-1"
+  return "bg-neutral-primary"
+}
+
+/** Card-badge icon sits on the red segment — no inner chip (Figma `16159:22611`). */
+export function getOfferCampaignIconChipClass(
+  surface: OfferCampaignSurface,
+  _iconActive: boolean,
+  _comfortable: boolean,
+): string | null {
+  if (surface === "cardBadge") return null
+  return null
+}
+
+export function getOfferCampaignIconClass(
+  surface: OfferCampaignSurface,
+  iconActive: boolean,
+): string {
+  if (surface === "mapPinSelected") {
+    return `${ICON_SHRINK} text-static-key-light`
+  }
+  if (!iconActive) {
+    return surface === "cardBadge" ?
+        ICON_INACTIVE_ON_DARK_PILL
+      : `${ICON_SHRINK} text-tertiary`
+  }
+  if (surface === "cardBadge") {
+    return `${ICON_SHRINK} text-static-key-light`
+  }
+  return `${ICON_SHRINK} text-danger-primary`
+}
+
+export function getOfferCampaignDiscountTextClass(
+  surface: OfferCampaignSurface,
+): string {
+  if (surface === "mapPinSelected") {
+    return "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"
+  }
+  if (surface === "mapPin") {
+    return "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-primary"
+  }
+  return ""
+}
+
+const BADGE_TEXT_SEMIBOLD =
+  "[font-variation-settings:'wght'_var(--font-weight-semibold)]"
+
+export function getOfferCampaignBadgeMainTextClass(comfortable: boolean): string {
+  const size =
+    comfortable ?
+      "text-sm leading-5 whitespace-nowrap"
+    : "text-xs leading-4 whitespace-nowrap"
+  return `${size} ${BADGE_TEXT_SEMIBOLD} text-static-key-light`
+}
+
+export function getOfferCampaignBadgeDotTextClass(comfortable: boolean): string {
+  const size =
+    comfortable ? "text-sm leading-5 shrink-0" : "text-xs leading-4 shrink-0"
+  return `${size} ${BADGE_TEXT_SEMIBOLD} text-static-key-light`
+}
+
+/** Time segment on card badges (Figma `15735:21955`). */
+export function getOfferCampaignBadgeTimeTextClass(comfortable: boolean): string {
+  return comfortable ?
+      "text-sm leading-5 font-normal whitespace-nowrap"
+    : "text-xs leading-4 font-normal whitespace-nowrap"
+}
+
+export const OFFER_CAMPAIGN_BADGE_TIME_STYLE = {
+  color: "var(--color-static-content-secondary-light)",
+} as const
 
 const OFFER_DISPLAY_CLOCK_TICK_MS = 30_000
 
@@ -94,7 +169,7 @@ export function campaignTimeWindowDisplayActive(
 }
 
 export function offerBadgeIconClass(iconActive: boolean): string {
-  return iconActive ? OFFER_ICON_ACTIVE_CLASS : OFFER_ICON_INACTIVE_CLASS
+  return getOfferCampaignIconClass("cardBadge", iconActive)
 }
 
 /** Device clock for offer icon color; ticks when timed offers may change state. */

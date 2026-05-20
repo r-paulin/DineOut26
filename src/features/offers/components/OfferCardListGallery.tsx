@@ -8,6 +8,7 @@ export interface OfferCardListGalleryProps {
   campaign: OfferCardCampaign
   /** When set, hero badges use timed-offer stack (up to three rows). */
   restaurantSlug?: string
+  liveNowFilter?: boolean
 }
 
 const R12 = "rounded-[12px]"
@@ -40,6 +41,7 @@ export function OfferCardListGallery({
   photos,
   campaign,
   restaurantSlug,
+  liveNowFilter,
 }: OfferCardListGalleryProps) {
   const list = photos.slice(0, MAX_PHOTOS)
   const src = (i: number) => list[i]
@@ -73,7 +75,11 @@ export function OfferCardListGallery({
           style={{ background: IMAGE_GRAD }}
         />
         <div className="absolute left-3 top-3 flex max-w-[90%] flex-col items-start">
-          <OfferCardBadges campaign={campaign} restaurantSlug={restaurantSlug} />
+          <OfferCardBadges
+            campaign={campaign}
+            restaurantSlug={restaurantSlug}
+            liveNowFilter={liveNowFilter}
+          />
         </div>
       </div>
 

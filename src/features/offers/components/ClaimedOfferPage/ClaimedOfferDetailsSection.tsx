@@ -1,12 +1,17 @@
+import { Typography } from "@bolteu/kalep-react"
 import Calendar from "@bolteu/kalep-react-icons/dist/Calendar"
+import Offer from "@bolteu/kalep-react-icons/dist/Offer"
 import Payment from "@bolteu/kalep-react-icons/dist/Payment"
-import Pool from "@bolteu/kalep-react-icons/dist/Pool"
+import User from "@bolteu/kalep-react-icons/dist/User"
+import type { ReactElement } from "react"
 import type { PaymentMethod } from "@/features/offers/offers.types"
-import { ClaimedOfferDiscountRow } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDiscountRow"
-import { formatOfferWindowClosesLabel } from "@/features/offers/components/ClaimedOfferPage/useOfferCountdown"
+import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import {
   ROW_ICON_CLASS,
-  formatClaimedOfferMenuLabel,
+  SEMIBOLD,
+  formatClaimedOfferFoodLabel,
+  formatClaimedOfferPaymentLabel,
+  formatGuestCountLabel,
 } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
 import { ListItem } from "@/shared/components/ListItem"
 
@@ -17,8 +22,6 @@ export interface ClaimedOfferDetailsSectionProps {
   discountPercent: number
   offerDetailLabel?: string
   paymentMethod: PaymentMethod
-  expired: boolean
-  countdownHms: string
 }
 
 export function ClaimedOfferDetailsSection({
@@ -28,54 +31,71 @@ export function ClaimedOfferDetailsSection({
   discountPercent,
   offerDetailLabel,
   paymentMethod,
-  expired,
-  countdownHms,
 }: ClaimedOfferDetailsSectionProps) {
-  const countdownLabel = formatOfferWindowClosesLabel(expired, countdownHms)
-  const offerLabel =
-    offerDetailLabel ?? formatClaimedOfferMenuLabel(discountPercent)
-  const paymentValue =
-    paymentMethod === "dineout" ? "Pay with Bolt DineOut" : "Pay by card or cash"
+  const offerLabel = offerDetailLabel ?? formatClaimedOfferFoodLabel(discountPercent)
+  const paymentValue = formatClaimedOfferPaymentLabel(paymentMethod)
+  const guestValue = formatGuestCountLabel(guestCount)
 
   return (
-    <ul className="m-0 flex list-none flex-col p-0 pb-6">
-      <li className="m-0 p-0">
-        <ListItem
+    <section
+      className={claimedOfferLayout.offerDetailsBlock}
+      aria-label="Offer details"
+    >
+      <div className={claimedOfferLayout.sectionHeadingPx}>
+        <Typography
+          variant="heading-s-accent"
+          color="primary"
+          as="h2"
+          inlineStyle={SEMIBOLD}
+        >
+          Offer details
+        </Typography>
+      </div>
+      <ul className={claimedOfferLayout.detailsList}>
+        <ClaimedOfferDetailRow
           icon={<Calendar size="md" className={ROW_ICON_CLASS} aria-hidden />}
-          lineOrder="valueFirst"
-          label={countdownLabel}
+          label="Date"
           value={`${arrivalDate} · ${arrivalTime}`}
-          labelColor={expired ? "danger-primary" : "secondary"}
-          showChevron={false}
-          interactive={false}
-          showSeparator={false}
         />
-      </li>
-      <li className="m-0 p-0">
-        <ListItem
-          icon={<Pool size="md" className={ROW_ICON_CLASS} aria-hidden />}
-          lineOrder="valueFirst"
-          label="Table availability depends on the venue"
-          value={`${guestCount} guests`}
-          showChevron={false}
-          interactive={false}
-          showSeparator={false}
+        <ClaimedOfferDetailRow
+          icon={<User size="md" className={ROW_ICON_CLASS} aria-hidden />}
+          label="Number of guests"
+          value={guestValue}
         />
-      </li>
-      <li className="m-0 p-0">
-        <ClaimedOfferDiscountRow label={offerLabel} />
-      </li>
-      <li className="m-0 p-0">
-        <ListItem
+        <ClaimedOfferDetailRow
+          icon={<Offer size="md" className={ROW_ICON_CLASS} aria-hidden />}
+          label="Offer"
+          value={offerLabel}
+        />
+        <ClaimedOfferDetailRow
           icon={<Payment size="md" className={ROW_ICON_CLASS} aria-hidden />}
-          lineOrder="valueFirst"
-          label=""
+          label="Payment method"
           value={paymentValue}
-          showChevron={false}
-          interactive={false}
-          showSeparator={false}
         />
-      </li>
-    </ul>
+      </ul>
+    </section>
+  )
+}
+
+interface ClaimedOfferDetailRowProps {
+  icon: ReactElement
+  label: string
+  value: string
+}
+
+function ClaimedOfferDetailRow({ icon, label, value }: ClaimedOfferDetailRowProps) {
+  return (
+    <li className="m-0 p-0">
+      <ListItem
+        icon={icon}
+        label={label}
+        value={value}
+        showChevron={false}
+        interactive={false}
+        showSeparator={false}
+        horizontalPadding="none"
+        className={claimedOfferLayout.sectionHeadingPx}
+      />
+    </li>
   )
 }

@@ -1,13 +1,18 @@
-import Offer from "@bolteu/kalep-react-icons/dist/Offer"
+import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
 import Percent from "@bolteu/kalep-react-icons/dist/Percent"
 import Wallet from "@bolteu/kalep-react-icons/dist/Wallet"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import type { MapMarkerData } from "@/features/map/map.types"
+import {
+  getOfferCampaignDiscountTextClass,
+  getOfferCampaignIconClass,
+  getOfferCampaignPillClass,
+} from "@/features/offers/utils/offerDisplayActive"
 import { MapPinTail } from "./MapPinTail"
 
 export interface MapPinContentProps {
   marker: MapMarkerData
-  /** Map pin selection — dark pill + mint icon (Figma 15809:12977). */
+  /** Selected map pin — red pill + white icon/text (Figma `16081:13158`). */
   selected?: boolean
 }
 
@@ -20,16 +25,11 @@ export function MapPinContent({ marker, selected }: MapPinContentProps) {
   const { variant, label, sublabel, discountText, timedOfferActiveNow } = marker
 
   if (variant === "map_pin") {
-    const pillClass = selected ? "bg-neutral-primary" : "bg-layer-floor-1"
-    const iconClass =
-      selected ?
-        "shrink-0 text-action-primary-inverted"
-      : timedOfferActiveNow === false ?
-        "shrink-0 text-tertiary"
-      : "shrink-0 text-action-primary"
-    const discountClass = selected
-      ? "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"
-      : "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-primary"
+    const iconActive = timedOfferActiveNow !== false
+    const surface: "mapPin" | "mapPinSelected" = selected ? "mapPinSelected" : "mapPin"
+    const pillClass = getOfferCampaignPillClass(surface)
+    const iconClass = getOfferCampaignIconClass(surface, iconActive)
+    const discountClass = getOfferCampaignDiscountTextClass(surface)
     const showDiscountPill = Boolean(discountText)
 
     return (
@@ -42,7 +42,7 @@ export function MapPinContent({ marker, selected }: MapPinContentProps) {
             <div
               className={`relative z-[2] -mb-0.5 flex items-center gap-[0.3125rem] rounded-full px-2 py-1 ${pillClass}`}
             >
-              <Offer size="xs" className={iconClass} />
+              <PercentFlower size="xs" className={iconClass} aria-hidden />
               <span className={discountClass}>{discountText}</span>
             </div>
             <MapPinTail selected={selected} />

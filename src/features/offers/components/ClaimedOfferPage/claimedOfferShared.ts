@@ -1,21 +1,37 @@
+import type { PaymentMethod } from "@/features/offers/offers.types"
+
 export const ROW_ICON_CLASS = "shrink-0 text-action-primary"
 
 export const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
-export const PIN_DISPLAY_STYLE = {
-  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
-  fontSize: "56px",
-  lineHeight: "72px",
-  letterSpacing: "-1.232px",
+/** Figma `static/content/primary-light` on `bg-special-brand-alt` hero. */
+export const HERO_ON_DARK_TEXT_STYLE = {
+  color: "var(--color-static-content-primary-light)",
 } as const
 
-export function boltRideUrl(destination: string): string {
-  return `https://bolt.eu/?dropoff=${encodeURIComponent(destination)}`
+/** Figma claimed-offer details row — e.g. "30% discount on food" (`16123:18340`). */
+export function formatClaimedOfferFoodLabel(discountPercent: number): string {
+  return `${discountPercent}% discount on food`
 }
 
-/** Figma claimed-offer details row — e.g. "30% discount on menu". */
-export function formatClaimedOfferMenuLabel(discountPercent: number): string {
-  return `${discountPercent}% discount on menu`
+/** Pay footer subtitle (Figma `16123:18340`). */
+export function formatClaimedOfferDiscountSubtitle(discountPercent: number): string {
+  return `${discountPercent}% discount`
+}
+
+export function formatClaimedOfferPaymentLabel(paymentMethod: PaymentMethod): string {
+  return paymentMethod === "dineout" ?
+      "Paying with Bolt DineOut"
+    : "Paying by card or cash"
+}
+
+export function formatWelcomeAtRestaurant(restaurantName: string): string {
+  return `Welcome at ${restaurantName}`
+}
+
+/** Figma claimed-offer details row — singular/plural-safe guest count. */
+export function formatGuestCountLabel(guestCount: number): string {
+  return guestCount === 1 ? "1 guest" : `${guestCount} guests`
 }

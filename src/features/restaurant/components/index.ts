@@ -2,18 +2,11 @@ export { AtVenueNoClaimedOffersSheet } from "./AtVenueNoClaimedOffersSheet"
 export type { AtVenueNoClaimedOffersSheetProps } from "./AtVenueNoClaimedOffersSheet"
 export { RestaurantOfferClaimInfoSheet } from "./RestaurantOfferClaimInfoSheet"
 export type { RestaurantOfferClaimInfoSheetProps } from "./RestaurantOfferClaimInfoSheet"
-export { RestaurantBenefitPromoSheet } from "./RestaurantBenefitPromoSheet"
-export type {
-  RestaurantBenefitPromoSheetProps,
-  RestaurantBenefitPromoVariant,
-} from "./RestaurantBenefitPromoSheet"
 export { RestaurantAbout } from "./RestaurantAbout"
 export type {
   RestaurantAboutProps,
   RestaurantAboutRestaurant,
 } from "./RestaurantAbout"
-export { RestaurantDetailBenefitsSection } from "./RestaurantDetailBenefitsSection"
-export type { RestaurantDetailBenefitsSectionProps } from "./RestaurantDetailBenefitsSection"
 export { RestaurantDetailHeader } from "./RestaurantDetailHeader"
 export type { RestaurantDetailHeaderProps } from "./RestaurantDetailHeader"
 export { RestaurantMenuGalleryModal } from "./RestaurantMenuGalleryModal"

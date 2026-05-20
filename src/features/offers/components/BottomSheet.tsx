@@ -42,6 +42,9 @@ export interface BottomSheetProps {
   docked?: boolean
   /** Bumps when discover search stack height is measured so sheet heights match layout. */
   discoverLayoutEpoch?: number
+  liveNowFilter?: boolean
+  showFilteredEmpty?: boolean
+  onResetFilters?: () => void
 }
 
 /**
@@ -71,6 +74,9 @@ export function BottomSheet({
   onOpenAdminPlaces,
   docked = false,
   discoverLayoutEpoch = 0,
+  liveNowFilter = false,
+  showFilteredEmpty = false,
+  onResetFilters,
 }: BottomSheetProps) {
   const [howItWorksOpen, setHowItWorksOpen] = useState(false)
   const {
@@ -176,6 +182,9 @@ export function BottomSheet({
         claimedOffersById={claimedOffersById}
         onHomeClaimedOfferPress={onHomeClaimedOfferPress}
         onOpenAdminPlaces={onOpenAdminPlaces}
+        liveNowFilter={liveNowFilter}
+        showFilteredEmpty={showFilteredEmpty}
+        onResetFilters={onResetFilters}
       />
     </div>
   )

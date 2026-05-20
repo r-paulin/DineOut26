@@ -1,13 +1,14 @@
 import { Button, Dialog, Typography } from "@bolteu/kalep-react"
+import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import { CustomEase } from "gsap/CustomEase"
-import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { ClaimedOfferCancelRow } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferCancelRow"
 import { ClaimedOfferDetailsSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDetailsSection"
 import { ClaimedOfferDisclaimer } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDisclaimer"
-import { ClaimedOfferGettingThereSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferGettingThereSection"
-import { ClaimedOfferNavBar } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferNavBar"
+import { ClaimedOfferHeroSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferHeroSection"
 import { ClaimedOfferPayFooter } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferPayFooter"
-import { ClaimedOfferPinCard } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferPinCard"
+import { ClaimedOfferVenueSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferVenueSection"
+import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 import { cancelOffer } from "@/features/offers/utils/claimOffer"
 import { Z_CLAIMED_OFFER_PAGE } from "@/features/restaurant/constants/screenLayers"
@@ -17,7 +18,7 @@ import { useSnackbar } from "@/shared/snackbar"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 import { toTelHref } from "@/shared/utils/telHref"
-import { useOfferCountdown } from "./useOfferCountdown"
+import { useOfferExpired } from "./useOfferCountdown"
 
 const EASE_ENTER = CustomEase.create("claimedEnter", "M0,0,C0.32,0.72,0,1,1,1")
 const EASE_EXIT = CustomEase.create("claimedExit", "M0,0,C0.58,0,0.92,0.36,1,1")
@@ -41,6 +42,7 @@ export interface ClaimedOfferPageProps {
     paymentMethod: PaymentMethod
     discountPercent: number
     offerDetailLabel?: string
+    minOrderEur?: number
     promoText?: string
   }
   onClose: () => void
@@ -62,14 +64,13 @@ export function ClaimedOfferPage({
   onPayWithBoltDineOut,
   portalContainer,
 }: ClaimedOfferPageProps) {
-  void portalContainer
   const onCloseRef = useRef(onClose)
   const onCancelOfferRef = useRef(onCancelOffer)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancelDialogPortal, setCancelDialogPortal] = useState<HTMLElement | null>(
-    null,
+    portalContainer ?? null,
   )
-  const { expired, countdownHms } = useOfferCountdown(claim.offerWindowCloses)
+  const expired = useOfferExpired(claim.offerWindowCloses)
   const showDineOutFooter = claim.paymentMethod === "dineout"
 
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
@@ -94,9 +95,14 @@ export function ClaimedOfferPage({
     onCancelOfferRef.current = onCancelOffer
   }, [onClose, onCancelOffer])
 
+  useEffect(() => {
+    const active = document.activeElement
+    if (active instanceof HTMLElement) active.blur()
+  }, [])
+
   useLayoutEffect(() => {
-    setCancelDialogPortal(rootRef.current)
-  }, [cancelDialogOpen])
+    setCancelDialogPortal(portalContainer ?? rootRef.current)
+  }, [portalContainer, rootRef])
 
   const handleAnimatedClose = useCallback(() => {
     runExit()
@@ -116,7 +122,10 @@ export function ClaimedOfferPage({
     }
   }, [onPayWithBoltDineOut])
 
-  const scrollBottomPad = showDineOutFooter ? "pb-40" : "pb-8"
+  const lightBodyBottomPad =
+    showDineOutFooter ?
+      claimedOfferLayout.lightBodyPadWithFooter
+    : claimedOfferLayout.lightBodyPadNoFooter
 
   return (
     <div
@@ -135,52 +144,66 @@ export function ClaimedOfferPage({
       />
       <div
         ref={panelRef}
-        className="relative z-[1] flex min-h-0 w-full flex-1 flex-col overflow-hidden shadow-[-6px_0_20px_rgba(0,0,0,0.06)]"
+        className="relative z-[1] flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-special-brand-alt shadow-[-6px_0_20px_rgba(0,0,0,0.06)]"
       >
-        <ClaimedOfferNavBar onBack={handleAnimatedClose} />
-
-        <div
-          className={`min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-layer-floor-1 ${scrollBottomPad}`}
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={handleAnimatedClose}
+          className={claimedOfferLayout.fixedClose}
         >
-          <ClaimedOfferPinCard restaurantName={restaurant.name} pin={claim.pin} />
+          <Cross size="md" className="text-static-key-dark" aria-hidden />
+        </button>
 
-          <ClaimedOfferDetailsSection
-            arrivalDate={claim.arrivalDate}
-            arrivalTime={claim.arrivalTime}
-            guestCount={claim.guestCount}
-            discountPercent={claim.discountPercent}
-            offerDetailLabel={claim.offerDetailLabel}
-            paymentMethod={claim.paymentMethod}
-            expired={expired}
-            countdownHms={countdownHms}
+        <div className={claimedOfferLayout.pageScroll}>
+          <ClaimedOfferHeroSection
+            restaurantName={restaurant.name}
+            pin={claim.pin}
+            offerWindowCloses={claim.offerWindowCloses}
           />
 
-          <CardDivider />
+          <div
+            data-mode="light"
+            className={`${claimedOfferLayout.lightBody} ${lightBodyBottomPad}`}
+          >
+            <ClaimedOfferDetailsSection
+              arrivalDate={claim.arrivalDate}
+              arrivalTime={claim.arrivalTime}
+              guestCount={claim.guestCount}
+              discountPercent={claim.discountPercent}
+              offerDetailLabel={claim.offerDetailLabel}
+              paymentMethod={claim.paymentMethod}
+            />
 
-          <ClaimedOfferGettingThereSection
-            address={restaurant.address}
-            phone={restaurant.phone}
-            mapsHref={mapsHref}
-            telHref={telHref ?? null}
-          />
+            <CardDivider />
 
-          <ClaimedOfferCancelRow onCancel={() => setCancelDialogOpen(true)} />
+            <ClaimedOfferVenueSection
+              restaurantName={restaurant.name}
+              address={restaurant.address}
+              phone={restaurant.phone}
+              mapsHref={mapsHref}
+              telHref={telHref ?? null}
+            />
 
-          <ClaimedOfferDisclaimer
-            onTermsPress={() => {
-              snackbar.add({
-                description:
-                  "Terms and conditions will be available in a future release.",
-                timeout: 4000,
-              })
-            }}
-          />
+            <ClaimedOfferCancelRow onCancel={() => setCancelDialogOpen(true)} />
 
+            <ClaimedOfferDisclaimer
+              minOrderEur={claim.minOrderEur}
+              onTermsPress={() => {
+                snackbar.add({
+                  description:
+                    "Terms and conditions will be available in a future release.",
+                  timeout: 4000,
+                })
+              }}
+            />
+          </div>
         </div>
 
         {showDineOutFooter ?
           <ClaimedOfferPayFooter
             anchorRef={snackbarAnchorRef}
+            discountPercent={claim.discountPercent}
             expired={expired}
             onPay={handlePay}
           />

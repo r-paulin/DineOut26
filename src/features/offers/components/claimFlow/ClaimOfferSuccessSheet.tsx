@@ -1,6 +1,7 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import MobilePayment from "@bolteu/kalep-react-icons/dist/MobilePayment"
+import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
 import Stop from "@bolteu/kalep-react-icons/dist/Stop"
 import Walk from "@bolteu/kalep-react-icons/dist/Walk"
 import type { ReactElement } from "react"
@@ -10,6 +11,30 @@ import {
   type ClaimOfferSuccessStep,
 } from "@/features/offers/constants/claimOfferSuccessSteps"
 import type { PaymentMethod } from "@/features/offers/offers.types"
+
+function getClaimSuccessStepIcons(
+  paymentMethod: PaymentMethod,
+): ReactElement[] {
+  const shared: ReactElement[] = [
+    <Walk key="walk" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
+    <Food key="food" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
+    <Receipt key="receipt" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
+  ]
+  return paymentMethod === "dineout" ?
+      [
+        ...shared,
+        <MobilePayment
+          key="pay"
+          size="lg"
+          className="shrink-0 text-action-primary"
+          aria-hidden
+        />,
+      ]
+    : [
+        ...shared,
+        <Stop key="pay" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
+      ]
+}
 import {
   Z_CLAIM_MODAL_CONTENT,
   Z_CLAIM_MODAL_OVERLAY,
@@ -19,25 +44,21 @@ const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
-const STEP_ICONS: ReactElement[] = [
-  <Walk key="walk" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-  <Food key="food" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-  <Stop key="stop" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-  <MobilePayment
-    key="pay"
-    size="lg"
-    className="shrink-0 text-action-primary"
-    aria-hidden
-  />,
-]
-
 export interface ClaimOfferSuccessSheetProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   discountPercent: number
   paymentMethod: PaymentMethod
+  restaurantName: string
   onDone: () => void
   container?: HTMLElement | null
+}
+
+export function formatHowToUseOfferAtRestaurant(restaurantName: string): string {
+  const name = restaurantName.trim()
+  return name.length > 0 ?
+      `How to use the offer at ${name}?`
+    : "How to use the offer?"
 }
 
 /**
@@ -48,11 +69,14 @@ export function ClaimOfferSuccessSheet({
   onOpenChange,
   discountPercent,
   paymentMethod,
+  restaurantName,
   onDone,
   container,
 }: ClaimOfferSuccessSheetProps) {
   const steps = getClaimOfferSuccessSteps(paymentMethod, discountPercent)
+  const stepIcons = getClaimSuccessStepIcons(paymentMethod)
   const title = `${discountPercent}% discount claimed`
+  const subtitle = formatHowToUseOfferAtRestaurant(restaurantName)
 
   return (
     <ClaimPromoSheetShell
@@ -81,22 +105,28 @@ export function ClaimOfferSuccessSheet({
           {title}
         </Typography>
         <Typography variant="body-m-regular" color="primary" as="p">
-          Use it in just a few steps
+          {subtitle}
         </Typography>
       </div>
 
-      <ClaimSuccessStepList steps={steps} />
+      <ClaimSuccessStepList steps={steps} stepIcons={stepIcons} />
     </ClaimPromoSheetShell>
   )
 }
 
-function ClaimSuccessStepList({ steps }: { steps: ClaimOfferSuccessStep[] }) {
+function ClaimSuccessStepList({
+  steps,
+  stepIcons,
+}: {
+  steps: ClaimOfferSuccessStep[]
+  stepIcons: ReactElement[]
+}) {
   return (
     <ul className="m-0 flex list-none flex-col px-6 pb-6">
       {steps.map((step, index) => (
         <li key={step.title}>
           <ClaimSuccessStepRow
-            icon={STEP_ICONS[index] ?? STEP_ICONS[0]!}
+            icon={stepIcons[index] ?? stepIcons[0]!}
             step={step}
           />
           {index < steps.length - 1 ?

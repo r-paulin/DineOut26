@@ -1,15 +1,34 @@
 import { Typography } from "@bolteu/kalep-react"
+import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
+import { formatEurMajor } from "@/features/payBill/utils/formatEur"
+
+const DEFAULT_MIN_ORDER_EUR = 10
 
 export interface ClaimedOfferDisclaimerProps {
+  minOrderEur?: number
   onTermsPress: () => void
 }
 
-export function ClaimedOfferDisclaimer({ onTermsPress }: ClaimedOfferDisclaimerProps) {
+export function ClaimedOfferDisclaimer({
+  minOrderEur = DEFAULT_MIN_ORDER_EUR,
+  onTermsPress,
+}: ClaimedOfferDisclaimerProps) {
   return (
-    <div className="flex flex-col gap-3 px-6 pb-6 pt-6">
+    <div className={claimedOfferLayout.disclaimer}>
       <Typography variant="body-s-regular" color="secondary" as="p">
-        Offers may exclude some items. Bolt Food offers can&apos;t be combined with
-        other offers at the venue and don&apos;t apply to delivery or pickup orders.
+        {`Minimum order value: ${formatEurMajor(minOrderEur)}.`}
+      </Typography>
+      <Typography variant="body-s-regular" color="secondary" as="p">
+        Applies to food items only.
+      </Typography>
+      <Typography variant="body-s-regular" color="secondary" as="p">
+        Offers are valid only for the selected number of guests and arrival time.
+        Late arrivals or additional guests may invalidate the offer. During busy
+        periods, you may need to wait for a table.
+      </Typography>
+      <Typography variant="body-s-regular" color="secondary" as="p">
+        Only one restaurant discount may be applied per bill. DineOut cashback or
+        payment rewards may be combined with restaurant discount where eligible.
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
         Venues may add a service charge and other{" "}

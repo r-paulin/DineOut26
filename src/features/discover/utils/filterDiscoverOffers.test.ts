@@ -6,6 +6,9 @@ import { useRestaurantCatalogStore } from "@/features/restaurants/restaurantCata
 import {
   filterOfferCardsForDiscover,
   getEffectiveOfferForDiscover,
+  isDiscoverEmptyTriggerFilter,
+  isTimedOfferLiveNow,
+  isTimedOfferWindowLiveAt,
   restaurantTimedOfferActiveAtTime,
   restaurantTimedOfferActiveNow,
 } from "./filterDiscoverOffers"
@@ -125,6 +128,57 @@ describe("getEffectiveOfferForDiscover", () => {
     expect(
       getEffectiveOfferForDiscover({ ...base, date: "2026-02-01", offer: "live" }),
     ).toBe("prebook")
+  })
+})
+
+describe("isTimedOfferWindowLiveAt", () => {
+  it("uses half-open range without pre-start grace", () => {
+    const window = { kind: "range" as const, start: "12:00", end: "15:00" }
+    expect(isTimedOfferWindowLiveAt(new Date(2026, 0, 7, 11, 44), window)).toBe(
+      false,
+    )
+    expect(isTimedOfferWindowLiveAt(new Date(2026, 0, 7, 12, 0), window)).toBe(
+      true,
+    )
+    expect(isTimedOfferWindowLiveAt(new Date(2026, 0, 7, 15, 0), window)).toBe(
+      false,
+    )
+  })
+})
+
+describe("isTimedOfferLiveNow", () => {
+  it("delegates to window live check", () => {
+    const o = {
+      discountPercent: 10,
+      window: { kind: "all-day" as const },
+      remainingSpots: 1,
+    }
+    expect(isTimedOfferLiveNow(o, new Date(2026, 0, 7, 3, 0))).toBe(true)
+  })
+})
+
+describe("isDiscoverEmptyTriggerFilter", () => {
+  it("is true for live, open now today, or price", () => {
+    const base = getDefaultFilterState()
+    expect(
+      isDiscoverEmptyTriggerFilter({ ...base, offer: "live" }),
+    ).toBe(true)
+    expect(
+      isDiscoverEmptyTriggerFilter({ ...base, openNow: true }),
+    ).toBe(true)
+    expect(
+      isDiscoverEmptyTriggerFilter({ ...base, price: "u10" }),
+    ).toBe(true)
+  })
+
+  it("is false for cuisine or amenity alone", () => {
+    const base = getDefaultFilterState()
+    expect(
+      isDiscoverEmptyTriggerFilter({ ...base, cuisine: "italian" }),
+    ).toBe(false)
+    expect(
+      isDiscoverEmptyTriggerFilter({ ...base, amenity: "outdoor-seating" }),
+    ).toBe(false)
   })
 })
 

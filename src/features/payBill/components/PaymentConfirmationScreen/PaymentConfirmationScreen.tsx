@@ -4,6 +4,7 @@ import paySuccessCheckmarkUrl from "@/features/payBill/assets/pay-success-checkm
 import { PaymentConfirmationNavbar } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationNavbar"
 import { PaymentConfirmationSummarySheet } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationSummarySheet"
 import { PaymentSuccessTitle } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentSuccessTitle"
+import { PAY_CONFIRM_NAV_RESERVE } from "@/features/payBill/components/PaymentConfirmationScreen/paymentConfirmationLayout"
 import { usePaymentConfirmationReveal } from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
 import { discountSecondEur } from "@/features/payBill/utils/discountCalc"
 import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
@@ -78,7 +79,10 @@ export function PaymentConfirmationScreen({
         onDismiss={onDismiss}
       />
 
-      <div className="relative min-h-0 flex-1 overflow-hidden">
+      <div
+        className="relative min-h-0 flex-1 overflow-hidden"
+        style={{ paddingTop: PAY_CONFIRM_NAV_RESERVE }}
+      >
         <div
           ref={heroBandRef}
           className="absolute inset-x-0 top-0 z-10 flex items-center justify-center overflow-hidden px-6"

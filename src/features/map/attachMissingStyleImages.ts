@@ -30,13 +30,5 @@ export function attachMissingStyleImageHandler(map: MaplibreMap): void {
     }
   }
 
-  const bind = () => {
-    map.on("styleimagemissing", onMissing)
-  }
-
-  if (map.isStyleLoaded()) {
-    bind()
-  } else {
-    map.once("style.load", bind)
-  }
+  map.on("styleimagemissing", onMissing)
 }
