@@ -48,6 +48,12 @@ export function parseTimedOffersFromJson(
     if (!isTimedOffer(row)) {
       return { ok: false, error: `Invalid offer at index ${i}` }
     }
+    if (row.window.kind === "all-day") {
+      return {
+        ok: false,
+        error: `All-day offers are not supported (index ${i}). Use a time range instead.`,
+      }
+    }
     const spots = (row as { remainingSpots?: unknown }).remainingSpots
     if (
       spots !== undefined &&

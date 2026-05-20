@@ -80,7 +80,7 @@ describe("formatLimitedAvailabilityLabel", () => {
 })
 
 describe("buildOfferBannerContent", () => {
-  it("active window: Claim now, no sticker, schedule line only", () => {
+  it("active window: Claim offer, no sticker, schedule line only", () => {
     const c = buildOfferBannerContent({
       state: "available",
       offer: baseOffer,
@@ -95,13 +95,13 @@ describe("buildOfferBannerContent", () => {
     expect(c.dataLines[0]?.text).toContain("Today")
     expect(c.action).toEqual({
       kind: "claim-now",
-      label: "Claim now",
+      label: "Claim offer",
       disabled: false,
     })
     expect(c.sticker).toBeNull()
   })
 
-  it("prebook: Claim now with availability sticker", () => {
+  it("prebook: Claim offer with availability sticker", () => {
     const c = buildOfferBannerContent({
       state: "available",
       offer: baseOffer,
@@ -113,7 +113,7 @@ describe("buildOfferBannerContent", () => {
     })
     expect(c.action).toEqual({
       kind: "claim-now",
-      label: "Claim now",
+      label: "Claim offer",
       disabled: false,
     })
     expect(c.sticker).toEqual({
@@ -123,7 +123,7 @@ describe("buildOfferBannerContent", () => {
     expect(c.outerShellTone).toBe("danger")
   })
 
-  it("locked: disabled Claim now and lock sticker", () => {
+  it("locked: disabled Claim offer and lock sticker", () => {
     const c = buildOfferBannerContent({
       state: "available",
       offer: baseOffer,

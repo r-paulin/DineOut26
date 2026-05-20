@@ -1,78 +1,155 @@
 import type { RestaurantTimedOffer } from "@/features/offers/data/restaurantOffers.types"
-import { isTimedOfferLiveNow } from "@/features/discover/utils/filterDiscoverOffers"
+import { isTimedOfferWindowLiveAt } from "@/features/discover/utils/filterDiscoverOffers"
+import { RESTAURANT_WEEKLY_OPEN_HOURS } from "@/features/restaurant/data/restaurantFixedOpenHours"
+import { buildOpenHoursUiState } from "@/features/restaurant/utils/restaurantOpenHoursUi"
 import { formatTimeWindowLabel } from "@/features/offers/utils/offerCampaign"
 
 export type BadgeStackMode = "default" | "liveNow"
+
+/** Prototype cap: at most five timed offers per venue per day. */
+export const MAX_BADGE_OFFERS_PER_VENUE = 5
 
 export type TimedOfferBadgeRow =
   | {
       kind: "offer"
       discountLabel: string
       timeWindow: string
-      /** White circle + red PercentFlower when true (Figma `16159:22611`). */
       iconActive: boolean
     }
   | {
       kind: "overflow"
-      /** Number of offers not shown in the first two pills (third pill text `+count offers`). */
+      /** Hidden count = total eligible offers minus the one shown. */
       count: number
       iconActive: boolean
     }
 
-function sortTimedOffersForBadges(
-  offers: readonly RestaurantTimedOffer[],
-): RestaurantTimedOffer[] {
-  return [...offers].map((o, index) => ({ o, index })).sort((a, b) => {
-    if (b.o.discountPercent !== a.o.discountPercent) {
-      return b.o.discountPercent - a.o.discountPercent
-    }
-    return a.index - b.index
-  }).map(({ o }) => o)
+function hhmmToMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number)
+  return h * 60 + (Number.isFinite(m) ? m : 0)
+}
+
+function minutesFromMidnight(d: Date): number {
+  return d.getHours() * 60 + d.getMinutes()
+}
+
+/** Range offers past end (half-open [start, end)) are hidden; all-day stays eligible. */
+export function isTimedOfferExpiredToday(
+  offer: RestaurantTimedOffer,
+  now: Date,
+): boolean {
+  const w = offer.window
+  if (w.kind === "all-day") return false
+  const m = minutesFromMidnight(now)
+  return m >= hhmmToMinutes(w.end)
+}
+
+/** Shared prototype weekly grid until per-venue hours exist in catalog. */
+export function isVenueOpenNow(now: Date): boolean {
+  return buildOpenHoursUiState(now, RESTAURANT_WEEKLY_OPEN_HOURS).isOpenNow
 }
 
 /**
- * Up to three map/list badge rows: concrete `-% · time` rows, then `+N offers`
- * when more than two timed offers exist (Figma `_Place / Card` stack).
+ * Live badge: ranged window contains now and venue is open.
+ * All-day uses “All day” copy and is sorted as claimable, not live.
+ */
+export function isOfferLiveForBadge(
+  offer: RestaurantTimedOffer,
+  now: Date,
+): boolean {
+  if (offer.window.kind === "all-day") return false
+  return (
+    isTimedOfferWindowLiveAt(now, offer.window) && isVenueOpenNow(now)
+  )
+}
+
+function offerStartMinutes(offer: RestaurantTimedOffer): number {
+  if (offer.window.kind === "all-day") return 0
+  return hhmmToMinutes(offer.window.start)
+}
+
+function compareOffersForBadgePriority(
+  a: RestaurantTimedOffer,
+  b: RestaurantTimedOffer,
+): number {
+  if (b.discountPercent !== a.discountPercent) {
+    return b.discountPercent - a.discountPercent
+  }
+  return offerStartMinutes(a) - offerStartMinutes(b)
+}
+
+export function formatBadgeTimeLabel(
+  offer: RestaurantTimedOffer,
+  now: Date,
+): string {
+  const w = offer.window
+  if (w.kind === "all-day") return "All day"
+  if (isOfferLiveForBadge(offer, now)) {
+    return `Until ${w.end}`
+  }
+  return formatTimeWindowLabel(w)
+}
+
+/**
+ * Non-expired offers, live first, then highest %, then earlier start.
+ * Capped at {@link MAX_BADGE_OFFERS_PER_VENUE}.
+ */
+export function sortOffersForBadgeDisplay(
+  offers: readonly RestaurantTimedOffer[],
+  now: Date,
+): RestaurantTimedOffer[] {
+  const eligible = offers
+    .filter((o) => !isTimedOfferExpiredToday(o, now))
+    .slice(0, MAX_BADGE_OFFERS_PER_VENUE)
+
+  const liveCandidates = eligible
+    .filter((o) => isOfferLiveForBadge(o, now))
+    .sort(compareOffersForBadgePriority)
+  const liveOffer = liveCandidates[0]
+  const rest = eligible
+    .filter((o) => o !== liveOffer)
+    .sort(compareOffersForBadgePriority)
+
+  return liveOffer ? [liveOffer, ...rest] : rest
+}
+
+/**
+ * Badge stack: 1 → one pill; 2 → two pills; 3–5 → best offer + `+N offers` (N = total − 1).
  *
- * - `default`: all offers; icons always active (claimable — no grey).
- * - `liveNow`: only strict-live windows; icons active on visible rows.
+ * `liveNow` mode keeps only venue-open live windows, then the same stack rules.
  */
 export function buildTimedOfferBadgeModels(
   offers: readonly RestaurantTimedOffer[],
   now: Date = new Date(),
   mode: BadgeStackMode = "default",
 ): TimedOfferBadgeRow[] {
-  if (offers.length === 0) return []
+  let ordered = sortOffersForBadgeDisplay(offers, now)
 
-  const sorted =
-    mode === "liveNow" ?
-      sortTimedOffersForBadges(offers).filter((o) => isTimedOfferLiveNow(o, now))
-    : sortTimedOffersForBadges(offers)
+  if (mode === "liveNow") {
+    ordered = ordered.filter((o) => isOfferLiveForBadge(o, now))
+  }
 
-  if (sorted.length === 0) return []
-
-  const iconActiveFor = (_offer: RestaurantTimedOffer): boolean => true
+  if (ordered.length === 0) return []
 
   const offerRow = (offer: RestaurantTimedOffer): TimedOfferBadgeRow => ({
     kind: "offer",
     discountLabel: `-${offer.discountPercent}%`,
-    timeWindow: formatTimeWindowLabel(offer.window),
-    iconActive: iconActiveFor(offer),
+    timeWindow: formatBadgeTimeLabel(offer, now),
+    iconActive: true,
   })
 
-  if (sorted.length <= 3) {
-    return sorted.map(offerRow)
+  if (ordered.length === 1) {
+    return [offerRow(ordered[0]!)]
   }
 
-  const [a, b] = sorted
-  const hidden = sorted.slice(2)
-  const overflow = hidden.length
+  if (ordered.length === 2) {
+    return ordered.map(offerRow)
+  }
+
   return [
-    offerRow(a),
-    offerRow(b),
+    offerRow(ordered[0]!),
     {
       kind: "overflow",
-      count: overflow,
+      count: ordered.length - 1,
       iconActive: true,
     },
   ]

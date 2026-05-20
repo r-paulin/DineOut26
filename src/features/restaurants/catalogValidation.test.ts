@@ -10,9 +10,12 @@ beforeEach(() => {
 })
 
 describe("parseTimedOffersFromJson", () => {
-  it("accepts valid array", () => {
+  it("accepts valid ranged offers", () => {
     const json = JSON.stringify([
-      { discountPercent: 10, window: { kind: "all-day" } },
+      {
+        discountPercent: 10,
+        window: { kind: "range", start: "10:00", end: "17:00" },
+      },
       {
         discountPercent: 20,
         window: { kind: "range", start: "12:00", end: "15:00" },
@@ -25,6 +28,16 @@ describe("parseTimedOffersFromJson", () => {
       expect(r.value).toHaveLength(2)
       expect(r.value[0]!.discountPercent).toBe(10)
       expect(r.value[1]!.remainingSpots).toBe(3)
+    }
+  })
+
+  it("rejects all-day windows", () => {
+    const r = parseTimedOffersFromJson(
+      JSON.stringify([{ discountPercent: 10, window: { kind: "all-day" } }]),
+    )
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.error).toMatch(/not supported/i)
     }
   })
 
@@ -68,6 +81,20 @@ describe("buildEntryFromForm", () => {
 })
 
 describe("getMergedRestaurantCatalogEntry", () => {
+  it("strips all-day offers from persisted snapshots", () => {
+    const base = RESTAURANTS_BY_SLUG.neiburgs
+    useRestaurantCatalogStore.getState().persistRestaurant("neiburgs", {
+      ...base,
+      timedOffers: [
+        { discountPercent: 10, window: { kind: "all-day" } },
+        ...base.timedOffers,
+      ],
+    })
+    const merged = getMergedRestaurantCatalogEntry("neiburgs")!
+    expect(merged.timedOffers.every((o) => o.window.kind === "range")).toBe(true)
+    expect(merged.timedOffers).toHaveLength(base.timedOffers.length)
+  })
+
   it("uses persisted snapshot when present", () => {
     const base = RESTAURANTS_BY_SLUG.neiburgs
     const overrideName = "Neiburgs Override Test"

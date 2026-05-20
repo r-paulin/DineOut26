@@ -6,6 +6,7 @@ import {
   type RestaurantCatalogEntry,
 } from "./restaurants.catalog"
 import { useRestaurantCatalogStore } from "./restaurantCatalogStore"
+import { stripAllDayTimedOffers } from "./sanitizeTimedOffers"
 
 function normalizeCatalogEntry(e: RestaurantCatalogEntry): RestaurantCatalogEntry {
   return {
@@ -14,9 +15,9 @@ function normalizeCatalogEntry(e: RestaurantCatalogEntry): RestaurantCatalogEntr
     whatWeServe: [...e.whatWeServe],
     amenities: [...e.amenities],
     logoFilenames: [...e.logoFilenames],
-    timedOffers: e.timedOffers.map((t) => ({
+    timedOffers: stripAllDayTimedOffers(e.timedOffers).map((t) => ({
       ...t,
-      window: t.window.kind === "range" ? { ...t.window } : { ...t.window },
+      window: { ...t.window },
     })),
   }
 }

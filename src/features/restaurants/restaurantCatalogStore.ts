@@ -2,8 +2,24 @@ import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 import type { RestaurantSlug } from "@/features/offers/data/restaurantOffers.types"
 import type { RestaurantCatalogEntry } from "./restaurants.catalog"
+import { stripAllDayTimedOffers } from "./sanitizeTimedOffers"
 
-const STORAGE_KEY = "dineout-admin-restaurant-catalog-v1"
+const STORAGE_KEY = "dineout-admin-restaurant-catalog-v2"
+
+function stripAllDayFromPersisted(
+  bySlug: RestaurantCatalogPersistState["persistedBySlug"],
+): RestaurantCatalogPersistState["persistedBySlug"] {
+  const next: RestaurantCatalogPersistState["persistedBySlug"] = {}
+  for (const slug of Object.keys(bySlug) as RestaurantSlug[]) {
+    const entry = bySlug[slug]
+    if (!entry) continue
+    next[slug] = {
+      ...entry,
+      timedOffers: stripAllDayTimedOffers(entry.timedOffers),
+    }
+  }
+  return next
+}
 
 export type RestaurantCatalogPersistState = {
   /** Full per-slug snapshots; when set, replace static defaults for that slug. */
@@ -34,6 +50,17 @@ export const useRestaurantCatalogStore = create<RestaurantCatalogPersistState>()
     {
       name: STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as RestaurantCatalogPersistState
+        if (version < 2 && state.persistedBySlug) {
+          return {
+            ...state,
+            persistedBySlug: stripAllDayFromPersisted(state.persistedBySlug),
+          }
+        }
+        return state
+      },
       partialize: (s) => ({ persistedBySlug: s.persistedBySlug }),
     },
   ),

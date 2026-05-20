@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { RestaurantTimedOffer } from "@/features/offers/data/restaurantOffers.types"
+import { RESTAURANTS_BY_SLUG } from "@/features/restaurants/restaurants.catalog"
 import {
   computeOfferCardCampaign,
   restaurantVisibleForPreset,
@@ -66,20 +67,12 @@ describe("computeOfferCardCampaign", () => {
 })
 
 describe("restaurantVisibleForPreset", () => {
-  const threeChefs: RestaurantTimedOffer[] = [
-    { discountPercent: 25, window: { kind: "range", start: "18:00", end: "22:00" } },
-    { discountPercent: 15, window: { kind: "range", start: "12:00", end: "15:00" } },
-    { discountPercent: 10, window: { kind: "all-day" } },
-  ]
+  const threeChefs = RESTAURANTS_BY_SLUG["three-chefs"].timedOffers
+  const maxCekot = RESTAURANTS_BY_SLUG["max-cekot"].timedOffers
+  const neiburgs = RESTAURANTS_BY_SLUG.neiburgs.timedOffers
 
-  const maxCekot: RestaurantTimedOffer[] = [
-    { discountPercent: 30, window: { kind: "range", start: "18:00", end: "21:00" } },
-    { discountPercent: 15, window: { kind: "all-day" } },
-  ]
-
-  it("morning: 3 Pavāru hidden (no window overlap morning, all-day removed would hide — has -10% all day so visible)", () => {
-    // Canonical data includes -10% all-day → visible for any preset
-    expect(restaurantVisibleForPreset(threeChefs, "morning")).toBe(true)
+  it("morning: 3 Pavāru hidden (lunch/evening windows only)", () => {
+    expect(restaurantVisibleForPreset(threeChefs, "morning")).toBe(false)
   })
 
   it("morning: venue with only evening timed offers hidden", () => {
@@ -89,16 +82,11 @@ describe("restaurantVisibleForPreset", () => {
     expect(restaurantVisibleForPreset(eveningOnly, "morning")).toBe(false)
   })
 
-  it("morning: Max Cekot visible due to All day offer", () => {
-    expect(restaurantVisibleForPreset(maxCekot, "morning")).toBe(true)
+  it("morning: Max Cekot hidden (evening window only)", () => {
+    expect(restaurantVisibleForPreset(maxCekot, "morning")).toBe(false)
   })
 
-  it("lunch: Neiburgs 11–14 overlaps", () => {
-    const neiburgs: RestaurantTimedOffer[] = [
-      { discountPercent: 20, window: { kind: "range", start: "19:00", end: "23:00" } },
-      { discountPercent: 15, window: { kind: "range", start: "11:00", end: "14:00" } },
-      { discountPercent: 10, window: { kind: "all-day" } },
-    ]
+  it("lunch: Neiburgs 12:00–17:00 overlaps lunch preset", () => {
     expect(restaurantVisibleForPreset(neiburgs, "lunch")).toBe(true)
   })
 

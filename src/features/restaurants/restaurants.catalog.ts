@@ -27,6 +27,7 @@ export type RestaurantCatalogEntry = {
   /** Short meta line (cards / search “cuisine” slot). */
   tags: string
   tagDescription: string
+  /** Ranged windows only — no `{ kind: "all-day" }` in catalog data. */
   timedOffers: RestaurantTimedOffer[]
   phone: string
   address: string
@@ -118,7 +119,7 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       },
       {
         discountPercent: 15,
-        window: { kind: "range", start: "10:00", end: "17:00" },
+        window: { kind: "range", start: "12:00", end: "17:00" },
         remainingSpots: 5,
       },
     ],
@@ -170,7 +171,7 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     timedOffers: [
       {
         discountPercent: 30,
-        window: { kind: "range", start: "10:00", end: "13:00" },
+        window: { kind: "range", start: "12:00", end: "14:00" },
         remainingSpots: 1,
       },
     ],
@@ -225,12 +226,12 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     timedOffers: [
       {
         discountPercent: 20,
-        window: { kind: "range", start: "12:00", end: "15:00" },
+        window: { kind: "range", start: "12:00", end: "14:00" },
         remainingSpots: 1,
       },
       {
         discountPercent: 10,
-        window: { kind: "range", start: "12:00", end: "15:00" },
+        window: { kind: "range", start: "17:00", end: "20:00" },
         remainingSpots: 8,
       },
     ],
