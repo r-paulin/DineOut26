@@ -2,7 +2,9 @@ import { Button, Typography } from "@bolteu/kalep-react"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import MobilePayment from "@bolteu/kalep-react-icons/dist/MobilePayment"
-import Offer from "@bolteu/kalep-react-icons/dist/Offer"
+import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
+import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
+import Walk from "@bolteu/kalep-react-icons/dist/Walk"
 import gsap from "gsap"
 import { CustomEase } from "gsap/CustomEase"
 import {
@@ -17,12 +19,21 @@ import {
 } from "react"
 import { createPortal } from "react-dom"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
+import {
+  DINEOUT_PROMO_CTA_LABEL,
+  DINEOUT_PROMO_INTRO,
+  DINEOUT_PROMO_STEPS,
+  DINEOUT_PROMO_TITLE,
+} from "@/features/offers/constants/dineOutPromoContent"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 import {
-  DINEOUT_PROMO_IMG_BOLT,
-  DINEOUT_PROMO_IMG_GROUP,
-} from "./dineOutPromoFigmaAssets"
-
+  SHEET_CLOSE_ICON_OVER_MEDIA_CLASS,
+  SHEET_CLOSE_OVER_MEDIA_CLASS,
+} from "@/shared/utils/sheetCloseButtonClass"
+import {
+  VAUL_SHEET_FOOTER_CLASS,
+  VAUL_SHEET_SCROLL_BODY_CLASS,
+} from "@/shared/utils/vaulAppSheetShell"
 gsap.registerPlugin(CustomEase)
 
 const EASE_IN = CustomEase.create("dineOutPromoIn", "M0,0,C0.32,0.72,0,1,1,1")
@@ -32,29 +43,12 @@ const SCRIM_MAX = 0.28
 const DISMISS_DRAG_PX = 80
 const DISMISS_VELOCITY = 500
 
-const FEATURES: {
-  icon: ReactElement
-  title: string
-  subtitle: string
-}[] = [
-  {
-    icon: <Offer size="lg" aria-hidden />,
-    title: "Discover exclusive offers",
-    subtitle:
-      "Find dining offers available only through Bolt Food",
-  },
-  {
-    icon: <Food size="lg" aria-hidden />,
-    title: "Dine as usual",
-    subtitle:
-      "Most offers don’t require a reservation. Simply visit the restaurant, show claimed offer and enjoy your meal.",
-  },
-  {
-    icon: <MobilePayment size="lg" aria-hidden />,
-    title: "Pay in the app",
-    subtitle:
-      "Ask for the receipt and tap Pay bill. Your offer is applied automatically before payment.",
-  },
+const STEP_ICONS: ReactElement[] = [
+  <PercentFlower key="pct" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
+  <Walk key="walk" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
+  <Food key="food" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
+  <Receipt key="receipt" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
+  <MobilePayment key="pay" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
 ]
 
 export interface DineOutPromoSheetProps {
@@ -69,8 +63,8 @@ function sheetHeightPx(el: HTMLElement | null): number {
 }
 
 /**
- * Bottom promo sheet: scrim, hero, scrollable content, sticky CTA, GSAP motion,
- * swipe-down on hero, scrim tap / Escape / CTA / close dismiss.
+ * Bottom promo sheet (Figma `16084:48918`): scrim, hero cover, feature list,
+ * sticky CTA, GSAP motion, swipe-down on hero, scrim tap / Escape / CTA / close.
  */
 export function DineOutPromoSheet({
   isVisible,
@@ -343,10 +337,23 @@ export function DineOutPromoSheet({
           aria-modal="true"
           aria-labelledby={titleId}
           aria-describedby={introId}
-          className="pointer-events-auto flex max-h-full min-h-0 w-full max-w-[var(--shell-width)] flex-col overflow-hidden rounded-t-[var(--sheet-radius)] bg-layer-floor-1 shadow-[var(--elevation-2)]"
+          className="pointer-events-auto relative flex max-h-[min(97dvh,var(--app-h,100dvh))] min-h-0 w-full max-w-[var(--shell-width)] flex-col overflow-hidden rounded-t-[var(--sheet-radius)] bg-layer-floor-1 shadow-[var(--elevation-2)]"
           onPointerDown={(e) => e.stopPropagation()}
         >
-          <div className="relative w-full shrink-0 overflow-hidden rounded-t-[var(--sheet-radius)] bg-special-brand-alt">
+          <button
+            type="button"
+            aria-label="Close"
+            className={SHEET_CLOSE_OVER_MEDIA_CLASS}
+            onClick={() => onDismiss()}
+          >
+            <Cross
+              size="xs"
+              className={SHEET_CLOSE_ICON_OVER_MEDIA_CLASS}
+              aria-hidden
+            />
+          </button>
+
+          <div className={`${VAUL_SHEET_SCROLL_BODY_CLASS} min-h-0 flex-1`}>
             <div
               className="relative w-full touch-none"
               style={{ aspectRatio: "375 / 250" }}
@@ -360,100 +367,65 @@ export function DineOutPromoSheet({
                   key={heroImage}
                   src={heroImage}
                   alt=""
-                  className="pointer-events-none absolute inset-0 size-full object-cover"
+                  className="block size-full object-cover"
                   loading="eager"
                   decoding="async"
                   onError={() => setHeroFailed(true)}
                 />
-              ) : null}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 mix-blend-multiply"
-                style={{
-                  background:
-                    "linear-gradient(rgba(102,102,102,0), rgba(26,26,26,0.38) 76.9%)",
-                }}
-              />
-              <div className="pointer-events-none absolute left-1/2 top-1/2 h-[57px] w-[248px] -translate-x-1/2 -translate-y-1/2 overflow-hidden">
-                <div className="absolute inset-[15.02%_68.98%_6.2%_0]">
-                  <img
-                    alt=""
-                    src={DINEOUT_PROMO_IMG_BOLT}
-                    className="absolute inset-0 block size-full max-w-none"
-                  />
-                </div>
-                <div className="absolute inset-[17.88%_0_24.87%_35.84%]">
-                  <img
-                    alt=""
-                    src={DINEOUT_PROMO_IMG_GROUP}
-                    className="absolute inset-0 block size-full max-w-none"
-                  />
-                </div>
-              </div>
+              ) : (
+                <div className="aspect-[375/250] w-full bg-special-brand-alt" aria-hidden />
+              )}
             </div>
-            <button
-              type="button"
-              aria-label="Close"
-              className="absolute right-3 top-3 z-[2] flex size-7 cursor-pointer items-center justify-center rounded-full border-0 bg-static-key-light p-0 shadow-[0_0.125rem_0.375rem_rgba(0,0,0,0.16)]"
-              onClick={() => onDismiss()}
-            >
-              <Cross size="md" className="text-static-key-dark" aria-hidden />
-            </button>
+
+            <div className="flex flex-col gap-2 p-6">
+              <div id={titleId}>
+                <Typography as="h2" variant="heading-m-accent" color="primary">
+                  {DINEOUT_PROMO_TITLE}
+                </Typography>
+              </div>
+              <div id={introId}>
+                <Typography as="p" variant="body-m-regular" color="secondary">
+                  {DINEOUT_PROMO_INTRO}
+                </Typography>
+              </div>
+              <ul className="m-0 flex list-none flex-col p-0" aria-label="How it works">
+                {DINEOUT_PROMO_STEPS.map((step, index) => (
+                  <li key={step.id} className="py-[10px]">
+                    <div className="flex gap-3">
+                      <span className="shrink-0">{STEP_ICONS[index]}</span>
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <Typography
+                          as="span"
+                          variant="body-m-accent"
+                          color="primary"
+                        >
+                          {step.title}
+                        </Typography>
+                        <Typography
+                          as="span"
+                          variant="body-s-regular"
+                          color="secondary"
+                        >
+                          {step.subtitle}
+                        </Typography>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <div className="flex flex-col gap-2 p-6">
-                <div id={titleId}>
-                  <Typography as="h2" variant="heading-m-accent" color="primary">
-                    Dine smarter with DineOut
-                  </Typography>
-                </div>
-                <div id={introId}>
-                  <Typography as="p" variant="body-m-regular" color="secondary">
-                    Enjoy exclusive restaurant benefits and pay seamlessly in the app
-                  </Typography>
-                </div>
-                <ul className="m-0 flex list-none flex-col p-0" aria-label="Features">
-                  {FEATURES.map(({ icon, title, subtitle }) => (
-                    <li key={title} className="py-[10px]">
-                      <div className="flex gap-3">
-                        <span className="shrink-0 text-action-primary">{icon}</span>
-                        <div className="flex min-w-0 flex-1 flex-col gap-1">
-                          <Typography
-                            as="span"
-                            variant="body-m-accent"
-                            color="primary"
-                          >
-                            {title}
-                          </Typography>
-                          <Typography
-                            as="span"
-                            variant="body-s-regular"
-                            color="secondary"
-                            lines={2}
-                          >
-                            {subtitle}
-                          </Typography>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="shrink-0 bg-layer-floor-1 p-6 pb-[max(1.5rem,var(--safe-area-bottom))]">
-              <Button
-                type="button"
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={() => onDismiss()}
-              >
-                Got it
-              </Button>
-            </div>
+          <div className={VAUL_SHEET_FOOTER_CLASS}>
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={() => onDismiss()}
+            >
+              {DINEOUT_PROMO_CTA_LABEL}
+            </Button>
           </div>
         </div>
       </div>
