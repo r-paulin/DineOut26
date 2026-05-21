@@ -15,6 +15,7 @@ import {
 } from "@/features/restaurant/utils/offerBannerWindowPhase"
 import {
   getOfferBannerState,
+  resolveEffectiveBannerState,
   shouldShowOfferBanner,
   toOfferForBanner,
   type UserClaim,
@@ -26,18 +27,21 @@ function useOfferBannerNowMs(offer: RestaurantOfferCardModel): number {
   const scheduleAware = Boolean(
     offer.offerScheduleDate && offer.offerEnd,
   )
+  const expiresAtAware =
+    !scheduleAware && Number.isFinite(offer.expiresAt)
+  const shouldTick = scheduleAware || expiresAtAware
   const [ms, setMs] = useState(() => Date.now())
 
   useEffect(() => {
-    if (!scheduleAware) return
+    if (!shouldTick) return
     setMs(Date.now())
     const id = window.setInterval(() => {
       setMs(Date.now())
     }, OFFER_BANNER_CLOCK_TICK_MS)
     return () => window.clearInterval(id)
-  }, [scheduleAware, offer.id, offer.offerScheduleDate, offer.offerEnd])
+  }, [shouldTick, offer.id, offer.offerScheduleDate, offer.offerEnd, offer.expiresAt])
 
-  return scheduleAware ? ms : Date.now()
+  return shouldTick ? ms : Date.now()
 }
 
 export type { OfferBannerContext } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
@@ -123,12 +127,13 @@ function OfferBannerInteractive({
   onClaimedPress,
 }: OfferBannerInteractiveProps) {
   const nowMs = useOfferBannerNowMs(offer)
-  const state = getOfferBannerState(
+  const rawState = getOfferBannerState(
     toOfferForBanner(offer),
     userClaims,
     nowMs,
   )
   const claim = claimedOffersById[offer.id]
+  const state = resolveEffectiveBannerState(rawState, claim != null)
   const displayDiscount =
     discountValue ?? claim?.discountPercent ?? offer.discountPercent ?? 30
   const offerForBanner = toOfferForBanner(offer)
@@ -164,14 +169,15 @@ function OfferBannerInteractive({
 
   const onActivate = useCallback(() => {
     if (blocked) return
-    if (state === "available") {
+    const kind = content.action?.kind
+    if (kind === "claim-now" || kind === "pre-book-now") {
       onAvailablePress?.()
       return
     }
-    if (state === "claimed") {
+    if (kind === "claimed") {
       onClaimedPress?.()
     }
-  }, [blocked, onAvailablePress, onClaimedPress, state])
+  }, [blocked, content.action?.kind, onAvailablePress, onClaimedPress])
 
   const isDisabled = state === "expired" || blocked
 

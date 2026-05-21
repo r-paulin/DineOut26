@@ -138,6 +138,18 @@ export function getOfferBannerState(
   return "available"
 }
 
+/**
+ * Banner UI state: `claimed` without a matching claim record is shown as `available`
+ * so copy, stickers, and handlers stay consistent when claim maps desync.
+ */
+export function resolveEffectiveBannerState(
+  rawState: BannerState,
+  hasClaimRecord: boolean,
+): BannerState {
+  if (rawState === "claimed" && !hasClaimRecord) return "available"
+  return rawState
+}
+
 export function shouldShowOfferBanner(tags: OfferTag[]): boolean {
   return (
     tags.includes("enabled") ||

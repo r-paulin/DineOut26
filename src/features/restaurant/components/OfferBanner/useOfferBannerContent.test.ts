@@ -79,6 +79,23 @@ describe("formatLimitedAvailabilityLabel", () => {
   })
 })
 
+describe("buildOfferBannerContent — claimed without claim record", () => {
+  it("falls through to available copy when state is claimed but claim is missing", () => {
+    const c = buildOfferBannerContent({
+      state: "claimed",
+      offer: baseOffer,
+      claim: undefined,
+      context: "restaurant",
+      displayDiscount: 30,
+      windowPhase: "active",
+      hasOtherClaimAtVenue: false,
+    })
+    expect(c.action?.kind).toBe("claim-now")
+    expect(c.action?.label).toMatch(/claim offer/i)
+    expect(c.outerClaimed).toBe(false)
+  })
+})
+
 describe("buildOfferBannerContent", () => {
   it("active window: Claim offer, no sticker, schedule line only", () => {
     const c = buildOfferBannerContent({

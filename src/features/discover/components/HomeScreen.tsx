@@ -379,6 +379,7 @@ export function HomeScreen() {
         maxSavingEur: card.maxSavingEur,
         isAllDay: Boolean(card.isAllDay),
         workingHoursEnd: card.workingHoursEnd ?? "23:00",
+        offerStart: card.isAllDay ? undefined : card.offerStart,
         offerEnd:
           card.isAllDay ? (card.workingHoursEnd ?? "23:00") : (card.offerEnd ?? "23:00"),
         offerWindowBaseDate: baseDate,
@@ -440,16 +441,16 @@ export function HomeScreen() {
     setClaimedView(null)
   }, [])
 
-  const handleCancelClaimedOffer = useCallback(() => {
-    const offerId = claimedView?.offerId
-    if (offerId) {
+  const handleCancelClaimedOffer = useCallback(
+    (offerId: string) => {
       setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
-    }
-    setClaimedView(null)
-    setPendingClaimOffer(null)
-    setPostClaimSuccess(null)
-    closeRestaurantDetail()
-  }, [claimedView, closeRestaurantDetail])
+      setClaimedView(null)
+      setPendingClaimOffer(null)
+      setPostClaimSuccess(null)
+      closeRestaurantDetail()
+    },
+    [closeRestaurantDetail],
+  )
 
   const handlePayFromClaimedOffer = useCallback(() => {
     if (!claimedView) return
@@ -770,7 +771,6 @@ export function HomeScreen() {
           onCancelOffer={handleCancelClaimedOffer}
           onPayWithBoltDineOut={handlePayFromClaimedOffer}
           onCardCashDone={handleCardCashClaimedDone}
-          portalContainer={portalRoot}
         />
       ) : null}
       {postClaimSuccess ?

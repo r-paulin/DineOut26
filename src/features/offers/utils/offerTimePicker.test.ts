@@ -31,6 +31,28 @@ describe("generateQuarterHourSlots", () => {
       "12:00",
     ])
   })
+
+  it("spans midnight for overnight windows", () => {
+    expect(generateQuarterHourSlots("22:00", "02:00")).toEqual([
+      "22:00",
+      "22:15",
+      "22:30",
+      "22:45",
+      "23:00",
+      "23:15",
+      "23:30",
+      "23:45",
+      "00:00",
+      "00:15",
+      "00:30",
+      "00:45",
+      "01:00",
+      "01:15",
+      "01:30",
+      "01:45",
+      "02:00",
+    ])
+  })
 })
 
 describe("getTimePickerConfig — all-day (native)", () => {
@@ -79,6 +101,21 @@ describe("getTimePickerConfig — limited window (slots)", () => {
     expect(cfg.mode).toBe("slots")
     expect(cfg.slots).toEqual(generateQuarterHourSlots("10:00", "12:00"))
     expect(cfg.initialValue).toBe("10:00")
+  })
+
+  it("returns overnight slots when end is before start on the clock", () => {
+    const cfg = getTimePickerConfig(
+      {
+        ...baseOffer,
+        isAllDay: false,
+        offerStart: "22:00",
+        offerEnd: "02:00",
+      },
+      at(21, 0),
+    )
+    expect(cfg.mode).toBe("slots")
+    expect(cfg.slots).toEqual(generateQuarterHourSlots("22:00", "02:00"))
+    expect(cfg.initialValue).toBe("22:00")
   })
 
   it("filters past slots when now falls mid-window", () => {

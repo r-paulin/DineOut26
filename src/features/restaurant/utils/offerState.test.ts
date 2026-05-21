@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   getOfferBannerState,
+  resolveEffectiveBannerState,
   shouldShowOfferBanner,
   type UserClaim,
 } from "./offerState"
@@ -108,6 +109,21 @@ describe("getOfferBannerState", () => {
       }
       expect(getOfferBannerState(row, claims, may11_3pm)).toBe("claimed")
     })
+  })
+})
+
+describe("resolveEffectiveBannerState", () => {
+  it("maps claimed without a claim record to available", () => {
+    expect(resolveEffectiveBannerState("claimed", false)).toBe("available")
+  })
+
+  it("keeps claimed when a claim record exists", () => {
+    expect(resolveEffectiveBannerState("claimed", true)).toBe("claimed")
+  })
+
+  it("passes through available and expired", () => {
+    expect(resolveEffectiveBannerState("available", false)).toBe("available")
+    expect(resolveEffectiveBannerState("expired", true)).toBe("expired")
   })
 })
 

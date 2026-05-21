@@ -1,5 +1,6 @@
 import type { ClaimData, ClaimedOffer } from "@/features/offers/offers.types"
 import { formatClaimedOfferFoodLabel } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
+import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
 import { parseHHMMToMinutes } from "@/features/offers/utils/offerTimePicker"
 import { toLocalYmd } from "@/features/offers/utils/offerScheduleLocal"
 
@@ -13,6 +14,7 @@ export interface ClaimOfferInput extends ClaimData {
   isAllDay: boolean
   workingHoursEnd: string
   offerEnd: string
+  offerStart?: string
   cashbackAmount?: number
   /** Percentages (e.g. 5, 10, 15, 20) for pay-bill tip chips; defaults in {@link claimOffer}. */
   tipPresetAmounts?: number[]
@@ -49,6 +51,8 @@ export function computeOfferWindowCloseIso(args: {
   baseDate: Date
   workingHoursEnd: string
   offerEnd: string
+  /** When set with an end before start, the window crosses midnight (mirrors banner expiry). */
+  offerStart?: string
 }): string {
   const workEndM = parseHHMMToMinutes(args.workingHoursEnd)
   const offerEndM = parseHHMMToMinutes(args.offerEnd)
@@ -57,6 +61,25 @@ export function computeOfferWindowCloseIso(args: {
     d.setHours(23, 0, 0, 0)
     return d.toISOString()
   }
+
+  const startM =
+    args.offerStart != null ? parseHHMMToMinutes(args.offerStart) : null
+  const overnight = startM != null && offerEndM < startM
+
+  if (overnight) {
+    const workEndAbsolute =
+      workEndM < startM! ? workEndM + 24 * 60 : workEndM
+    const offerEndAbsolute = offerEndM + 24 * 60
+    const closeAbsolute = Math.min(workEndAbsolute, offerEndAbsolute)
+    const d = new Date(args.baseDate)
+    if (closeAbsolute >= 24 * 60) {
+      d.setDate(d.getDate() + 1)
+    }
+    const minutesOnDay = closeAbsolute % (24 * 60)
+    d.setHours(Math.floor(minutesOnDay / 60), minutesOnDay % 60, 0, 0)
+    return d.toISOString()
+  }
+
   const closeM = Math.min(workEndM, offerEndM)
   const d = new Date(args.baseDate)
   d.setHours(Math.floor(closeM / 60), closeM % 60, 0, 0)
@@ -73,11 +96,12 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
     baseDate: input.offerWindowBaseDate ?? new Date(),
     workingHoursEnd: input.workingHoursEnd,
     offerEnd: input.offerEnd,
+    offerStart: input.isAllDay ? undefined : input.offerStart,
   })
 
   const discountAddPercent =
     input.discountAddPercent ??
-    (input.paymentMethod === "dineout" ? 40 : 0)
+    (input.paymentMethod === "dineout" ? DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT : 0)
 
   const offerWindowBaseDate = input.offerWindowBaseDate ?? new Date()
   const offerScheduleYmd =

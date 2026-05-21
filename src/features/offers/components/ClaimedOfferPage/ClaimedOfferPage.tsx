@@ -47,13 +47,11 @@ export interface ClaimedOfferPageProps {
     promoText?: string
   }
   onClose: () => void
-  onCancelOffer: () => void
+  onCancelOffer: (offerId: string) => void
   /** When user chose Bolt DineOut at claim time, opens the in-app pay bill flow (parent provides navigation). */
   onPayWithBoltDineOut?: () => void
   /** Card/cash: parent dismisses to home after venue payment (same outcome as pay flow Done). */
   onCardCashDone?: () => void
-  /** Reserved for nested overlays; cancel dialog portals into this page root. */
-  portalContainer?: HTMLElement | null
 }
 
 /**
@@ -66,14 +64,13 @@ export function ClaimedOfferPage({
   onCancelOffer,
   onPayWithBoltDineOut,
   onCardCashDone,
-  portalContainer,
 }: ClaimedOfferPageProps) {
   const onCloseRef = useRef(onClose)
   const onCancelOfferRef = useRef(onCancelOffer)
   const onCardCashDoneRef = useRef(onCardCashDone)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancelDialogPortal, setCancelDialogPortal] = useState<HTMLElement | null>(
-    portalContainer ?? null,
+    null,
   )
   const expired = useOfferExpired(claim.offerWindowCloses)
   const showDineOutFooter = claim.paymentMethod === "dineout"
@@ -108,18 +105,19 @@ export function ClaimedOfferPage({
   }, [])
 
   useLayoutEffect(() => {
-    setCancelDialogPortal(portalContainer ?? rootRef.current)
-  }, [portalContainer, rootRef])
+    setCancelDialogPortal(rootRef.current)
+  }, [rootRef])
 
   const handleAnimatedClose = useCallback(() => {
     runExit()
   }, [runExit])
 
   const handleConfirmCancel = useCallback(() => {
-    cancelOffer(claim.offerId)
+    const offerId = claim.offerId
+    cancelOffer(offerId)
     setCancelDialogOpen(false)
     runExit(() => {
-      onCancelOfferRef.current()
+      onCancelOfferRef.current(offerId)
     })
   }, [claim.offerId, runExit])
 
@@ -146,8 +144,7 @@ export function ClaimedOfferPage({
       ref={rootRef}
       className="fixed inset-0 mx-auto box-border flex w-full max-w-[var(--shell-width)] flex-col"
       style={{ zIndex: Z_CLAIMED_OFFER_PAGE, minHeight: "var(--app-h)" }}
-      role="dialog"
-      aria-modal="true"
+      role="region"
       aria-label={`Claimed offer at ${restaurant.name}`}
     >
       <div
@@ -237,7 +234,7 @@ export function ClaimedOfferPage({
         portalContainer={cancelDialogPortal ?? undefined}
       >
         <Dialog.Content>
-          <div className="mx-auto flex w-full min-w-[26vw] max-w-[15.75rem] flex-col gap-4 pb-4">
+          <div className="mx-auto flex w-full min-w-0 max-w-[15.75rem] flex-col gap-4 pb-4">
             <Typography variant="body-m-regular" color="secondary" as="p" align="center">
               {"You\u2019ll lose this offer"}
             </Typography>

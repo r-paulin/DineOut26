@@ -96,9 +96,22 @@ export function generateQuarterHourSlots(start: string, end: string): string[] {
   const startM = parseHHMMToMinutes(start)
   const endM = parseHHMMToMinutes(end)
   if (startM == null || endM == null) return []
-  let cur = startM
-  if (cur > endM) return []
+  if (startM > endM) {
+    const out: string[] = []
+    let cur = startM
+    while (cur < 24 * 60) {
+      out.push(formatMinutesToHHMM(cur))
+      cur += 15
+    }
+    cur = 0
+    while (cur <= endM) {
+      out.push(formatMinutesToHHMM(cur))
+      cur += 15
+    }
+    return out
+  }
   const out: string[] = []
+  let cur = startM
   while (cur <= endM) {
     out.push(formatMinutesToHHMM(cur))
     cur += 15
@@ -114,6 +127,26 @@ export function filterFutureSlots(slots: string[], now: Date): string[] {
   return slots.filter((s) => {
     const sm = parseHHMMToMinutes(s)
     return sm != null && sm > nowM
+  })
+}
+
+/**
+ * Future slots for an overnight window (`start` later than `end` on the clock).
+ */
+export function filterFutureSlotsOvernight(
+  slots: string[],
+  _startM: number,
+  endM: number,
+  now: Date,
+): string[] {
+  const nowM = now.getHours() * 60 + now.getMinutes()
+  return slots.filter((s) => {
+    const sm = parseHHMMToMinutes(s)
+    if (sm == null) return false
+    if (sm <= endM) {
+      return nowM <= endM ? sm > nowM : true
+    }
+    return sm > nowM
   })
 }
 
@@ -183,9 +216,16 @@ export function getTimePickerConfig(
     }
   }
 
+  const startM = parseHHMMToMinutes(offer.offerStart)
+  const endM = parseHHMMToMinutes(offer.offerEnd)
+  const overnight =
+    startM != null && endM != null && startM > endM
   const allSlots = generateQuarterHourSlots(offer.offerStart, offer.offerEnd)
   const slots =
-    isFutureOfferDay ? allSlots : filterFutureSlots(allSlots, now)
+    isFutureOfferDay ? allSlots
+    : overnight && startM != null && endM != null ?
+      filterFutureSlotsOvernight(allSlots, startM, endM, now)
+    : filterFutureSlots(allSlots, now)
   const minTime = isFutureOfferDay ?
     maxTimeString(workingHoursStart, offer.offerStart)
   : maxTimeString(workingHoursStart, nowStr)
