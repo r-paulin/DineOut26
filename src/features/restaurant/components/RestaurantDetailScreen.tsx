@@ -3,7 +3,15 @@ import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
 import ShareIosOutlined from "@bolteu/kalep-react-icons/dist/ShareIosOutlined"
 import gsap from "gsap"
 import { CustomEase } from "gsap/CustomEase"
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
+import { findActiveClaimForRestaurant } from "@/features/offers/utils/claimFlowModel"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
 import { buildVenueSharePayload } from "@/shared/utils/venueShare"
@@ -118,6 +126,15 @@ export function RestaurantDetailScreen({
 
   const mapsHref = googleMapsSearchUrl(model.address)
   const telHref = toTelHref(model.phone)
+
+  const hasActiveVenueClaim = useMemo(
+    () =>
+      findActiveClaimForRestaurant(model.slug, model, claimedOffersById) !=
+      null,
+    [claimedOffersById, model],
+  )
+
+  const showAtVenueBar = hasActiveVenueClaim && !aboutOpen
 
   useEffect(() => {
     onBackRef.current = onBack
@@ -315,7 +332,9 @@ export function RestaurantDetailScreen({
             onScroll={handleScroll}
             style={{
               paddingBottom:
-                "calc(env(safe-area-inset-bottom, 0px) + 10rem)",
+                showAtVenueBar ?
+                  "calc(env(safe-area-inset-bottom, 0px) + 10rem)"
+                : "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
             }}
             aria-hidden={aboutOpen}
           >
@@ -383,7 +402,7 @@ export function RestaurantDetailScreen({
               name={model.name}
               cuisineTags={model.cuisineTags}
               venueGalleryCycles={model.venueGalleryCycles}
-              openHoursSummary={model.openHoursSummary}
+              venueHoursRowSubtitle={model.venueHoursRowSubtitle}
               isOpen={model.isOpen}
               address={model.address}
               phone={model.phone}
@@ -462,10 +481,10 @@ export function RestaurantDetailScreen({
               </div>
             </div>
           ) : null}
-          {!aboutOpen ?
+          {showAtVenueBar ?
             <RestaurantDetailAtVenueBar
               onPress={onPayBill}
-              animateIn={!aboutOpen}
+              animateIn
               onExitAnimationRef={registerVenueBarExit}
             />
           : null}

@@ -3,10 +3,12 @@ export {
   RestaurantAbout,
   RestaurantDetailScreen,
   RestaurantOfferClaimInfoSheet,
+  VenueClosedSheet,
 } from "./components"
 export type {
   AtVenueNoClaimedOffersSheetProps,
   RestaurantOfferClaimInfoSheetProps,
+  VenueClosedSheetProps,
 } from "./components"
 export { getRestaurantDetailDemo } from "./data/restaurantDetailDemo"
 export {

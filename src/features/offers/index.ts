@@ -30,8 +30,8 @@ export type {
 } from "./components"
 export {
   DINEOUT_CLAIM_INLINE_PRIMARY,
-  DINEOUT_CLAIM_INLINE_SECONDARY,
   DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT,
+  formatDineOutClaimCashbackBannerSecondary,
 } from "./constants/dineOutStackablePromo"
 export {
   getOffersAllRestaurants,

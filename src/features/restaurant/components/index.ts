@@ -1,5 +1,7 @@
 export { AtVenueNoClaimedOffersSheet } from "./AtVenueNoClaimedOffersSheet"
 export type { AtVenueNoClaimedOffersSheetProps } from "./AtVenueNoClaimedOffersSheet"
+export { VenueClosedSheet } from "./VenueClosedSheet"
+export type { VenueClosedSheetProps } from "./VenueClosedSheet"
 export { RestaurantOfferClaimInfoSheet } from "./RestaurantOfferClaimInfoSheet"
 export type { RestaurantOfferClaimInfoSheetProps } from "./RestaurantOfferClaimInfoSheet"
 export { RestaurantAbout } from "./RestaurantAbout"

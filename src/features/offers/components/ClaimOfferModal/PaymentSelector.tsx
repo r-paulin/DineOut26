@@ -3,7 +3,7 @@ import CheckCircle from "@bolteu/kalep-react-icons/dist/CheckCircle"
 import { useLayoutEffect, useRef, useState, type TransitionEvent } from "react"
 import {
   DINEOUT_CLAIM_INLINE_PRIMARY,
-  DINEOUT_CLAIM_INLINE_SECONDARY,
+  formatDineOutClaimCashbackBannerSecondary,
 } from "@/features/offers/constants/dineOutStackablePromo"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
@@ -85,7 +85,7 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
     .join(" ")
 
   const promoBannerClass = [
-    "flex min-h-[48px] w-full gap-2 rounded-xl bg-action-secondary px-3 py-3",
+    "flex min-h-[48px] w-full gap-2 rounded-[12px] bg-action-secondary px-3 py-3",
     reducedMotion ? "" : "transition-[opacity,transform] ease-out",
     promoOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
   ]
@@ -105,7 +105,7 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
               Payment method
             </Typography>
             <Typography variant="body-s-regular" color="secondary" as="p">
-              Select how you&apos;ll settle the bill at the restaurant
+              Pay at the venue after dining. Choose your preferred payment method.
             </Typography>
           </div>
         </div>
@@ -177,7 +177,7 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
                     {DINEOUT_CLAIM_INLINE_PRIMARY}
                   </Typography>
                   <Typography as="p" variant="body-s-regular" color="primary">
-                    {DINEOUT_CLAIM_INLINE_SECONDARY}
+                    {formatDineOutClaimCashbackBannerSecondary()}
                   </Typography>
                 </div>
               </div>
@@ -185,8 +185,6 @@ export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
           </div>
         </div>
       </div>
-
-      <div className={SECTION_SEPARATOR_CLASS} aria-hidden />
     </div>
   )
 }

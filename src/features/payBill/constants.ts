@@ -3,4 +3,4 @@
  * already entered (that total is treated as already including any claimed-offer discount).
  * Applies even without a claimed offer unless the claim explicitly sets {@link ClaimedOffer.discountAddPercent}.
  */
-export const DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT = 40
+export const DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT = 20

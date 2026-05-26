@@ -5,6 +5,8 @@ import ChevronRight from "@bolteu/kalep-react-icons/dist/ChevronRight"
 export interface ListItemProps {
   /** Leading icon; omit for text-only rows (e.g. Getting there). */
   icon?: ReactNode
+  /** Icon wrapper color; defaults to action green (venue feed uses primary). */
+  iconTone?: "primary" | "action-primary"
   label: string
   value: string
   /** When false, hours-style static row (no chevron). */
@@ -45,12 +47,15 @@ export function ListItem({
   horizontalPadding = "default",
   labelColor = "secondary",
   lineOrder = "labelFirst",
+  iconTone = "action-primary",
   href,
   external,
   onAnchorClick,
   className,
   "aria-label": ariaLabel,
 }: ListItemProps) {
+  const iconWrapClass =
+    iconTone === "primary" ? "text-primary" : "text-action-primary"
   const textLines =
     lineOrder === "valueFirst" ? (
       <>
@@ -79,7 +84,7 @@ export function ListItem({
       <div className="flex w-full items-center gap-3 pt-[10px] pb-[9px]">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         {icon != null ? (
-          <div className="flex shrink-0 items-center text-action-primary">
+          <div className={`flex shrink-0 items-center ${iconWrapClass}`}>
             {icon}
           </div>
         ) : null}

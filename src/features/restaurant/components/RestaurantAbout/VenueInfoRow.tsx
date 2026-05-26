@@ -7,7 +7,7 @@ import { ListItem } from "@/shared/components/ListItem"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { toTelHref } from "@/shared/utils/telHref"
 
-const ICON = "size-6 shrink-0"
+const ROW_ICON_CLASS = "size-6 shrink-0"
 
 export interface VenueInfoRowsProps {
   isOpenNow: boolean
@@ -58,81 +58,122 @@ export function VenueInfoRows({
   const telHref = toTelHref(phone)
   const mapsUrl = googleMapsSearchUrl(address)
   const siteHref = websiteHref(website)
+  const hoursStatusLabel = isOpenNow ? "Open now" : "Closed"
 
   return (
-    <div className="flex w-full flex-col bg-layer-floor-1">
-      <ListItem
-        icon={<Time size="lg" className={ICON} aria-hidden />}
-        label={isOpenNow ? "Open now" : "Closed"}
-        value={openingHours}
-        showChevron
-        interactive={Boolean(onOpenHours)}
-        onPress={onOpenHours}
-        aria-label={
-          onOpenHours
-            ? `Opening hours, ${isOpenNow ? "Open now" : "Closed"}, ${openingHours}`
-            : undefined
-        }
-        labelColor={isOpenNow ? "secondary" : "tertiary"}
-      />
-      {onOpenMenuGallery ? (
+    <ul className="m-0 flex list-none flex-col px-6 p-0 [&>li:not(:last-child)]:border-b [&>li:not(:last-child)]:border-solid [&>li:not(:last-child)]:border-separator">
+      <li className="m-0 p-0">
         <ListItem
-          icon={<Receipt size="lg" className={ICON} aria-hidden />}
-          label="Check the menu and pricing"
-          value={menuRowValue}
-          interactive
-          onPress={onOpenMenuGallery}
-          aria-label={`Restaurant menu, ${menuRowValue}`}
+          icon={<Time size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+          iconTone="primary"
+          lineOrder="valueFirst"
+          value={hoursStatusLabel}
+          label={openingHours}
+          showChevron
+          interactive={Boolean(onOpenHours)}
+          onPress={onOpenHours}
+          horizontalPadding="none"
+          showSeparator={false}
+          aria-label={
+            onOpenHours
+              ? `Opening hours, ${hoursStatusLabel}, ${openingHours}`
+              : undefined
+          }
+          labelColor={isOpenNow ? "secondary" : "tertiary"}
         />
-      ) : (
+      </li>
+      <li className="m-0 p-0">
+        {onOpenMenuGallery ? (
+          <ListItem
+            icon={<Receipt size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+            iconTone="primary"
+            lineOrder="valueFirst"
+            label="Check the menu and pricing"
+            value={menuRowValue}
+            interactive
+            onPress={onOpenMenuGallery}
+            horizontalPadding="none"
+            showSeparator={false}
+            aria-label={`Restaurant menu, ${menuRowValue}`}
+          />
+        ) : (
+          <ListItem
+            icon={<Receipt size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+            iconTone="primary"
+            lineOrder="valueFirst"
+            label="Check the menu and pricing"
+            value={menuRowValue}
+            href={menuUrl}
+            horizontalPadding="none"
+            showSeparator={false}
+            onAnchorClick={(e) => {
+              e.preventDefault()
+              openExternalUrl(menuUrl)
+            }}
+            aria-label={`Restaurant menu, ${menuRowValue}`}
+          />
+        )}
+      </li>
+      <li className="m-0 p-0">
         <ListItem
-          icon={<Receipt size="lg" className={ICON} aria-hidden />}
-          label="Check the menu and pricing"
-          value={menuRowValue}
-          href={menuUrl}
+          icon={<Pin size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+          iconTone="primary"
+          lineOrder="valueFirst"
+          label="Address"
+          value={address}
+          href={mapsUrl}
+          horizontalPadding="none"
+          showSeparator={false}
           onAnchorClick={(e) => {
             e.preventDefault()
-            openExternalUrl(menuUrl)
+            openExternalUrl(mapsUrl)
           }}
+          aria-label={`Open address in Google Maps: ${address}`}
         />
-      )}
-      <ListItem
-        icon={<Pin size="lg" className={ICON} aria-hidden />}
-        label="Address"
-        value={address}
-        href={mapsUrl}
-        onAnchorClick={(e) => {
-          e.preventDefault()
-          openExternalUrl(mapsUrl)
-        }}
-      />
-      {telHref ? (
+      </li>
+      <li className="m-0 p-0">
+        {telHref ? (
+          <ListItem
+            icon={<Call size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+            iconTone="primary"
+            lineOrder="valueFirst"
+            label="Phone"
+            value={phone}
+            href={telHref}
+            horizontalPadding="none"
+            showSeparator={false}
+            aria-label={`Call ${phone}`}
+          />
+        ) : (
+          <ListItem
+            icon={<Call size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+            iconTone="primary"
+            lineOrder="valueFirst"
+            label="Phone"
+            value={phone}
+            interactive={false}
+            horizontalPadding="none"
+            showSeparator={false}
+          />
+        )}
+      </li>
+      <li className="m-0 p-0">
         <ListItem
-          icon={<Call size="lg" className={ICON} aria-hidden />}
-          label="Phone"
-          value={phone}
-          href={telHref}
-          aria-label={`Call ${phone}`}
+          icon={<Globe size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+          iconTone="primary"
+          lineOrder="valueFirst"
+          label="Website"
+          value={websiteHostname(website)}
+          href={siteHref}
+          horizontalPadding="none"
+          showSeparator={false}
+          onAnchorClick={(e) => {
+            e.preventDefault()
+            openExternalUrl(siteHref)
+          }}
+          aria-label={`Open website ${websiteHostname(website)}`}
         />
-      ) : (
-        <ListItem
-          icon={<Call size="lg" className={ICON} aria-hidden />}
-          label="Phone"
-          value={phone}
-          interactive={false}
-        />
-      )}
-      <ListItem
-        icon={<Globe size="lg" className={ICON} aria-hidden />}
-        label="Website"
-        value={websiteHostname(website)}
-        href={siteHref}
-        showSeparator={false}
-        onAnchorClick={(e) => {
-          e.preventDefault()
-          openExternalUrl(siteHref)
-        }}
-      />
-    </div>
+      </li>
+    </ul>
   )
 }

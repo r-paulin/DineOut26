@@ -10,6 +10,7 @@ import {
   SHEET_CLOSE_ICON_ON_SURFACE_CLASS,
   SHEET_CLOSE_ON_SURFACE_NESTED_CLASS,
 } from "@/shared/utils/sheetCloseButtonClass"
+import { formatPeopleCountLabel } from "@/features/offers/components/ClaimOfferModal/formatPeopleCountLabel"
 import {
   VAUL_SHEET_OVERLAY_CLASS,
   vaulSheetContentClassName,
@@ -56,7 +57,7 @@ export function GuestPickerSheet({
           style={{ zIndex: Z_CLAIM_NESTED_SHEET_CONTENT }}
         >
           <Drawer.Title className="sr-only">
-            How many guests?
+            How many people?
           </Drawer.Title>
           <Drawer.Close asChild>
             <button
@@ -71,19 +72,19 @@ export function GuestPickerSheet({
             className="flex flex-col pb-[max(1.5rem,var(--safe-area-bottom))]"
           >
             <Drawer.Description className="sr-only">
-              Choose how many guests will dine.
+              Choose how many people will dine.
             </Drawer.Description>
             <div className="flex w-full flex-col gap-2 px-6 pb-3 pt-6 pe-14">
               <h2 id={titleId} className="m-0 p-0">
                 <Typography variant="body-l-accent" color="primary" as="span">
-                  How many guests?
+                  How many people?
                 </Typography>
               </h2>
             </div>
             <ul className="m-0 flex list-none flex-col p-0">
               {OPTIONS.map((n, index) => {
                 const selected = n === value
-                const label = n === 1 ? "1 guest" : `${n} guests`
+                const label = formatPeopleCountLabel(n)
                 return (
                   <li
                     key={n}

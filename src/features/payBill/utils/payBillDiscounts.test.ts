@@ -48,7 +48,7 @@ describe("effectivePayDiscountPercents", () => {
       effectivePayDiscountPercents(
         claim({
           discountPercent: 20,
-          discountAddPercent: 40,
+          discountAddPercent: 20,
           paymentMethod: "card_or_cash",
         }),
       ),

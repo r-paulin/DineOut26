@@ -17,7 +17,7 @@ function claim(offerId: string): ClaimedOffer {
     offerScheduleYmd: "2026-05-08",
     cashbackAmount: 2.5,
     tipPresetAmounts: [5, 10, 15, 20],
-    discountAddPercent: 40,
+    discountAddPercent: 20,
   }
 }
 

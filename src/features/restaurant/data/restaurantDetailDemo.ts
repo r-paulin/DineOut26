@@ -364,6 +364,7 @@ export function getRestaurantDetailDemo(slug: string): RestaurantDetailModel {
       { tall: row.sideTop, top: row.primaryImage, bottom: row.sideBottom },
     ],
     openHoursSummary: hoursUi.summaryRangeToday,
+    venueHoursRowSubtitle: hoursUi.venueHoursRowSubtitle,
     weeklyOpenHours: RESTAURANT_WEEKLY_OPEN_HOURS,
     openHoursSheetHeading: hoursUi.openHoursSheetHeading,
     openHoursSheetSubtitle: hoursUi.openHoursSheetSubtitle,

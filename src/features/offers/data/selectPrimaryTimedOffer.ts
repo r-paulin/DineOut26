@@ -47,10 +47,7 @@ export function clampRemainingSpotsForDisplay(
   return Math.min(spots, SCARCITY_MAX)
 }
 
+/** Limited-availability banner sticker — only when a single claim slot remains. */
 export function shouldShowScarcitySticker(remainingCount: number | undefined): boolean {
-  return (
-    remainingCount != null &&
-    remainingCount >= SCARCITY_MIN &&
-    remainingCount <= SCARCITY_MAX
-  )
+  return remainingCount === 1
 }

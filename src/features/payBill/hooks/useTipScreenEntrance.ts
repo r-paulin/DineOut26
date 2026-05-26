@@ -1,5 +1,5 @@
 import gsap from "gsap"
-import { useLayoutEffect } from "react"
+import { useLayoutEffect, useRef } from "react"
 import type { RefObject } from "react"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
@@ -18,6 +18,8 @@ export function useTipScreenEntrance(
   tipRowRef: RefObject<HTMLElement | null>,
   footerRef: RefObject<HTMLElement | null>,
 ): void {
+  const entranceDoneRef = useRef(false)
+
   useLayoutEffect(() => {
     const root = rootRef.current
     if (!root) return
@@ -31,8 +33,27 @@ export function useTipScreenEntrance(
 
     if (els.length === 0) return
 
+    const settleVisible = () => {
+      gsap.set(els, { opacity: 1, y: 0, clearProps: "opacity,y,transform" })
+      entranceDoneRef.current = true
+    }
+
+    if (entranceDoneRef.current) {
+      settleVisible()
+      return
+    }
+
     if (prefersReducedMotion()) {
-      gsap.set(els, { opacity: 1, y: 0 })
+      settleVisible()
+      return
+    }
+
+    const alreadySettled = els.every((el) => {
+      const opacity = Number(gsap.getProperty(el, "opacity"))
+      return !Number.isNaN(opacity) && opacity >= 0.99
+    })
+    if (alreadySettled) {
+      settleVisible()
       return
     }
 
@@ -44,10 +65,15 @@ export function useTipScreenEntrance(
         duration: DUR,
         ease: EASE,
         stagger: STAGGER,
+        onComplete: settleVisible,
       })
     }, root)
 
-    return () => ctx.revert()
+    // Kill tweens without revert so opening overlays does not replay entrance.
+    return () => {
+      ctx.kill()
+      settleVisible()
+    }
     // One-shot entrance when Tip screen mounts.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refs + DOM targets only
   }, [])

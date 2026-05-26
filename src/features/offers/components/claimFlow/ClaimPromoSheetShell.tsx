@@ -39,6 +39,8 @@ export interface ClaimPromoSheetShellProps {
   description?: string
   hero?: ClaimPromoSheetHeroVariant
   heroImageSrc?: string
+  /** Applied to hero `<img>` when `hero` is `offer-image` (default `object-cover`). */
+  heroImageClassName?: string
   surfaceClass?: "bg-layer-floor-1" | "bg-layer-floor-2"
   sheetHeight?: ClaimPromoSheetHeight
   footer?: ReactNode
@@ -51,9 +53,11 @@ export interface ClaimPromoSheetShellProps {
 function PromoSheetHero({
   hero,
   heroImageSrc,
+  heroImageClassName = "object-cover",
 }: {
   hero: ClaimPromoSheetHeroVariant
   heroImageSrc?: string
+  heroImageClassName?: string
 }) {
   if (hero === "none") return null
 
@@ -68,7 +72,7 @@ function PromoSheetHero({
           height={250}
           decoding="async"
           draggable={false}
-          className="absolute inset-0 size-full object-cover"
+          className={`absolute inset-0 size-full ${heroImageClassName}`}
         />
       : heroImageSrc ?
         <img
@@ -78,7 +82,7 @@ function PromoSheetHero({
           height={250}
           decoding="async"
           draggable={false}
-          className="absolute inset-0 size-full object-cover"
+          className={`absolute inset-0 size-full ${heroImageClassName}`}
         />
       : null}
     </div>
@@ -95,6 +99,7 @@ export function ClaimPromoSheetShell({
   description,
   hero = "none",
   heroImageSrc,
+  heroImageClassName,
   surfaceClass = "bg-layer-floor-2",
   sheetHeight = "fill",
   footer,
@@ -187,7 +192,11 @@ export function ClaimPromoSheetShell({
               .filter(Boolean)
               .join(" ")}
           >
-            <PromoSheetHero hero={hero} heroImageSrc={heroImageSrc} />
+            <PromoSheetHero
+              hero={hero}
+              heroImageSrc={heroImageSrc}
+              heroImageClassName={heroImageClassName}
+            />
             {children}
           </div>
 

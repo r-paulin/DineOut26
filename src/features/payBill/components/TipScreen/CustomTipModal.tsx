@@ -1,8 +1,14 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
-import { Drawer } from "vaul"
 import type { CSSProperties } from "react"
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
+import { createPortal } from "react-dom"
 import { BillAmountEntryBlock } from "@/features/payBill/components/shared/BillAmountEntryBlock"
 import { useAnimatedBillCents } from "@/features/payBill/hooks/useAnimatedBillCents"
 import {
@@ -17,6 +23,7 @@ import {
 } from "@/features/payBill/utils/billAmount"
 import { useCoarsePointer } from "@/shared/hooks/useCoarsePointer"
 import { useVisualViewportLayout } from "@/shared/hooks/useVisualViewportLayout"
+import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 import {
   SHEET_CLOSE_ICON_ON_SURFACE_CLASS,
   SHEET_CLOSE_ON_SURFACE_NESTED_CLASS,
@@ -26,6 +33,7 @@ export interface CustomTipModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialCents: number
+  /** Pay-bill shell (`position: relative`) — overlay uses `absolute` so the tip screen behind stays put. */
   container?: HTMLElement | null
   onSave: (amountEur: number) => void
 }
@@ -33,10 +41,13 @@ export interface CustomTipModalProps {
 const FONT_FEAT =
   "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
+const SHEET_MOTION =
+  "transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+
 /**
- * Bottom sheet: custom tip — same amount field as {@link BillAmountScreen}; footer Save; native keyboard on touch.
- * `modal={false}` so Radix does not mount the overlay `RemoveScroll` path (avoids body scroll-lock / layout
- * shift on the tip screen). A plain scrim restores dimming; other app drawers stay modal.
+ * Custom tip bottom sheet inside the pay-bill shell (no Vaul/Radix) so opening it
+ * does not run body scroll-lock or Safari `position: fixed` restore — that shifted
+ * the tip screen behind the sheet.
  */
 export function CustomTipModal({
   open,
@@ -46,7 +57,9 @@ export function CustomTipModal({
   onSave,
 }: CustomTipModalProps) {
   const coarse = useCoarsePointer()
-  const vvLayout = useVisualViewportLayout(coarse)
+  const vvLayout = useVisualViewportLayout(open && coarse)
+  const reduceMotion = prefersReducedMotion()
+  const [entered, setEntered] = useState(reduceMotion)
   const [state, setState] = useState(initialBillNumpadState)
   const amountRef = useRef<HTMLSpanElement>(null)
   const scaleWrapRef = useRef<HTMLSpanElement>(null)
@@ -56,6 +69,22 @@ export function CustomTipModal({
   const cents = billStateToCents(state)
   useAnimatedBillCents(state, amountRef, scaleWrapRef)
   const display = formatBillDisplayEur(state, { dimWhenZero: true })
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setEntered(reduceMotion)
+      return
+    }
+    if (reduceMotion) {
+      setEntered(true)
+      return
+    }
+    setEntered(false)
+    const id = window.requestAnimationFrame(() => {
+      setEntered(true)
+    })
+    return () => window.cancelAnimationFrame(id)
+  }, [open, reduceMotion])
 
   useEffect(() => {
     if (!open) return
@@ -78,6 +107,15 @@ export function CustomTipModal({
     return () => window.cancelAnimationFrame(id)
   }, [open, coarse])
 
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange(false)
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [open, onOpenChange])
+
   const onShellKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (document.activeElement !== shellRef.current) return
@@ -91,7 +129,7 @@ export function CustomTipModal({
 
   const valid = isBillAmountValidForContinue(state)
 
-  const drawerContentStyle: CSSProperties | undefined =
+  const sheetStyle: CSSProperties | undefined =
     coarse && vvLayout && vvLayout.overlapBottom > 0 ?
       (() => {
         const visibleMax = Math.max(240, vvLayout.height - 8)
@@ -105,104 +143,107 @@ export function CustomTipModal({
       })()
     : undefined
 
-  return (
-    <Drawer.Root
-      open={open}
-      onOpenChange={onOpenChange}
-      dismissible
-      modal={false}
-      repositionInputs={false}
-      snapPoints={[]}
-    >
-      <Drawer.Portal container={container ?? undefined}>
-        <div
-          role="presentation"
-          className="fixed inset-0 z-[200] bg-special-scrim"
-          onPointerDown={(e) => {
-            if (e.target === e.currentTarget) onOpenChange(false)
-          }}
-        />
-        <Drawer.Content
-          style={drawerContentStyle}
-          className={[
-            "fixed inset-x-0 bottom-0 z-[201] flex max-h-[min(90dvh,100svh)] min-h-[70dvh]",
-            "flex-col rounded-t-[16px] bg-layer-floor-1 px-0 pb-0 outline-none",
-            "overflow-hidden shadow-[0_0.375rem_0.75rem_rgba(0,0,0,0.24)]",
-          ].join(" ")}
-        >
-          <Drawer.Title className="sr-only">Add a custom tip</Drawer.Title>
-          <Drawer.Description className="sr-only">
-            Enter a custom tip amount using the keyboard, then save.
-          </Drawer.Description>
+  if (!open || !container) return null
 
-          <div className="relative shrink-0 px-6 pb-3 pt-6">
-            <Drawer.Close asChild>
-              <button
-                type="button"
-                aria-label="Close"
-                className={`${SHEET_CLOSE_ON_SURFACE_NESTED_CLASS} !right-3 !top-3 z-[2] !size-7`}
-              >
-                <Cross size="xs" className={SHEET_CLOSE_ICON_ON_SURFACE_CLASS} aria-hidden />
-              </button>
-            </Drawer.Close>
-            <div className="w-full px-10 text-center">
-              <Typography
-                variant="body-l-accent"
-                color="primary"
-                align="center"
-                as="h2"
-                inlineStyle={{
-                  fontVariationSettings: "'wght' var(--font-weight-semibold)",
-                  fontFeatureSettings: FONT_FEAT,
-                }}
-              >
-                Add a custom tip
-              </Typography>
-            </div>
-          </div>
+  const sheetMotionClass =
+    reduceMotion ? ""
+    : `${SHEET_MOTION} ${entered ? "translate-y-0" : "translate-y-full"}`
+  const scrimMotionClass =
+    reduceMotion ? "" : `${SHEET_MOTION} ${entered ? "opacity-100" : "opacity-0"}`
 
-          <div
-            ref={shellRef}
-            tabIndex={coarse ? -1 : 0}
-            onKeyDown={coarse ? undefined : onShellKeyDown}
-            className="flex min-h-0 flex-1 flex-col overflow-y-auto outline-none"
+  return createPortal(
+    <>
+      <div
+        role="presentation"
+        className={`absolute inset-0 z-[200] bg-special-scrim ${scrimMotionClass}`}
+        onPointerDown={(e) => {
+          if (e.target === e.currentTarget) onOpenChange(false)
+        }}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="custom-tip-sheet-title"
+        style={sheetStyle}
+        className={[
+          "absolute inset-x-0 bottom-0 z-[201] flex max-h-[min(90dvh,100%)] min-h-[70%]",
+          "flex-col rounded-t-[16px] bg-layer-floor-1 px-0 pb-0 outline-none",
+          "overflow-hidden shadow-[0_0.375rem_0.75rem_rgba(0,0,0,0.24)]",
+          sheetMotionClass,
+        ].join(" ")}
+      >
+        <h2 id="custom-tip-sheet-title" className="sr-only">
+          Add a custom tip
+        </h2>
+
+        <div className="relative shrink-0 px-6 pb-3 pt-6">
+          <button
+            type="button"
+            aria-label="Close"
+            className={`${SHEET_CLOSE_ON_SURFACE_NESTED_CLASS} !right-3 !top-3 z-[2] !size-7`}
+            onClick={() => onOpenChange(false)}
           >
-            <BillAmountEntryBlock
-              label="Tip amount"
-              coarse={coarse}
-              display={display}
-              amountRef={amountRef}
-              scaleWrapRef={scaleWrapRef}
-              hiddenInputRef={hiddenInputRef}
-              sectionClassName="relative flex flex-col items-center px-6 pt-[clamp(1.5rem,8vh,96px)] pb-4"
-              onTapAmount={() => {
-                if (coarse) hiddenInputRef.current?.focus()
-                else shellRef.current?.focus()
-              }}
-              onHiddenInputChange={(raw) => {
-                setState(billStateFromFormattedInput(raw))
-              }}
-              inputName="customTipAmount"
-              inputAriaLabel="Custom tip amount in euros"
-            />
-          </div>
-
-          <div className="flex shrink-0 flex-col gap-3 px-6 pt-2 pb-[max(1.5rem,var(--safe-area-bottom))]">
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              disabled={!valid}
-              onClick={() => {
-                onSave(cents / 100)
-                onOpenChange(false)
+            <Cross size="xs" className={SHEET_CLOSE_ICON_ON_SURFACE_CLASS} aria-hidden />
+          </button>
+          <div className="w-full px-10 text-center">
+            <Typography
+              variant="body-l-accent"
+              color="primary"
+              align="center"
+              as="p"
+              aria-hidden
+              inlineStyle={{
+                fontVariationSettings: "'wght' var(--font-weight-semibold)",
+                fontFeatureSettings: FONT_FEAT,
               }}
             >
-              Save
-            </Button>
+              Add a custom tip
+            </Typography>
           </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        </div>
+
+        <div
+          ref={shellRef}
+          tabIndex={coarse ? -1 : 0}
+          onKeyDown={coarse ? undefined : onShellKeyDown}
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto outline-none"
+        >
+          <BillAmountEntryBlock
+            label="Tip amount"
+            coarse={coarse}
+            display={display}
+            amountRef={amountRef}
+            scaleWrapRef={scaleWrapRef}
+            hiddenInputRef={hiddenInputRef}
+            sectionClassName="relative flex flex-col items-center px-6 pt-[clamp(1.5rem,8vh,96px)] pb-4"
+            onTapAmount={() => {
+              if (coarse) hiddenInputRef.current?.focus()
+              else shellRef.current?.focus()
+            }}
+            onHiddenInputChange={(raw) => {
+              setState(billStateFromFormattedInput(raw))
+            }}
+            inputName="customTipAmount"
+            inputAriaLabel="Custom tip amount in euros"
+          />
+        </div>
+
+        <div className="flex shrink-0 flex-col gap-3 px-6 pt-2 pb-[max(1.5rem,var(--safe-area-bottom))]">
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={!valid}
+            onClick={() => {
+              onSave(cents / 100)
+              onOpenChange(false)
+            }}
+          >
+            Save
+          </Button>
+        </div>
+      </div>
+    </>,
+    container,
   )
 }

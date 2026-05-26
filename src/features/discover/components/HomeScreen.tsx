@@ -58,6 +58,7 @@ import {
   AtVenueNoClaimedOffersSheet,
   getRestaurantDetailDemo,
   RestaurantDetailScreen,
+  VenueClosedSheet,
 } from "@/features/restaurant"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { MapSurfaceErrorBoundary } from "./MapSurfaceErrorBoundary"
@@ -238,6 +239,7 @@ export function HomeScreen() {
   const [claimedView, setClaimedView] = useState<ClaimedOffer | null>(null)
   const [payBillEntry, setPayBillEntry] = useState<PayBillFlowEntry | null>(null)
   const [atVenueNoClaimPayInfoOpen, setAtVenueNoClaimPayInfoOpen] = useState(false)
+  const [venueClosedSheetOpen, setVenueClosedSheetOpen] = useState(false)
   const [pendingAtVenuePayBillEntry, setPendingAtVenuePayBillEntry] =
     useState<PayBillFlowEntry | null>(null)
   const continueAtVenuePayAfterCloseRef = useRef(false)
@@ -465,6 +467,10 @@ export function HomeScreen() {
 
   const handleOpenPayBill = useCallback(() => {
     if (!restaurantDetailSlug || !baseRestaurantDetail) return
+    if (!baseRestaurantDetail.isOpen) {
+      setVenueClosedSheetOpen(true)
+      return
+    }
     const claim = findActiveClaimForRestaurant(
       restaurantDetailSlug,
       baseRestaurantDetail,
@@ -787,6 +793,11 @@ export function HomeScreen() {
           container={portalRoot}
         />
       : null}
+      <VenueClosedSheet
+        isOpen={venueClosedSheetOpen}
+        onOpenChange={setVenueClosedSheetOpen}
+        container={portalRoot}
+      />
       {pendingAtVenuePayBillEntry && baseRestaurantDetail ? (
         <AtVenueNoClaimedOffersSheet
           isOpen={atVenueNoClaimPayInfoOpen}

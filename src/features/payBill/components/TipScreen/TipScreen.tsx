@@ -16,7 +16,8 @@ export interface TipScreenProps {
   restaurantName: string
   receiptTotalEur: number
   tipPercentPresets: number[]
-  portalContainer?: HTMLElement | null
+  /** Pay-bill shell element for the custom-tip overlay (keeps the tip screen static). */
+  sheetContainer?: HTMLElement | null
   onBack: () => void
   onContinue: (payload: {
     tip: number | null
@@ -32,7 +33,7 @@ export function TipScreen({
   restaurantName,
   receiptTotalEur,
   tipPercentPresets,
-  portalContainer,
+  sheetContainer,
   onBack,
   onContinue,
 }: TipScreenProps) {
@@ -134,9 +135,14 @@ export function TipScreen({
     customAmount != null ? Math.round(customAmount * 100) : 0
 
   return (
+    <>
     <div
       ref={rootRef}
-      className="flex h-[var(--app-h)] max-h-[var(--app-h)] w-full flex-col overflow-y-auto bg-layer-floor-1"
+      className={[
+        "flex h-[var(--app-h)] max-h-[var(--app-h)] w-full flex-col bg-layer-floor-1",
+        customModal ? "pointer-events-none overflow-hidden" : "overflow-y-auto",
+      ].join(" ")}
+      aria-hidden={customModal ? true : undefined}
     >
       <header className="flex shrink-0 items-center gap-4 px-6 pt-[max(1rem,var(--safe-area-top))] pb-3">
         <button
@@ -280,9 +286,11 @@ export function TipScreen({
           )}
         </div>
       </div>
+    </div>
 
+    {customModal ?
       <CustomTipModal
-        open={customModal}
+        open
         onOpenChange={(open) => {
           setCustomModal(open)
           if (!open) {
@@ -294,13 +302,14 @@ export function TipScreen({
           }
         }}
         initialCents={initialCustomCents}
-        container={portalContainer ?? undefined}
+        container={sheetContainer ?? undefined}
         onSave={(eur) => {
           customAmountRef.current = eur
           setCustomAmount(eur)
           setSelectedId("other")
         }}
       />
-    </div>
+    : null}
+    </>
   )
 }

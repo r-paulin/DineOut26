@@ -5,8 +5,9 @@ import { useCallback, useMemo, useRef, useState } from "react"
 import { ClaimModalDisclaimer } from "@/features/offers/components/ClaimOfferModal/ClaimModalDisclaimer"
 import { ClaimModalOfferDetails } from "@/features/offers/components/ClaimOfferModal/ClaimModalOfferDetails"
 import { ClaimOfferPrimaryButton } from "@/features/offers/components/ClaimOfferModal/ClaimOfferPrimaryButton"
-import { useClaimOfferButtonSubtitle } from "@/features/offers/components/ClaimOfferModal/useClaimOfferButtonSubtitle"
+import { formatPeopleCountLabel } from "@/features/offers/components/ClaimOfferModal/formatPeopleCountLabel"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
+import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
 import type { ClaimData, ClaimOfferModalOffer, PaymentMethod } from "@/features/offers/offers.types"
 import type {
   GetTimePickerConfigOptions,
@@ -25,8 +26,12 @@ const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
+/** Figma Heading M / M Accent (`16144:19979`). */
+const CLAIM_MODAL_TITLE_CLASS =
+  "m-0 p-0 text-primary text-[1.75rem] font-semibold leading-[2.25rem] tracking-[-0.616px] [font-feature-settings:'cv03'_on,'cv04'_on] [font-variant-numeric:lining-nums_proportional-nums] [font-variation-settings:'wght'_var(--font-weight-semibold)]"
+
 const PICKER_ROW_CLASS =
-  "flex w-full flex-row items-center justify-between gap-3 border-0 bg-transparent px-6 pb-[13px] pt-[14px] text-left transition-colors hover:bg-active-neutral-secondary active:bg-active-neutral-secondary"
+  "flex w-full flex-row items-center justify-between gap-3 rounded-[8px] border-0 bg-transparent px-6 pb-[13px] pt-[14px] text-left transition-colors hover:bg-active-neutral-secondary active:bg-active-neutral-secondary"
 
 export interface ClaimOfferModalProps {
   isOpen: boolean
@@ -75,12 +80,12 @@ export function ClaimOfferModal({
   const [timeSheetOpen, setTimeSheetOpen] = useState(false)
   const [slotList, setSlotList] = useState<string[]>([])
 
-  const buttonSubtitle = useClaimOfferButtonSubtitle(
-    paymentMethod,
-    offer.discountPercent,
+  const modalTitle = useMemo(
+    () => formatOfferDiscountTitle(offer.discountPercent, offer.isAllDay),
+    [offer.discountPercent, offer.isAllDay],
   )
 
-  const guestChipLabel = guestCount === 1 ? "1 guest" : `${guestCount} guests`
+  const peopleChipLabel = formatPeopleCountLabel(guestCount)
 
   const handleDrawerOpenChange = useCallback(
     (open: boolean) => {
@@ -155,27 +160,15 @@ export function ClaimOfferModal({
         container={container}
         zOverlay={Z_CLAIM_MODAL_OVERLAY}
         zContent={Z_CLAIM_MODAL_CONTENT}
-        title="Claim discount"
-        description={`Claim discount at ${offer.restaurantName}.`}
+        title={modalTitle}
+        description={`${modalTitle} at ${offer.restaurantName}.`}
         hero="none"
         sheetHeight="fill"
         surfaceClass="bg-layer-floor-2"
-        footer={
-          <ClaimOfferPrimaryButton
-            subtitle={buttonSubtitle}
-            onClick={handleClaim}
-          />
-        }
+        footer={<ClaimOfferPrimaryButton onClick={handleClaim} />}
       >
         <div className="px-6 pb-3 pt-10">
-          <Typography
-            variant="heading-m-accent"
-            color="primary"
-            as="h2"
-            inlineStyle={SEMIBOLD}
-          >
-            Claim discount
-          </Typography>
+          <h2 className={CLAIM_MODAL_TITLE_CLASS}>{modalTitle}</h2>
         </div>
 
         <input
@@ -200,7 +193,7 @@ export function ClaimOfferModal({
             <Typography as="span" variant="body-m-regular" color="primary">
               When will you arrive?
             </Typography>
-            <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-lg bg-neutral-secondary px-3 py-2">
+            <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-[8px] bg-neutral-secondary px-3 py-2">
               <Typography
                 as="span"
                 variant="body-m-accent"
@@ -220,9 +213,9 @@ export function ClaimOfferModal({
             onClick={() => setGuestSheetOpen(true)}
           >
             <Typography as="span" variant="body-m-regular" color="primary">
-              How many guests?
+              How many people?
             </Typography>
-            <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-lg bg-neutral-secondary px-3 py-2">
+            <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-[8px] bg-neutral-secondary px-3 py-2">
               <Typography
                 as="span"
                 variant="body-m-accent"
@@ -230,7 +223,7 @@ export function ClaimOfferModal({
                 inlineStyle={SEMIBOLD}
                 noWrap
               >
-                {guestChipLabel}
+                {peopleChipLabel}
               </Typography>
               <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
             </span>

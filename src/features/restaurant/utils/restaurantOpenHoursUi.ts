@@ -50,6 +50,8 @@ export interface RestaurantOpenHoursUi {
   closesAtLabel: string
   /** Same-day opening time label, e.g. `12:00`. */
   opensAtLabel: string
+  /** Venue feed hours row subtitle (Figma `16123:18092`), e.g. `Closes 23:00`. */
+  venueHoursRowSubtitle: string
 }
 
 /** Hero scrim pill — Figma `16004:24677`. */
@@ -84,6 +86,10 @@ export function buildOpenHoursUiState(
     ? `Closes at ${closesAtLabel}`
     : `Opens at ${opensAtLabel}`
 
+  const venueHoursRowSubtitle = isOpenNow
+    ? `Closes ${closesAtLabel}`
+    : `Opens ${opensAtLabel}`
+
   return {
     isOpenNow,
     summaryRangeToday: row.range,
@@ -91,6 +97,7 @@ export function buildOpenHoursUiState(
     openHoursSheetSubtitle,
     closesAtLabel,
     opensAtLabel,
+    venueHoursRowSubtitle,
   }
 }
 
@@ -161,11 +168,12 @@ export function buildRestaurantHeroStatusPill(
     }
   }
 
+  const secondary = `Opens at ${opensAtLabel}`
   return {
     primary: "Closed",
-    secondary: null,
-    showSecondary: false,
-    ariaLabel: "Closed, working hours",
+    secondary,
+    showSecondary: true,
+    ariaLabel: `Closed, ${secondary}, working hours`,
   }
 }
 

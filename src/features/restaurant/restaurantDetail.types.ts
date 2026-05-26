@@ -120,6 +120,8 @@ export interface RestaurantDetailModel {
   offersByTabId: Record<string, RestaurantOfferCardModel[]>
   venueGalleryCycles: Array<{ tall: string; top: string; bottom: string }>
   openHoursSummary: string
+  /** Venue list hours row subtitle (Figma `16123:18092`), e.g. `Closes 23:00`. */
+  venueHoursRowSubtitle: string
   /** Weekly grid for the hours sheet (single source with {@link openHoursSummary}). */
   weeklyOpenHours: readonly RestaurantFixedOpenHoursRow[]
   /** Sheet title: {@link buildOpenHoursUiState} → `Open now` or `Closed`. */

@@ -42,10 +42,10 @@ describe("scarcity helpers", () => {
     expect(clampRemainingSpotsForDisplay(0)).toBeUndefined()
   })
 
-  it("shows sticker only for 1–5", () => {
+  it("shows sticker only when exactly one spot remains", () => {
     expect(shouldShowScarcitySticker(1)).toBe(true)
-    expect(shouldShowScarcitySticker(5)).toBe(true)
-    expect(shouldShowScarcitySticker(6)).toBe(false)
+    expect(shouldShowScarcitySticker(2)).toBe(false)
+    expect(shouldShowScarcitySticker(5)).toBe(false)
     expect(shouldShowScarcitySticker(undefined)).toBe(false)
   })
 })

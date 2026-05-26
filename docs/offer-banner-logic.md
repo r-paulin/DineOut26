@@ -97,7 +97,7 @@ These do **not** add a fourth `OfferState`. They layer on top of `available` in 
 | Mode | When | Action | Sticker |
 | --- | --- | --- | --- |
 | **Active window** | Scheduled today and local time is inside `[offerStart, offerEnd)` (all-day on today counts as active until `offerEnd`) | Claim offer | None |
-| **Pre-book** | Future schedule date, or today before `offerStart` | Pre-book now | `Limited availability — {n} left` when `remainingCount > 0` |
+| **Pre-book** | Future schedule date, or today before `offerStart` | Pre-book now | `Limited availability — 1 left` when `remainingCount === 1` |
 | **Locked** | User claimed a **different** offer at this venue on the **same calendar day** as this row (`hasOtherClaimAtVenue`) | Claim offer (disabled) | `One offer per restaurant per day` |
 
 Every interactive row also shows schedule + `Min. order X · Max. saving Y` (from `minOrderEur` / `maxSavingEur` on the card or claim).

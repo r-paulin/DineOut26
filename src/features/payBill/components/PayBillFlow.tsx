@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { BillAmountScreen } from "@/features/payBill/components/BillAmountScreen/BillAmountScreen"
 import { PayScreen } from "@/features/payBill/components/PayScreen/PayScreen"
 import { PaySuccessScreen } from "@/features/payBill/components/PaySuccessScreen/PaySuccessScreen"
@@ -47,6 +47,7 @@ export function PayBillFlow({
 
   const entryIdentity = `${entry.restaurantSlug}|${entry.offer?.offerId ?? ""}`
   const openedEntryRef = useRef<string | null>(null)
+  const [shellEl, setShellEl] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
     if (openedEntryRef.current === entryIdentity) return
@@ -73,6 +74,7 @@ export function PayBillFlow({
   const node = (
     <div className="fixed inset-0 z-[120] flex w-full justify-center bg-layer-floor-1">
       <div
+        ref={setShellEl}
         className="relative h-[var(--app-h)] w-full max-w-[var(--shell-width)] overflow-hidden bg-layer-floor-1 shadow-[0_0.25rem_0.75rem_rgba(0,0,0,0.2)]"
         style={{
           minHeight: "var(--app-h)",
@@ -100,7 +102,7 @@ export function PayBillFlow({
             tipPercentPresets={
               entry.offer?.tipPresetAmounts ?? [...DEFAULT_TIP_PERCENT_PRESETS]
             }
-            portalContainer={portalContainer}
+            sheetContainer={shellEl}
             onBack={() => setStep("billAmount")}
             onContinue={({ tip: t, snackbarIntent }) => {
               setTip(t)
