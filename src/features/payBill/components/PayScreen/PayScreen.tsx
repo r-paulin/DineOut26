@@ -23,8 +23,8 @@ import { SlidingButton } from "@/features/payBill/components/PayScreen/SlidingBu
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
 import {
-  discountSecondEur,
-  finalAmountCompound,
+  cashbackAmountEur,
+  payAmountDue,
   round2,
 } from "@/features/payBill/utils/discountCalc"
 import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
@@ -224,14 +224,12 @@ export function PayScreen({
   const { discountPercent: d1, discountAddPercent: d2 } =
     effectivePayDiscountPercents(offer)
   const offerId = offer?.offerId ?? payBillSyntheticOfferId(restaurantSlug)
-  const finalAmt = finalAmountCompound(receiptTotal, tip, d1, d2)
-  const secondDiscEur = discountSecondEur(receiptTotal, tip, d1, d2)
+  const finalAmt = payAmountDue(receiptTotal, tip, d1)
+  const cashbackEur = d2 > 0 ? cashbackAmountEur(receiptTotal, tip, d2) : 0
 
   const fromBalance = Math.min(DEMO_BOLT_BALANCE, finalAmt)
   const fromCard = Math.max(0, round2(finalAmt - fromBalance))
   const hideCardRow = fromCard <= 0
-
-  const cashbackEur = d2 > 0 ? secondDiscEur : 0
 
   const onSlideComplete = useCallback(async () => {
     setPayLoading(true)

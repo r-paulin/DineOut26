@@ -14,6 +14,29 @@ export function subtotalWithTip(
   return round2(receiptTotal + (tip ?? 0))
 }
 
+/**
+ * Amount the guest pays at checkout (claimed-offer % only).
+ * DineOut cashback (`discountAddPercent`) is not subtracted here.
+ */
+export function payAmountDue(
+  receiptTotal: number,
+  tip: number | null,
+  discountPercent: number,
+): number {
+  return finalAmountCompound(receiptTotal, tip, discountPercent, 0)
+}
+
+/** Post-payment cashback in EUR from % of receipt + tip. */
+export function cashbackAmountEur(
+  receiptTotal: number,
+  tip: number | null,
+  cashbackPercent: number,
+): number {
+  if (cashbackPercent <= 0) return 0
+  const S = subtotalWithTip(receiptTotal, tip)
+  return round2((S * cashbackPercent) / 100)
+}
+
 /** Final amount after two sequential percentage discounts. */
 export function finalAmountCompound(
   receiptTotal: number,

@@ -1,6 +1,7 @@
 import {
+  cashbackAmountEur,
   discountAmountCompound,
-  finalAmountCompound,
+  payAmountDue,
 } from "@/features/payBill/utils/discountCalc"
 import { createPaymentCode } from "@/features/payBill/utils/paymentCodeDisplay"
 
@@ -27,18 +28,24 @@ export function payBillMock(
 ): Promise<PayBillPaymentResult> {
   return new Promise((resolve) => {
     window.setTimeout(() => {
-      const paidAmount = finalAmountCompound(
+      const paidAmount = payAmountDue(
         req.receiptTotal,
         req.tip,
         req.discountPercent,
-        req.discountAddPercent,
       )
-      const discountAmount = discountAmountCompound(
-        req.receiptTotal,
-        req.tip,
-        req.discountPercent,
-        req.discountAddPercent,
-      )
+      const discountAmount =
+        req.discountAddPercent > 0 ?
+          cashbackAmountEur(
+            req.receiptTotal,
+            req.tip,
+            req.discountAddPercent,
+          )
+        : discountAmountCompound(
+            req.receiptTotal,
+            req.tip,
+            req.discountPercent,
+            0,
+          )
       const transactionId = `TXN-${Date.now().toString(36).toUpperCase()}`
       const paymentCode = createPaymentCode()
       const paidAt = new Date().toISOString()
