@@ -1,62 +1,36 @@
 import { Typography } from "@bolteu/kalep-react"
-import { PayBillSavedBadge } from "@/features/payBill/components/PayScreen/PayBillSavedBadge"
+import { PAY_BILL_HERO_CAPTION } from "@/features/payBill/constants/payBillCashbackCopy"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
-import {
-  payBillHeroMainPriceStyle,
-  payBillNumericOpentype,
-} from "@/features/payBill/utils/payBillNumericDisplay"
+import { payBillHeroMainPriceStyle } from "@/features/payBill/utils/payBillNumericDisplay"
+
+const FONT_FEAT =
+  "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
 export interface PayBillPayHeroProps {
-  subtotal: number
   finalAmt: number
-  savedEur: number
 }
 
 /**
- * Pay screen price hero — content height only (no min-height / flex-1 centering).
- * Figma `15767:51083`; must stay compact so summary + slide CTA fit on short viewports.
+ * Pay screen price hero — grows to fill space above summary (Figma `15767:51083` / `16364:30080`).
  */
-export function PayBillPayHero({
-  subtotal,
-  finalAmt,
-  savedEur,
-}: PayBillPayHeroProps) {
-  const showStrikeSubtotal = subtotal > finalAmt
-
+export function PayBillPayHero({ finalAmt }: PayBillPayHeroProps) {
   return (
-    <section className="flex w-full shrink-0 grow-0 flex-col items-center gap-1 px-6 py-4">
-      <p className="m-0 flex w-full max-w-[min(100%,22rem)] flex-col items-center gap-1 text-center">
-        <Typography
-          variant="body-l-regular"
-          color="secondary"
-          as="span"
-          align="center"
-        >
-          <span>You&apos;ll pay</span>
-          {showStrikeSubtotal ?
-            <>
-              {" "}
-              <span
-                className="[text-decoration-skip-ink:none] line-through tabular-nums"
-                style={payBillNumericOpentype}
-              >
-                {formatEurMajor(subtotal)}
-              </span>
-            </>
-          : null}
-        </Typography>
-        <span
-          className="text-primary tabular-nums"
-          style={payBillHeroMainPriceStyle}
-        >
-          {formatEurMajor(finalAmt)}
-        </span>
-      </p>
-      {savedEur > 0 ?
-        <div className="mt-1">
-          <PayBillSavedBadge savedAmountEur={savedEur} />
-        </div>
-      : null}
+    <section className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-1 px-6 py-8">
+      <span
+        className="w-full text-center text-primary tabular-nums"
+        style={payBillHeroMainPriceStyle}
+      >
+        {formatEurMajor(finalAmt)}
+      </span>
+      <Typography
+        variant="body-s-regular"
+        color="secondary"
+        align="center"
+        as="p"
+        inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
+      >
+        {PAY_BILL_HERO_CAPTION}
+      </Typography>
     </section>
   )
 }

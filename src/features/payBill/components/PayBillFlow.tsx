@@ -137,7 +137,6 @@ export function PayBillFlow({
             tip={tip}
             paymentCode={paymentCode}
             offer={entry.offer}
-            portalContainer={portalContainer}
             onDismiss={exitAfterPayment}
             onDone={completeAfterConfirmation}
           />

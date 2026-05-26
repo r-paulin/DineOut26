@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import paySuccessCheckmarkUrl from "@/features/payBill/assets/pay-success-checkmark-180.png"
 import { PaymentConfirmationNavbar } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationNavbar"
@@ -6,9 +6,6 @@ import { PaymentConfirmationSummarySheet } from "@/features/payBill/components/P
 import { PaymentSuccessTitle } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentSuccessTitle"
 import { PAY_CONFIRM_NAV_RESERVE } from "@/features/payBill/components/PaymentConfirmationScreen/paymentConfirmationLayout"
 import { usePaymentConfirmationReveal } from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
-import { discountSecondEur } from "@/features/payBill/utils/discountCalc"
-import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
-import { AppInfoBottomSheet } from "@/shared/components/AppInfoBottomSheet"
 
 export interface PaymentConfirmationScreenProps {
   restaurantName: string
@@ -17,13 +14,9 @@ export interface PaymentConfirmationScreenProps {
   tip: number | null
   paymentCode: string
   offer: ClaimedOffer | null
-  portalContainer?: HTMLElement | null
   onDismiss: () => void
   onDone: () => void
 }
-
-const Z_CONFIRM_SHEET_OVERLAY = 200
-const Z_CONFIRM_SHEET_CONTENT = 201
 
 const CHECKMARK_IMG_PROPS = {
   src: paySuccessCheckmarkUrl,
@@ -41,8 +34,6 @@ export function PaymentConfirmationScreen({
   receiptTotal,
   tip,
   paymentCode,
-  offer,
-  portalContainer,
   onDismiss,
   onDone,
 }: PaymentConfirmationScreenProps) {
@@ -53,8 +44,6 @@ export function PaymentConfirmationScreen({
   const titleSlotRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
 
-  const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
-
   const { phase } = usePaymentConfirmationReveal({
     rootRef,
     heroBandRef,
@@ -64,9 +53,6 @@ export function PaymentConfirmationScreen({
     sheetRef,
   })
 
-  const { discountPercent: d1, discountAddPercent: d2 } =
-    effectivePayDiscountPercents(offer)
-  const secondDiscEur = discountSecondEur(receiptTotal, tip, d1, d2)
   const revealed = phase === "revealed"
 
   return (
@@ -126,23 +112,10 @@ export function PaymentConfirmationScreen({
             receiptTotal={receiptTotal}
             tip={tip}
             paidAmount={paidAmount}
-            discountPercentSecond={d2}
-            secondDiscEur={secondDiscEur}
             onDone={onDone}
-            onDineOutBenefitInfo={() => setDineOutBenefitSheet(true)}
           />
         </div>
       </div>
-
-      <AppInfoBottomSheet
-        open={dineOutBenefitSheet}
-        onOpenChange={setDineOutBenefitSheet}
-        container={portalContainer}
-        title="DineOut benefit"
-        body="When you pay with DineOut, an extra discount applies to your bill including tips."
-        zOverlay={Z_CONFIRM_SHEET_OVERLAY}
-        zContent={Z_CONFIRM_SHEET_CONTENT}
-      />
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import { Button, Typography } from "@bolteu/kalep-react"
-import { DiscountReceiptRow } from "@/features/payBill/components/shared/DiscountReceiptRow"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 
@@ -11,10 +10,7 @@ export interface PaymentConfirmationSummarySheetProps {
   receiptTotal: number
   tip: number | null
   paidAmount: number
-  discountPercentSecond: number
-  secondDiscEur: number
   onDone: () => void
-  onDineOutBenefitInfo: () => void
 }
 
 /** Figma `15823:25243` — white sheet: payment code, summary, total, Done. */
@@ -23,13 +19,8 @@ export function PaymentConfirmationSummarySheet({
   receiptTotal,
   tip,
   paidAmount,
-  discountPercentSecond,
-  secondDiscEur,
   onDone,
-  onDineOutBenefitInfo,
 }: PaymentConfirmationSummarySheetProps) {
-  const hasDiscount = discountPercentSecond > 0
-
   return (
     <div
       data-confirm-sheet-body=""
@@ -87,19 +78,9 @@ export function PaymentConfirmationSummarySheet({
               labelTypographyVariant="body-m-regular"
             />
           : null}
-          {hasDiscount ?
-            <DiscountReceiptRow
-              percent={discountPercentSecond}
-              discountEur={secondDiscEur}
-              infoAriaLabel="DineOut benefit info"
-              onInfoClick={onDineOutBenefitInfo}
-            />
-          : null}
         </div>
 
-        {!hasDiscount ?
-          <div className="my-1 h-px w-full shrink-0 bg-separator" aria-hidden />
-        : null}
+        <div className="my-1 h-px w-full shrink-0 bg-separator" aria-hidden />
 
         <ReceiptItem
           label="Total paid"

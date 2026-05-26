@@ -7,27 +7,34 @@ export type ClaimOfferSuccessStep = {
   subtitle: string
 }
 
-function dineOutSteps(discountPercent: number): ClaimOfferSuccessStep[] {
+function sharedClaimSteps(discountPercent: number): ClaimOfferSuccessStep[] {
   const pct = String(discountPercent)
   return [
     {
-      title: "Go to the restaurant",
-      subtitle:
-        "Arrive during the valid hours and let the staff know you’re using DineOut.",
+      title: "Arrive during the offer hours",
+      subtitle: "Your discount is available while the offer is active",
     },
     {
-      title: "Dine as usual",
-      subtitle:
-        "Ask for the menu, choose your dishes, and enjoy your meal.",
+      title: "Tap I'm at venue",
+      subtitle: "The button appears on the restaurant page once you arrive",
     },
     {
-      title: "Ask for the receipt",
-      subtitle:
-        "Request the final bill from the waiter — say you’re paying with DineOut",
+      title: "Show the PIN to the staff",
+      subtitle: "This confirms your DineOut offer",
     },
+    {
+      title: "Enjoy your meal",
+      subtitle: `Your ${pct}% discount applies to the final bill`,
+    },
+  ]
+}
+
+function dineOutSteps(discountPercent: number): ClaimOfferSuccessStep[] {
+  return [
+    ...sharedClaimSteps(discountPercent),
     {
       title: "Pay in the app",
-      subtitle: `Tap Pay bill, enter the receipt total, and confirm your payment. Make sure your ${pct}% discount is applied before paying.`,
+      subtitle: "Enter the receipt total and confirm payment.",
     },
   ]
 }
@@ -35,21 +42,7 @@ function dineOutSteps(discountPercent: number): ClaimOfferSuccessStep[] {
 function cardOrCashSteps(discountPercent: number): ClaimOfferSuccessStep[] {
   const pct = String(discountPercent)
   return [
-    {
-      title: "Go to the restaurant",
-      subtitle:
-        "Arrive during the valid hours and let the staff know you’re using DineOut.",
-    },
-    {
-      title: "Dine as usual",
-      subtitle:
-        "Ask for the menu, choose your dishes, and enjoy your meal.",
-    },
-    {
-      title: "Ask for the receipt",
-      subtitle:
-        "After your meal, request the receipt and let them know you're using Bolt DineOut.",
-    },
+    ...sharedClaimSteps(discountPercent),
     {
       title: "Pay at the venue",
       subtitle: `Make sure the ${pct}% discount is applied to your bill, then pay by card or cash.`,

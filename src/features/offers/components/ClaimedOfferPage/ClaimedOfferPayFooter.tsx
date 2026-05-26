@@ -1,8 +1,8 @@
 import { Button, Typography } from "@bolteu/kalep-react"
-import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
+import CashbackColoured from "@bolteu/kalep-react-icons/dist/CashbackColoured"
 import type { RefObject } from "react"
 import { formatClaimedOfferDiscountSubtitle } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
-import { CLAIMED_OFFER_FOOTER_PROMO_TEXT } from "@/features/offers/constants/claimedOfferCopy"
+import { formatClaimedOfferFooterPromoText } from "@/features/offers/constants/claimedOfferCopy"
 
 export interface ClaimedOfferPayFooterProps {
   anchorRef: RefObject<HTMLDivElement | null>
@@ -11,7 +11,7 @@ export interface ClaimedOfferPayFooterProps {
   onPay: () => void
 }
 
-/** Figma `16123:18340` — fixed pay CTA + first-payment promo. */
+/** Figma claimed-offer pay stack — CTA + footer promo (`16364:29753`). */
 export function ClaimedOfferPayFooter({
   anchorRef,
   discountPercent,
@@ -56,13 +56,9 @@ export function ClaimedOfferPayFooter({
         </Button>
       </div>
       <div className="flex items-center justify-center gap-1">
-        <PercentFlower
-          size="sm"
-          className="shrink-0 text-danger-primary"
-          aria-hidden
-        />
-        <Typography variant="body-xs-regular" color="primary" as="p" align="center">
-          {CLAIMED_OFFER_FOOTER_PROMO_TEXT}
+        <CashbackColoured size="sm" className="shrink-0" aria-hidden />
+        <Typography variant="body-s-regular" color="primary" as="p" align="center">
+          {formatClaimedOfferFooterPromoText()}
         </Typography>
       </div>
     </div>

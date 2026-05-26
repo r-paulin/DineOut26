@@ -17,16 +17,15 @@ import {
   narrowCheckoutPaymentOptionId,
   type CheckoutPaymentOptionId,
 } from "@/features/payBill/constants/checkoutPaymentOptions"
+import { PayBillCashbackUpsell } from "@/features/payBill/components/PayScreen/PayBillCashbackUpsell"
 import { PayBillPayHero } from "@/features/payBill/components/PayScreen/PayBillPayHero"
 import { SlidingButton } from "@/features/payBill/components/PayScreen/SlidingButton"
-import { DiscountReceiptRow } from "@/features/payBill/components/shared/DiscountReceiptRow"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
 import {
   discountSecondEur,
   finalAmountCompound,
   round2,
-  subtotalWithTip,
 } from "@/features/payBill/utils/discountCalc"
 import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
@@ -175,7 +174,6 @@ export function PayScreen({
   const checkoutPaymentOptionId = usePayBillStore((s) => s.checkoutPaymentOptionId)
   const setCheckoutPaymentOptionId = usePayBillStore((s) => s.setCheckoutPaymentOptionId)
 
-  const [dineOutBenefitSheet, setDineOutBenefitSheet] = useState(false)
   const [boltInfoSheet, setBoltInfoSheet] = useState(false)
   const [cardSheet, setCardSheet] = useState(false)
   const [paymentPickerOpen, setPaymentPickerOpen] = useState(false)
@@ -226,7 +224,6 @@ export function PayScreen({
   const { discountPercent: d1, discountAddPercent: d2 } =
     effectivePayDiscountPercents(offer)
   const offerId = offer?.offerId ?? payBillSyntheticOfferId(restaurantSlug)
-  const subtotal = subtotalWithTip(receiptTotal, tip)
   const finalAmt = finalAmountCompound(receiptTotal, tip, d1, d2)
   const secondDiscEur = discountSecondEur(receiptTotal, tip, d1, d2)
 
@@ -234,7 +231,7 @@ export function PayScreen({
   const fromCard = Math.max(0, round2(finalAmt - fromBalance))
   const hideCardRow = fromCard <= 0
 
-  const savedEur = round2(subtotal - finalAmt)
+  const cashbackEur = d2 > 0 ? secondDiscEur : 0
 
   const onSlideComplete = useCallback(async () => {
     setPayLoading(true)
@@ -310,16 +307,13 @@ export function PayScreen({
         <span className="size-6 shrink-0" aria-hidden />
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-layer-floor-1">
-        <PayBillPayHero
-          subtotal={subtotal}
-          finalAmt={finalAmt}
-          savedEur={savedEur}
-        />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <main className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-layer-floor-1">
+          <PayBillPayHero finalAmt={finalAmt} />
 
-        <CardDivider />
+          <CardDivider />
 
-        <section className="flex shrink-0 grow-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pt-6 pb-8 shadow-[var(--elevation-1)]">
+          <section className="flex shrink-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pt-6 pb-8 shadow-[var(--elevation-1)]">
             <div className="mb-2">
               <Typography variant="heading-s-accent" color="primary" as="h2">
                 Summary
@@ -342,22 +336,8 @@ export function PayScreen({
                   labelTypographyVariant="body-m-regular"
                 />
               : null}
-              {d2 > 0 ?
-                <DiscountReceiptRow
-                  percent={d2}
-                  discountEur={secondDiscEur}
-                  infoAriaLabel="DineOut benefit info"
-                  onInfoClick={() => setDineOutBenefitSheet(true)}
-                />
-              : null}
             </div>
-            <div
-              className={
-                d2 > 0 ?
-                  "mt-2 pt-2"
-                : "mt-2 border-t border-solid border-separator pt-2"
-              }
-            >
+            <div className="mt-2 border-t border-solid border-separator pt-2">
               <ReceiptItem
                 label="Total"
                 amount={formatEurMajor(finalAmt)}
@@ -420,30 +400,34 @@ export function PayScreen({
               : null}
             </div>
           </section>
-      </main>
+        </main>
 
-      <footer
-        data-snackbar-anchor=""
-        className="shrink-0 border-t border-solid border-separator bg-layer-floor-1 px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
-      >
-        <SlidingButton
-          label="Pay bill"
-          sublabel="Slide to confirm"
-          isLoading={payLoading}
-          disabled={payLoading}
-          onComplete={onSlideComplete}
-        />
-      </footer>
+        <div className="flex shrink-0 flex-col bg-layer-floor-1">
+          {cashbackEur > 0 ?
+            <PayBillCashbackUpsell
+              cashbackEur={cashbackEur}
+              cashbackPercent={d2}
+            />
+          : null}
+          <footer
+            data-snackbar-anchor=""
+            className={
+              cashbackEur > 0 ?
+                "shrink-0 px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
+              : "shrink-0 border-t border-solid border-separator px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
+            }
+          >
+            <SlidingButton
+              label="Pay bill"
+              sublabel="Slide to confirm"
+              isLoading={payLoading}
+              disabled={payLoading}
+              onComplete={onSlideComplete}
+            />
+          </footer>
+        </div>
+      </div>
 
-      <AppInfoBottomSheet
-        open={dineOutBenefitSheet}
-        onOpenChange={setDineOutBenefitSheet}
-        container={portalContainer}
-        title="DineOut benefit"
-        body="When you pay with DineOut, an extra discount applies to your bill including tips."
-        zOverlay={Z_PAY_SHEET_OVERLAY}
-        zContent={Z_PAY_SHEET_CONTENT}
-      />
       <AppInfoBottomSheet
         open={boltInfoSheet}
         onOpenChange={setBoltInfoSheet}

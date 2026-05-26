@@ -1,9 +1,10 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
+import Lock from "@bolteu/kalep-react-icons/dist/Lock"
 import MobilePayment from "@bolteu/kalep-react-icons/dist/MobilePayment"
-import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
+import Pin from "@bolteu/kalep-react-icons/dist/Pin"
 import Stop from "@bolteu/kalep-react-icons/dist/Stop"
-import Walk from "@bolteu/kalep-react-icons/dist/Walk"
+import Time from "@bolteu/kalep-react-icons/dist/Time"
 import type { ReactElement } from "react"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
 import {
@@ -11,34 +12,28 @@ import {
   type ClaimOfferSuccessStep,
 } from "@/features/offers/constants/claimOfferSuccessSteps"
 import type { PaymentMethod } from "@/features/offers/offers.types"
-
-function getClaimSuccessStepIcons(
-  paymentMethod: PaymentMethod,
-): ReactElement[] {
-  const shared: ReactElement[] = [
-    <Walk key="walk" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-    <Food key="food" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-    <Receipt key="receipt" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-  ]
-  return paymentMethod === "dineout" ?
-      [
-        ...shared,
-        <MobilePayment
-          key="pay"
-          size="lg"
-          className="shrink-0 text-action-primary"
-          aria-hidden
-        />,
-      ]
-    : [
-        ...shared,
-        <Stop key="pay" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-      ]
-}
 import {
   Z_CLAIM_MODAL_CONTENT,
   Z_CLAIM_MODAL_OVERLAY,
 } from "@/features/restaurant/constants/screenLayers"
+
+function getClaimSuccessStepIcons(
+  paymentMethod: PaymentMethod,
+): ReactElement[] {
+  const iconClass = "shrink-0 text-action-primary"
+  const shared: ReactElement[] = [
+    <Time key="hours" size="lg" className={iconClass} aria-hidden />,
+    <Pin key="venue" size="lg" className={iconClass} aria-hidden />,
+    <Lock key="pin" size="lg" className={iconClass} aria-hidden />,
+    <Food key="food" size="lg" className={iconClass} aria-hidden />,
+  ]
+  return paymentMethod === "dineout" ?
+      [
+        ...shared,
+        <MobilePayment key="pay" size="lg" className={iconClass} aria-hidden />,
+      ]
+    : [...shared, <Stop key="pay" size="lg" className={iconClass} aria-hidden />]
+}
 
 const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
