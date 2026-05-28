@@ -1,6 +1,5 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import { useSnackbar } from "@/shared/snackbar"
-import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
 import InfoCircleOutlined from "@bolteu/kalep-react-icons/dist/InfoCircleOutlined"
 import PaymentCash from "@bolteu/kalep-react-icons/dist/PaymentCash"
 import PaymentGooglePay from "@bolteu/kalep-react-icons/dist/PaymentGooglePay"
@@ -20,6 +19,7 @@ import {
 import { PayBillCashbackUpsell } from "@/features/payBill/components/PayScreen/PayBillCashbackUpsell"
 import { PayBillPayHero } from "@/features/payBill/components/PayScreen/PayBillPayHero"
 import { SlidingButton } from "@/features/payBill/components/PayScreen/SlidingButton"
+import { PayBillScreenHeader } from "@/features/payBill/components/shared/PayBillScreenHeader"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
 import {
@@ -291,32 +291,11 @@ export function PayScreen({
 
   return (
     <div className="relative flex h-[var(--app-h)] max-h-[var(--app-h)] w-full min-h-0 flex-col bg-layer-floor-1">
-      <header className="flex shrink-0 items-center gap-4 px-6 pt-[max(1rem,var(--safe-area-top))] pb-3">
-        <button
-          type="button"
-          aria-label="Back"
-          onClick={onBack}
-          className="flex size-6 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
-        >
-          <ArrowLeft size="md" className="text-primary" aria-hidden />
-        </button>
-        <div className="flex min-h-[24px] min-w-0 flex-1 items-center justify-center">
-          <Typography
-            variant="body-l-accent"
-            color="primary"
-            as="p"
-            align="center"
-            noWrap
-            inlineStyle={{
-              fontVariationSettings: "'wght' var(--font-weight-semibold)",
-              fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
-            }}
-          >
-            {restaurantName}
-          </Typography>
-        </div>
-        <span className="size-6 shrink-0" aria-hidden />
-      </header>
+      <PayBillScreenHeader
+        title={restaurantName}
+        onBack={onBack}
+        showDivider={false}
+      />
 
       <div className="flex min-h-0 flex-1 flex-col">
         <main className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-layer-floor-1">

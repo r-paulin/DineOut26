@@ -1,10 +1,10 @@
 import { Button, Typography } from "@bolteu/kalep-react"
-import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { PayBillScreenHeader } from "@/features/payBill/components/shared/PayBillScreenHeader"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import tipHandsUrl from "@/features/payBill/assets/tip-hands.png"
 import { CustomTipModal } from "@/features/payBill/components/TipScreen/CustomTipModal"
 import { TipPill } from "@/features/payBill/components/TipScreen/TipPill"
-import { useTipScreenEntrance } from "@/features/payBill/hooks/useTipScreenEntrance"
+import { useTipScreenEntrance, useTipScreenEntranceLock } from "@/features/payBill/hooks/useTipScreenEntrance"
 import type { TipOption } from "@/features/payBill/payBill.types"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import { percentTipEur } from "@/features/payBill/utils/tipPresets"
@@ -47,6 +47,7 @@ export function TipScreen({
   const [customAmount, setCustomAmount] = useState<number | null>(null)
   const [customModal, setCustomModal] = useState(false)
   const customAmountRef = useRef<number | null>(null)
+  const scrollTopRef = useRef(0)
 
   useTipScreenEntrance(
     rootRef,
@@ -54,8 +55,24 @@ export function TipScreen({
     titleBlockRef,
     tipRowRef,
     footerRef,
+  )
+
+  useTipScreenEntranceLock(
+    illustrationRef,
+    titleBlockRef,
+    tipRowRef,
+    footerRef,
     customModal,
   )
+
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    if (customModal) {
+      scrollTopRef.current = root.scrollTop
+      root.scrollTop = scrollTopRef.current
+    }
+  }, [customModal])
 
   const options: TipOption[] = useMemo(() => {
     const noneOption: TipOption = {
@@ -102,6 +119,9 @@ export function TipScreen({
     (!selected?.isCustom || customAmount != null)
 
   const openOther = useCallback(() => {
+    if (rootRef.current) {
+      scrollTopRef.current = rootRef.current.scrollTop
+    }
     setSelectedId("other")
     setCustomModal(true)
   }, [])
@@ -140,40 +160,14 @@ export function TipScreen({
     <div
       ref={rootRef}
       className={[
-        "flex h-[var(--app-h)] max-h-[var(--app-h)] w-full flex-col bg-layer-floor-1 overflow-y-auto",
-        customModal ? "pointer-events-none touch-none overscroll-none" : "",
+        "flex h-[var(--app-h)] max-h-[var(--app-h)] w-full flex-col bg-layer-floor-1",
+        customModal ?
+          "pointer-events-none touch-none overflow-hidden overscroll-none"
+        : "overflow-y-auto",
       ].join(" ")}
-      inert={customModal ? true : undefined}
       aria-hidden={customModal ? true : undefined}
     >
-      <header className="flex shrink-0 items-center gap-4 px-6 pt-[max(1rem,var(--safe-area-top))] pb-3">
-        <button
-          type="button"
-          aria-label="Back"
-          onClick={onBack}
-          className="flex size-6 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
-        >
-          <ArrowLeft size="md" className="text-primary" aria-hidden />
-        </button>
-        <div className="flex min-h-[24px] min-w-0 flex-1 items-center justify-center">
-          <Typography
-            variant="body-l-accent"
-            color="primary"
-            as="p"
-            align="center"
-            noWrap
-            inlineStyle={{
-              fontVariationSettings: "'wght' var(--font-weight-semibold)",
-              fontFeatureSettings: FONT_FEAT,
-            }}
-          >
-            {restaurantName}
-          </Typography>
-        </div>
-        <span className="size-6 shrink-0" aria-hidden />
-      </header>
-
-      <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+      <PayBillScreenHeader title={restaurantName} onBack={onBack} />
 
       <div className="flex min-h-0 flex-1 flex-col items-center pt-6">
         <div className="flex w-full max-w-[min(100%,24rem)] flex-col items-center gap-6 px-6">
@@ -229,6 +223,9 @@ export function TipScreen({
                   onSelect={() => handleSelect(opt)}
                   onDeselect={() => {
                     if (opt.isCustom && isSel) {
+                      if (rootRef.current) {
+                        scrollTopRef.current = rootRef.current.scrollTop
+                      }
                       setCustomModal(true)
                       return
                     }
@@ -290,9 +287,9 @@ export function TipScreen({
       </div>
     </div>
 
-    {customModal ?
+    {sheetContainer ?
       <CustomTipModal
-        open
+        open={customModal}
         onOpenChange={(open) => {
           setCustomModal(open)
           if (!open) {
@@ -304,7 +301,7 @@ export function TipScreen({
           }
         }}
         initialCents={initialCustomCents}
-        container={sheetContainer ?? undefined}
+        container={sheetContainer}
         onSave={(eur) => {
           customAmountRef.current = eur
           setCustomAmount(eur)

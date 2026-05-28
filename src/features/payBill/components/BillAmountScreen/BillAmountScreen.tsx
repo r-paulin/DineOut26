@@ -1,5 +1,5 @@
-import { Button, Typography } from "@bolteu/kalep-react"
-import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
+import { Button } from "@bolteu/kalep-react"
+import { PayBillScreenHeader } from "@/features/payBill/components/shared/PayBillScreenHeader"
 import gsap from "gsap"
 import type { CSSProperties } from "react"
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
@@ -18,9 +18,6 @@ import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPe
 import { useCoarsePointer } from "@/shared/hooks/useCoarsePointer"
 import { useVisualViewportLayout } from "@/shared/hooks/useVisualViewportLayout"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
-
-const FONT_FEAT =
-  "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
 const BILL_AMOUNT_ERROR_ID = "bill-amount-screen-error"
 
@@ -139,39 +136,7 @@ export function BillAmountScreen({
         .join(" ")}
       style={rootStyle}
     >
-      <header className="flex shrink-0 flex-col gap-[15px] bg-layer-floor-1 pt-[max(2.5rem,var(--safe-area-top))]">
-        <div className="flex min-h-6 items-center gap-4 px-6">
-          <button
-            type="button"
-            aria-label="Back"
-            onClick={onDismiss}
-            className="flex size-6 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
-          >
-            <ArrowLeft size="md" className="text-primary" aria-hidden />
-          </button>
-          <div className="flex min-h-[24px] min-w-0 flex-1 items-center justify-center">
-            <Typography
-              variant="body-l-accent"
-              color="primary"
-              as="p"
-              align="center"
-              noWrap
-              inlineStyle={{
-                fontVariationSettings: "'wght' var(--font-weight-semibold)",
-                fontFeatureSettings: FONT_FEAT,
-              }}
-            >
-              {restaurantName}
-            </Typography>
-          </div>
-          <span className="size-6 shrink-0" aria-hidden />
-        </div>
-
-        <div
-          className="h-px w-full shrink-0 bg-[var(--color-border-separator)]"
-          aria-hidden
-        />
-      </header>
+      <PayBillScreenHeader title={restaurantName} onBack={onDismiss} />
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">

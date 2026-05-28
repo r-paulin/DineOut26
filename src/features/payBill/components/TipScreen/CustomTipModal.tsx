@@ -94,7 +94,7 @@ export function CustomTipModal({
   useEffect(() => {
     if (!open || coarse) return
     const id = window.requestAnimationFrame(() => {
-      shellRef.current?.focus()
+      shellRef.current?.focus({ preventScroll: true })
     })
     return () => window.cancelAnimationFrame(id)
   }, [open, coarse])
