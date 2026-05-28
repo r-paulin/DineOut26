@@ -67,33 +67,11 @@ describe("measureSnackbarInsetFromElement", () => {
 })
 
 describe("resolveSnackbarLayoutBaseline", () => {
-  it("prefers discover dock height when dock is active", () => {
-    expect(
-      resolveSnackbarLayoutBaseline({
-        discoverDockActive: true,
-        discoverDockBottomInsetPx: 420,
-        showBottomNav: true,
-      }),
-    ).toBe(420)
+  it("uses nav offset when bottom nav is shown (discover dock or standalone)", () => {
+    expect(resolveSnackbarLayoutBaseline({ showBottomNav: true })).toBe(72)
   })
 
-  it("uses nav offset when only bottom nav is shown", () => {
-    expect(
-      resolveSnackbarLayoutBaseline({
-        discoverDockActive: false,
-        discoverDockBottomInsetPx: null,
-        showBottomNav: true,
-      }),
-    ).toBe(72)
-  })
-
-  it("falls back to safe area when no dock or nav", () => {
-    expect(
-      resolveSnackbarLayoutBaseline({
-        discoverDockActive: false,
-        discoverDockBottomInsetPx: null,
-        showBottomNav: false,
-      }),
-    ).toBe(0)
+  it("falls back to safe area when bottom nav is hidden", () => {
+    expect(resolveSnackbarLayoutBaseline({ showBottomNav: false })).toBe(0)
   })
 })

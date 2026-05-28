@@ -189,19 +189,32 @@ export function PayScreen({
     intentConsumedRef.current = true
     const kind = intent
     setIntent(null)
-    if (kind === "tip-added") {
-      snackbar.add({
-        swipeToDismiss: false,
-        title: "Tip added",
-        description: "Your tip will go to the restaurant staff.",
-        timeout: 3500,
+    // Wait for Pay footer anchor + snackbar inset to settle before GSAP entry.
+    let cancelled = false
+    let raf2 = 0
+    const raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => {
+        if (cancelled) return
+        if (kind === "tip-added") {
+          snackbar.add({
+            swipeToDismiss: false,
+            title: "Tip added",
+            description: "Your tip will go to the restaurant staff.",
+            timeout: 3500,
+          })
+        } else if (kind === "no-tip") {
+          snackbar.add({
+            swipeToDismiss: false,
+            description: "No tip was added",
+            timeout: 3500,
+          })
+        }
       })
-    } else if (kind === "no-tip") {
-      snackbar.add({
-        swipeToDismiss: false,
-        description: "No tip was added",
-        timeout: 3500,
-      })
+    })
+    return () => {
+      cancelled = true
+      window.cancelAnimationFrame(raf1)
+      if (raf2) window.cancelAnimationFrame(raf2)
     }
   }, [intent, setIntent, snackbar])
 

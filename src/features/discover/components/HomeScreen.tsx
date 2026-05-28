@@ -15,6 +15,7 @@ import {
   BottomSheet,
   ClaimOfferModal,
   ClaimedOfferPage,
+  type ClaimedOfferPageHandle,
   ClaimOfferSuccessSheet,
   MapPlaceCardOpened,
   SectionOffersListScreen,
@@ -243,6 +244,7 @@ export function HomeScreen() {
   const [pendingAtVenuePayBillEntry, setPendingAtVenuePayBillEntry] =
     useState<PayBillFlowEntry | null>(null)
   const continueAtVenuePayAfterCloseRef = useRef(false)
+  const claimedOfferPageRef = useRef<ClaimedOfferPageHandle>(null)
   const { portalRoot } = useDeviceShell()
   const snackbar = useSnackbar()
 
@@ -443,6 +445,26 @@ export function HomeScreen() {
     setClaimedView(null)
   }, [])
 
+  const dismissClaimedViewAnimated = useCallback(
+    (after?: () => void) => {
+      if (!claimedView) {
+        after?.()
+        return
+      }
+      const dismiss = claimedOfferPageRef.current?.dismissAnimated
+      if (dismiss) {
+        dismiss(() => {
+          setClaimedView(null)
+          after?.()
+        })
+        return
+      }
+      setClaimedView(null)
+      after?.()
+    },
+    [claimedView],
+  )
+
   const handleCancelClaimedOffer = useCallback(
     (offerId: string) => {
       setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
@@ -456,12 +478,13 @@ export function HomeScreen() {
 
   const handlePayFromClaimedOffer = useCallback(() => {
     if (!claimedView) return
-    const detail = getRestaurantDetailDemo(claimedView.restaurantSlug)
+    const claim = claimedView
+    const detail = getRestaurantDetailDemo(claim.restaurantSlug)
     setClaimedView(null)
     setPayBillEntry({
       restaurantName: detail.name,
-      restaurantSlug: claimedView.restaurantSlug,
-      offer: claimedView,
+      restaurantSlug: claim.restaurantSlug,
+      offer: claim,
     })
   }, [claimedView, catalogSnapshot])
 
@@ -576,11 +599,7 @@ export function HomeScreen() {
     sheetSnap,
   })
 
-  useSnackbarLayoutBaseline({
-    discoverDockActive,
-    discoverDockBottomInsetPx,
-    showBottomNav,
-  })
+  useSnackbarLayoutBaseline({ showBottomNav })
 
   const bottomSheetProps = {
     snap: sheetSnap,
@@ -612,9 +631,12 @@ export function HomeScreen() {
     />
   )
 
-  /** Vaul claim sheets portal into the shell; keep map/sheet inert so focus cannot sit under aria-hidden. */
+  /** Keep discover inert under full-screen overlays so focus cannot sit beneath them. */
   const discoverUnderClaimSheetsInert =
-    pendingClaimOffer != null || postClaimSuccess != null
+    pendingClaimOffer != null ||
+    postClaimSuccess != null ||
+    claimedView != null ||
+    payBillEntry != null
 
   return (
     <div
@@ -732,7 +754,12 @@ export function HomeScreen() {
           claimedOffersById={claimedByOfferId}
           onBack={() => {
             setPendingClaimOffer(null)
-            setClaimedView(null)
+            if (claimedView) {
+              dismissClaimedViewAnimated(() => {
+                closeRestaurantDetail()
+              })
+              return
+            }
             closeRestaurantDetail()
           }}
           activeTab={activeTab}
@@ -770,6 +797,7 @@ export function HomeScreen() {
       ) : null}
       {claimedView && claimedOfferPageRestaurant ? (
         <ClaimedOfferPage
+          ref={claimedOfferPageRef}
           key={`${claimedView.offerId}-${claimedView.offerWindowCloses}`}
           restaurant={claimedOfferPageRestaurant}
           claim={claimedView}

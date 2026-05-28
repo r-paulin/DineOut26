@@ -88,8 +88,15 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
         { autoAlpha: 1, y: 0, scale: 1, duration: 0.42, ease: "power3.out" },
       )
     }, el)
-    return () => ctx.revert()
-  }, [id])
+    // Do not `revert()` — Sonner may re-run this effect while the toast id is stable,
+    // and revert would flash the panel back to hidden mid-animation.
+    return () => {
+      ctx.kill()
+      gsap.set(el, { autoAlpha: 1, y: 0, scale: 1 })
+    }
+    // One-shot entry per toast mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- panel ref only
+  }, [])
 
   useEffect(() => {
     const tid = window.setTimeout(() => dismissWithAnimation(), timeoutMs)

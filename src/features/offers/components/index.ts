@@ -26,7 +26,10 @@ export type {
   TimeSlotSheetProps,
 } from "./ClaimOfferModal"
 export { ClaimedOfferPage } from "./ClaimedOfferPage"
-export type { ClaimedOfferPageProps } from "./ClaimedOfferPage"
+export type {
+  ClaimedOfferPageHandle,
+  ClaimedOfferPageProps,
+} from "./ClaimedOfferPage"
 export { DineOutPromoSheet } from "./DineOutPromoSheet"
 export type { DineOutPromoSheetProps } from "./DineOutPromoSheet"
 export { BottomSheetScrollContent } from "./BottomSheetScrollContent"

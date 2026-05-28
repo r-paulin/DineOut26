@@ -7,18 +7,18 @@ function claim(offerId: string): ClaimedOffer {
   return {
     offerId,
     pin: "1234",
-    offerWindowCloses: new Date().toISOString(),
+    offerWindowCloses: "2026-05-08T21:00:00.000Z",
     arrivalTime: "19:00",
     arrivalDate: "Monday, 8 May",
     guestCount: 2,
     paymentMethod: "dineout",
     discountPercent: 20,
     restaurantSlug: "neiburgs",
-    claimedAt: Date.now(),
+    claimedAt: 1_700_000_000_000,
     offerScheduleYmd: "2026-05-08",
     cashbackAmount: 2.5,
     tipPresetAmounts: [5, 10, 15, 20],
-    discountAddPercent: 20,
+    discountAddPercent: 40,
   }
 }
 
@@ -30,7 +30,11 @@ describe("claimed offer cancel (local state)", () => {
     expect("dinner" in next).toBe(false)
   })
 
-  it("cancelOffer prototype does not throw (API stub)", () => {
-    expect(() => cancelOffer("any-id")).not.toThrow()
+  it("cancelOffer prototype resolves for a valid offer id", async () => {
+    await expect(cancelOffer("valid-offer")).resolves.toBeUndefined()
+  })
+
+  it("cancelOffer rejects empty offer id", async () => {
+    await expect(cancelOffer("")).rejects.toThrow("Offer not found")
   })
 })

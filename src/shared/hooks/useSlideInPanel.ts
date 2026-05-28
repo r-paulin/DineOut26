@@ -106,6 +106,7 @@ export function useSlideInPanel(
           onComplete: finish,
           onInterrupt: () => {
             exitingRef.current = false
+            finish()
           },
         })
         .to(

@@ -18,6 +18,7 @@ export type {
   BottomSheetScrollContentProps,
   ClaimOfferModalProps,
   ClaimOfferSuccessSheetProps,
+  ClaimedOfferPageHandle,
   ClaimedOfferPageProps,
   DineOutPromoSheetProps,
   MapPlaceCardOpenedProps,

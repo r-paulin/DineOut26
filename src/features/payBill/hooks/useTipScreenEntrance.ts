@@ -17,6 +17,8 @@ export function useTipScreenEntrance(
   titleBlockRef: RefObject<HTMLElement | null>,
   tipRowRef: RefObject<HTMLElement | null>,
   footerRef: RefObject<HTMLElement | null>,
+  /** When true, lock content visible (custom tip sheet open) — no entrance replay. */
+  modalOpen: boolean,
 ): void {
   const entranceDoneRef = useRef(false)
 
@@ -34,11 +36,12 @@ export function useTipScreenEntrance(
     if (els.length === 0) return
 
     const settleVisible = () => {
+      gsap.killTweensOf(els)
       gsap.set(els, { opacity: 1, y: 0, clearProps: "opacity,y,transform" })
       entranceDoneRef.current = true
     }
 
-    if (entranceDoneRef.current) {
+    if (modalOpen || entranceDoneRef.current) {
       settleVisible()
       return
     }
@@ -74,7 +77,6 @@ export function useTipScreenEntrance(
       ctx.kill()
       settleVisible()
     }
-    // One-shot entrance when Tip screen mounts.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refs + DOM targets only
-  }, [])
+  }, [modalOpen])
 }

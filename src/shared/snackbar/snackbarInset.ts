@@ -58,22 +58,16 @@ export function readSafeAreaBottomPx(): number {
 }
 
 export interface SnackbarLayoutBaselineInput {
-  discoverDockActive: boolean
-  discoverDockBottomInsetPx: number | null
   showBottomNav: boolean
 }
 
-/** Minimum bottom obstruction when no footer anchor is registered. */
+/**
+ * Minimum bottom obstruction when no footer anchor is registered.
+ * Snackbars sit above the tab bar only — not above the discover bottom sheet.
+ */
 export function resolveSnackbarLayoutBaseline(
   input: SnackbarLayoutBaselineInput,
 ): number {
-  if (
-    input.discoverDockActive &&
-    input.discoverDockBottomInsetPx != null &&
-    input.discoverDockBottomInsetPx > 0
-  ) {
-    return input.discoverDockBottomInsetPx
-  }
   if (input.showBottomNav) {
     return readNavLayoutOffsetPx()
   }

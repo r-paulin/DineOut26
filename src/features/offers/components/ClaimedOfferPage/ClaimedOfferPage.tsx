@@ -1,7 +1,14 @@
 import { Button, Dialog, Typography } from "@bolteu/kalep-react"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import { CustomEase } from "gsap/CustomEase"
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
 import { ClaimedOfferCancelRow } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferCancelRow"
 import { ClaimedOfferDetailsSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDetailsSection"
 import { ClaimedOfferDisclaimer } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDisclaimer"
@@ -54,21 +61,34 @@ export interface ClaimedOfferPageProps {
   onCardCashDone?: () => void
 }
 
+export interface ClaimedOfferPageHandle {
+  /** Slide out, then run `after` (defaults to {@link ClaimedOfferPageProps.onClose}). */
+  dismissAnimated: (after?: () => void) => void
+}
+
 /**
  * Post-claim full-screen panel (GSAP slide-in, same motion family as restaurant detail).
  */
-export function ClaimedOfferPage({
-  restaurant,
-  claim,
-  onClose,
-  onCancelOffer,
-  onPayWithBoltDineOut,
-  onCardCashDone,
-}: ClaimedOfferPageProps) {
+export const ClaimedOfferPage = forwardRef<
+  ClaimedOfferPageHandle,
+  ClaimedOfferPageProps
+>(function ClaimedOfferPage(
+  {
+    restaurant,
+    claim,
+    onClose,
+    onCancelOffer,
+    onPayWithBoltDineOut,
+    onCardCashDone,
+  },
+  ref,
+) {
   const onCloseRef = useRef(onClose)
   const onCancelOfferRef = useRef(onCancelOffer)
+  const onPayWithBoltDineOutRef = useRef(onPayWithBoltDineOut)
   const onCardCashDoneRef = useRef(onCardCashDone)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [cancelPending, setCancelPending] = useState(false)
   const [cancelDialogPortal, setCancelDialogPortal] = useState<HTMLElement | null>(
     null,
   )
@@ -96,13 +116,19 @@ export function ClaimedOfferPage({
   useLayoutEffect(() => {
     onCloseRef.current = onClose
     onCancelOfferRef.current = onCancelOffer
+    onPayWithBoltDineOutRef.current = onPayWithBoltDineOut
     onCardCashDoneRef.current = onCardCashDone
-  }, [onClose, onCancelOffer, onCardCashDone])
+  }, [onClose, onCancelOffer, onPayWithBoltDineOut, onCardCashDone])
 
-  useEffect(() => {
-    const active = document.activeElement
-    if (active instanceof HTMLElement) active.blur()
-  }, [])
+  useImperativeHandle(
+    ref,
+    () => ({
+      dismissAnimated: (after) => {
+        runExit(after ?? (() => onCloseRef.current()))
+      },
+    }),
+    [runExit],
+  )
 
   useLayoutEffect(() => {
     setCancelDialogPortal(rootRef.current)
@@ -112,20 +138,36 @@ export function ClaimedOfferPage({
     runExit()
   }, [runExit])
 
-  const handleConfirmCancel = useCallback(() => {
+  const handleConfirmCancel = useCallback(async () => {
+    if (cancelPending) return
     const offerId = claim.offerId
-    cancelOffer(offerId)
-    setCancelDialogOpen(false)
-    runExit(() => {
-      onCancelOfferRef.current(offerId)
-    })
-  }, [claim.offerId, runExit])
+    setCancelPending(true)
+    try {
+      await cancelOffer(offerId)
+      setCancelDialogOpen(false)
+      snackbar.add({
+        description: "Offer cancelled",
+        timeout: 4000,
+      })
+      runExit(() => {
+        onCancelOfferRef.current(offerId)
+      })
+    } catch {
+      snackbar.add({
+        description: "Could not cancel offer. Try again.",
+        timeout: 4000,
+      })
+    } finally {
+      setCancelPending(false)
+    }
+  }, [cancelPending, claim.offerId, runExit, snackbar])
 
   const handlePay = useCallback(() => {
-    if (onPayWithBoltDineOut) {
-      onPayWithBoltDineOut()
-    }
-  }, [onPayWithBoltDineOut])
+    if (!onPayWithBoltDineOutRef.current) return
+    runExit(() => {
+      onPayWithBoltDineOutRef.current?.()
+    })
+  }, [runExit])
 
   const handleCardCashDone = useCallback(() => {
     if (!onCardCashDoneRef.current) return
@@ -228,7 +270,9 @@ export function ClaimedOfferPage({
 
       <Dialog
         isOpen={cancelDialogOpen}
-        onRequestClose={() => setCancelDialogOpen(false)}
+        onRequestClose={() => {
+          if (!cancelPending) setCancelDialogOpen(false)
+        }}
         title="Are you sure?"
         variant="alert"
         portalContainer={cancelDialogPortal ?? undefined}
@@ -239,13 +283,19 @@ export function ClaimedOfferPage({
               {"You\u2019ll lose this offer"}
             </Typography>
             <div className="flex w-full min-w-0 flex-col gap-2">
-              <Button fullWidth variant="danger" onClick={handleConfirmCancel}>
+              <Button
+                fullWidth
+                variant="danger"
+                disabled={cancelPending}
+                onClick={() => void handleConfirmCancel()}
+              >
                 Cancel offer
               </Button>
               <Button
                 fullWidth
                 variant="secondary"
                 size="lg"
+                disabled={cancelPending}
                 onClick={() => setCancelDialogOpen(false)}
               >
                 Back
@@ -256,4 +306,4 @@ export function ClaimedOfferPage({
       </Dialog>
     </div>
   )
-}
+})

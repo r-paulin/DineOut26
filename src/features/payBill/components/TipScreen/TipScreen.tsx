@@ -43,12 +43,18 @@ export function TipScreen({
   const tipRowRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
 
+  const [selectedId, setSelectedId] = useState("")
+  const [customAmount, setCustomAmount] = useState<number | null>(null)
+  const [customModal, setCustomModal] = useState(false)
+  const customAmountRef = useRef<number | null>(null)
+
   useTipScreenEntrance(
     rootRef,
     illustrationRef,
     titleBlockRef,
     tipRowRef,
     footerRef,
+    customModal,
   )
 
   const options: TipOption[] = useMemo(() => {
@@ -79,11 +85,6 @@ export function TipScreen({
       { id: "other", label: "Other", amount: null, isCustom: true },
     ]
   }, [receiptTotalEur, tipPercentPresets])
-
-  const [selectedId, setSelectedId] = useState("")
-  const [customAmount, setCustomAmount] = useState<number | null>(null)
-  const [customModal, setCustomModal] = useState(false)
-  const customAmountRef = useRef<number | null>(null)
 
   useEffect(() => {
     customAmountRef.current = customAmount
@@ -139,9 +140,10 @@ export function TipScreen({
     <div
       ref={rootRef}
       className={[
-        "flex h-[var(--app-h)] max-h-[var(--app-h)] w-full flex-col bg-layer-floor-1",
-        customModal ? "pointer-events-none overflow-hidden" : "overflow-y-auto",
+        "flex h-[var(--app-h)] max-h-[var(--app-h)] w-full flex-col bg-layer-floor-1 overflow-y-auto",
+        customModal ? "pointer-events-none touch-none overscroll-none" : "",
       ].join(" ")}
+      inert={customModal ? true : undefined}
       aria-hidden={customModal ? true : undefined}
     >
       <header className="flex shrink-0 items-center gap-4 px-6 pt-[max(1rem,var(--safe-area-top))] pb-3">

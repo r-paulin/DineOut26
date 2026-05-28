@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BillAmountScreen } from "@/features/payBill/components/BillAmountScreen/BillAmountScreen"
+import { PayBillFlowErrorFallback } from "@/features/payBill/components/PayBillFlow/PayBillFlowErrorFallback"
 import { PayScreen } from "@/features/payBill/components/PayScreen/PayScreen"
 import { PaySuccessScreen } from "@/features/payBill/components/PaySuccessScreen/PaySuccessScreen"
 import { PaymentConfirmationScreen } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationScreen"
@@ -71,6 +72,111 @@ export function PayBillFlow({
     onPaidDone?.()
   }, [onExitAfterPayment, onPaidDone, reset])
 
+  const retryBillAmount = useCallback(() => {
+    setStep("billAmount")
+    setTip(null)
+  }, [setStep, setTip])
+
+  const stepContent = useMemo(() => {
+    if (step === "billAmount") {
+      return (
+        <BillAmountScreen
+          restaurantName={entry.restaurantName}
+          claimedOffer={entry.offer}
+          onDismiss={dismissAll}
+          onContinue={(amt) => {
+            setBillAmount(amt)
+            setStep("tip")
+          }}
+        />
+      )
+    }
+    if (step === "tip") {
+      return (
+        <TipScreen
+          restaurantName={entry.restaurantName}
+          receiptTotalEur={billAmount ?? 0}
+          tipPercentPresets={
+            entry.offer?.tipPresetAmounts ?? [...DEFAULT_TIP_PERCENT_PRESETS]
+          }
+          sheetContainer={shellEl}
+          onBack={() => setStep("billAmount")}
+          onContinue={({ tip: t, snackbarIntent }) => {
+            setTip(t)
+            setIntent(snackbarIntent)
+            setStep("pay")
+          }}
+        />
+      )
+    }
+    if (step === "pay" && billAmount != null) {
+      return (
+        <PayScreen
+          restaurantName={entry.restaurantName}
+          restaurantSlug={entry.restaurantSlug}
+          receiptTotal={billAmount}
+          tip={tip}
+          offer={entry.offer}
+          portalContainer={portalContainer}
+          onBack={() => setStep("tip")}
+        />
+      )
+    }
+    if (step === "success") {
+      return <PaySuccessScreen onAdvance={() => setStep("confirmation")} />
+    }
+    if (
+      step === "confirmation" &&
+      billAmount != null &&
+      txn &&
+      paymentCode &&
+      paidAt &&
+      paidAmount != null &&
+      discountAmount != null &&
+      paymentMethodUi
+    ) {
+      return (
+        <PaymentConfirmationScreen
+          restaurantName={entry.restaurantName}
+          paidAmount={paidAmount}
+          receiptTotal={billAmount}
+          tip={tip}
+          paymentCode={paymentCode}
+          offer={entry.offer}
+          onDismiss={exitAfterPayment}
+          onDone={completeAfterConfirmation}
+        />
+      )
+    }
+    return (
+      <PayBillFlowErrorFallback
+        onDismiss={dismissAll}
+        onRetryBillAmount={retryBillAmount}
+      />
+    )
+  }, [
+    billAmount,
+    completeAfterConfirmation,
+    discountAmount,
+    dismissAll,
+    entry,
+    exitAfterPayment,
+    paidAmount,
+    paidAt,
+    paymentCode,
+    paymentMethodUi,
+    portalContainer,
+    retryBillAmount,
+    setBillAmount,
+    setIntent,
+    setStep,
+    setTip,
+    shellEl,
+    step,
+    tip,
+    txn,
+  ])
+
   const node = (
     <div className="fixed inset-0 z-[120] flex w-full justify-center bg-layer-floor-1">
       <div
@@ -85,62 +191,7 @@ export function PayBillFlow({
           `success` (PaySuccessScreen) is unused: PayScreen jumps straight to `confirmation`
           so PaymentConfirmationScreen can run the 15767→15823 GSAP sequence in one surface.
         */}
-        {step === "billAmount" ?
-          <BillAmountScreen
-            restaurantName={entry.restaurantName}
-            claimedOffer={entry.offer}
-            onDismiss={dismissAll}
-            onContinue={(amt) => {
-              setBillAmount(amt)
-              setStep("tip")
-            }}
-          />
-        : step === "tip" ?
-          <TipScreen
-            restaurantName={entry.restaurantName}
-            receiptTotalEur={billAmount ?? 0}
-            tipPercentPresets={
-              entry.offer?.tipPresetAmounts ?? [...DEFAULT_TIP_PERCENT_PRESETS]
-            }
-            sheetContainer={shellEl}
-            onBack={() => setStep("billAmount")}
-            onContinue={({ tip: t, snackbarIntent }) => {
-              setTip(t)
-              setIntent(snackbarIntent)
-              setStep("pay")
-            }}
-          />
-        : step === "pay" && billAmount != null ?
-          <PayScreen
-            restaurantName={entry.restaurantName}
-            restaurantSlug={entry.restaurantSlug}
-            receiptTotal={billAmount}
-            tip={tip}
-            offer={entry.offer}
-            portalContainer={portalContainer}
-            onBack={() => setStep("tip")}
-          />
-        : step === "success" ?
-          <PaySuccessScreen onAdvance={() => setStep("confirmation")} />
-        : step === "confirmation" &&
-          billAmount != null &&
-          txn &&
-          paymentCode &&
-          paidAt &&
-          paidAmount != null &&
-          discountAmount != null &&
-          paymentMethodUi ?
-          <PaymentConfirmationScreen
-            restaurantName={entry.restaurantName}
-            paidAmount={paidAmount}
-            receiptTotal={billAmount}
-            tip={tip}
-            paymentCode={paymentCode}
-            offer={entry.offer}
-            onDismiss={exitAfterPayment}
-            onDone={completeAfterConfirmation}
-          />
-        : null}
+        {stepContent}
       </div>
     </div>
   )

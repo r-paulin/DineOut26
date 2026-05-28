@@ -130,7 +130,19 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
   }
 }
 
-/** Prototype cancel — reserved for future API wiring. */
-export function cancelOffer(offerId: string): void {
-  void offerId
+export class CancelOfferError extends Error {
+  override readonly name = "CancelOfferError"
+}
+
+/** Prototype cancel — mirrors async API; replace with real `fetch` in production. */
+export function cancelOffer(offerId: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    globalThis.setTimeout(() => {
+      if (!offerId.trim()) {
+        reject(new CancelOfferError("Offer not found"))
+        return
+      }
+      resolve()
+    }, 400)
+  })
 }
