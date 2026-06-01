@@ -28,7 +28,7 @@ export function OfferBannerActionRow({ action }: OfferBannerActionRowProps) {
       >
         {action.label}
       </Typography>
-      {action.kind === "claimed" ?
+      {action.kind === "claimed" || action.kind === "cashback-earned" ?
         <CheckCircle size="sm" className={`shrink-0 ${iconClass}`} aria-hidden />
       : <ArrowCircleRight
           size="sm"

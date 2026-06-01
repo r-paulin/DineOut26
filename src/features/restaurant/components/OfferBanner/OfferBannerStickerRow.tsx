@@ -1,4 +1,5 @@
 import { Typography } from "@bolteu/kalep-react"
+import CashbackColoured from "@bolteu/kalep-react-icons/dist/CashbackColoured"
 import Lock from "@bolteu/kalep-react-icons/dist/Lock"
 import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
@@ -47,6 +48,20 @@ export function OfferBannerStickerRow({
   if (sticker.kind === "countdown" && claim) {
     return (
       <OfferBannerCountdownSticker claim={claim} iconClass={iconClass} />
+    )
+  }
+
+  if (sticker.kind === "dineout-upsell") {
+    return (
+      <div className={STICKER_ROW_CLASS}>
+        <CashbackColoured
+          className={`${STICKER_ICON_CLASS} text-primary-inverted`}
+          aria-hidden
+        />
+        <Typography variant="body-xs-regular" color="primary-inverted" as="p">
+          {sticker.text}
+        </Typography>
+      </div>
     )
   }
 

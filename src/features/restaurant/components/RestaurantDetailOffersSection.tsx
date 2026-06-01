@@ -4,7 +4,7 @@ import Decline from "@bolteu/kalep-react-icons/dist/Decline"
 import { useOfferDateTabs } from "@/features/restaurant/hooks/useOfferDateTabs"
 import { useOfferPanelTransition } from "@/features/restaurant/hooks/useOfferPanelTransition"
 import { useOfferTabPanelViewportHeight } from "@/features/restaurant/hooks/useOfferTabPanelViewportHeight"
-import type { ClaimedOffer } from "@/features/offers/offers.types"
+import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
 import { sortRestaurantOfferCardsByClaim } from "@/features/restaurant/utils/sortRestaurantOfferCards"
 import type {
   RestaurantOfferCardModel,
@@ -23,8 +23,10 @@ export interface RestaurantDetailOffersSectionProps {
   offersByTabId: Record<string, RestaurantOfferCardModel[]>
   userClaims: readonly UserClaim[]
   claimedOffersById: Readonly<Record<string, ClaimedOffer>>
+  paidOffersById?: Readonly<Record<string, PaidOfferRecord>>
   onOfferAvailablePress?: (offerId: string) => void
   onOfferClaimedPress?: (offerId: string) => void
+  onPaidOfferPress?: (offerId: string) => void
 }
 
 /**
@@ -43,8 +45,10 @@ export function RestaurantDetailOffersSection({
   offersByTabId,
   userClaims,
   claimedOffersById,
+  paidOffersById = {},
   onOfferAvailablePress,
   onOfferClaimedPress,
+  onPaidOfferPress,
 }: RestaurantDetailOffersSectionProps) {
   const {
     activeTabId,
@@ -149,6 +153,8 @@ export function RestaurantDetailOffersSection({
           const tabCards = sortRestaurantOfferCardsByClaim(
             offersByTabId[tab.id] ?? [],
             userClaims,
+            Date.now(),
+            paidOffersById,
           )
           const offset = idx - activeIdx
           return (
@@ -180,6 +186,7 @@ export function RestaurantDetailOffersSection({
                         offer={card}
                         userClaims={userClaims}
                         claimedOffersById={claimedOffersById}
+                        paidOffersById={paidOffersById}
                         onAvailablePress={
                           onOfferAvailablePress
                             ? () => onOfferAvailablePress(card.id)
@@ -188,6 +195,11 @@ export function RestaurantDetailOffersSection({
                         onClaimedPress={
                           onOfferClaimedPress
                             ? () => onOfferClaimedPress(card.id)
+                            : undefined
+                        }
+                        onPaidOfferPress={
+                          onPaidOfferPress
+                            ? () => onPaidOfferPress(card.id)
                             : undefined
                         }
                       />

@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
-import type { ClaimedOffer } from "@/features/offers/offers.types"
+import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
 import { OfferBannerCard } from "@/features/restaurant/components/OfferBanner/OfferBannerCard"
 import { OfferBannerStickerRow } from "@/features/restaurant/components/OfferBanner/OfferBannerStickerRow"
 import {
   buildOfferBannerContent,
+  buildPaidOfferBannerContent,
   buildStaticOfferBannerContent,
   type OfferBannerContext,
   type OfferBannerOuterShellTone,
 } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
+import { isPaidOfferPaymentDetailsAvailable } from "@/features/offers/utils/buildPaidOfferRecord"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import {
   getOfferBannerWindowPhase,
@@ -51,11 +53,14 @@ type OfferBannerInteractiveProps = {
   offer: RestaurantOfferCardModel
   userClaims: readonly UserClaim[]
   claimedOffersById: Readonly<Record<string, ClaimedOffer>>
+  paidOffersById?: Readonly<Record<string, PaidOfferRecord>>
   discountValue?: number
   minOrderEur?: number
   context?: OfferBannerContext
   onAvailablePress?: () => void
   onClaimedPress?: () => void
+  /** DineOut paid banner — reopen payment confirmation. */
+  onPaidOfferPress?: () => void
 }
 
 export type OfferBannerStaticProps = {
@@ -116,7 +121,67 @@ function OfferBannerStatic({
   return <div aria-label={content.ariaLabel}>{shell}</div>
 }
 
-function OfferBannerInteractive({
+function OfferBannerInteractive(props: OfferBannerInteractiveProps) {
+  const paid = props.paidOffersById?.[props.offer.id]
+  if (paid) {
+    return (
+      <OfferBannerPaid
+        offer={props.offer}
+        paid={paid}
+        onPress={props.onPaidOfferPress}
+      />
+    )
+  }
+  return <OfferBannerClaimable {...props} />
+}
+
+function OfferBannerPaid({
+  offer,
+  paid,
+  onPress,
+}: {
+  offer: RestaurantOfferCardModel
+  paid: PaidOfferRecord
+  onPress?: () => void
+}) {
+  const content = useMemo(
+    () => buildPaidOfferBannerContent({ paid, offer }),
+    [paid, offer],
+  )
+  const canOpenPaymentDetails = isPaidOfferPaymentDetailsAvailable(paid)
+
+  const shell = (
+    <OfferBannerShell
+      outerClaimed={content.outerClaimed}
+      outerShellTone={content.outerShellTone}
+    >
+      <OfferBannerCard content={content} />
+      {content.sticker ?
+        <OfferBannerStickerRow
+          sticker={content.sticker}
+          claimed={content.outerClaimed}
+        />
+      : null}
+    </OfferBannerShell>
+  )
+
+  if (canOpenPaymentDetails && onPress) {
+    return (
+      <button
+        type="button"
+        className="w-full min-w-0 cursor-pointer border-none bg-transparent p-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-action-primary focus-visible:ring-inset"
+        aria-label={`${content.ariaLabel}. View payment details`}
+        onClick={onPress}
+      >
+        {shell}
+      </button>
+    )
+  }
+
+  return <div aria-label={content.ariaLabel}>{shell}</div>
+}
+
+function OfferBannerClaimable({
   offer,
   userClaims,
   claimedOffersById,

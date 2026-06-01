@@ -6,8 +6,12 @@ import { PayScreen } from "@/features/payBill/components/PayScreen/PayScreen"
 import { PaySuccessScreen } from "@/features/payBill/components/PaySuccessScreen/PaySuccessScreen"
 import { PaymentConfirmationScreen } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationScreen"
 import { TipScreen } from "@/features/payBill/components/TipScreen/TipScreen"
-import { type PayBillFlowEntry } from "@/features/payBill/payBill.types"
+import {
+  type PayBillCompletionSnapshot,
+  type PayBillFlowEntry,
+} from "@/features/payBill/payBill.types"
 import { DEFAULT_TIP_PERCENT_PRESETS } from "@/features/payBill/utils/tipPresets"
+import { capturePayBillCompletionSnapshot } from "@/features/payBill/utils/capturePayBillCompletionSnapshot"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
 
 export interface PayBillFlowProps {
@@ -15,7 +19,7 @@ export interface PayBillFlowProps {
   portalContainer?: HTMLElement | null
   onClose: () => void
   /** User left payment confirmation after a successful pay (Close or Done). */
-  onExitAfterPayment?: () => void
+  onExitAfterPayment?: (snapshot: PayBillCompletionSnapshot | null) => void
   /** After the user taps Done on the payment confirmation screen. */
   onPaidDone?: () => void
 }
@@ -51,6 +55,17 @@ export function PayBillFlow({
   const [shellEl, setShellEl] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
+    const state = usePayBillStore.getState()
+    const storeEntryId = state.entry
+      ? `${state.entry.restaurantSlug}|${state.entry.offer?.offerId ?? ""}`
+      : null
+
+    // Remount mid-flow (e.g. Strict Mode) — keep bill/tip/pay/confirmation state.
+    if (storeEntryId === entryIdentity) {
+      openedEntryRef.current = entryIdentity
+      return
+    }
+
     if (openedEntryRef.current === entryIdentity) return
     openedEntryRef.current = entryIdentity
     open(entry)
@@ -62,15 +77,17 @@ export function PayBillFlow({
   }, [onClose, reset])
 
   const exitAfterPayment = useCallback(() => {
+    const snapshot = capturePayBillCompletionSnapshot(entry)
     reset()
-    onExitAfterPayment?.()
-  }, [onExitAfterPayment, reset])
+    onExitAfterPayment?.(snapshot)
+  }, [entry, onExitAfterPayment, reset])
 
   const completeAfterConfirmation = useCallback(() => {
+    const snapshot = capturePayBillCompletionSnapshot(entry)
     reset()
-    onExitAfterPayment?.()
+    onExitAfterPayment?.(snapshot)
     onPaidDone?.()
-  }, [onExitAfterPayment, onPaidDone, reset])
+  }, [entry, onExitAfterPayment, onPaidDone, reset])
 
   const retryBillAmount = useCallback(() => {
     setStep("billAmount")

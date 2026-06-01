@@ -1,4 +1,5 @@
 import { Button, Typography } from "@bolteu/kalep-react"
+import { PaymentConfirmationCashbackBanner } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationCashbackBanner"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 
@@ -10,6 +11,7 @@ export interface PaymentConfirmationSummarySheetProps {
   receiptTotal: number
   tip: number | null
   paidAmount: number
+  showCashback?: boolean
   onDone: () => void
 }
 
@@ -19,6 +21,7 @@ export function PaymentConfirmationSummarySheet({
   receiptTotal,
   tip,
   paidAmount,
+  showCashback = false,
   onDone,
 }: PaymentConfirmationSummarySheetProps) {
   return (
@@ -26,8 +29,8 @@ export function PaymentConfirmationSummarySheet({
       data-confirm-sheet-body=""
       className="flex max-h-[min(72vh,calc(var(--app-h)*0.72))] min-h-0 flex-col overflow-y-auto px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-6"
     >
-      <div className="flex shrink-0 flex-col gap-2 rounded-lg bg-layer-floor-0-grouped px-6 py-3 text-center">
-        <Typography variant="body-s-regular" color="secondary" as="p">
+      <div className="flex shrink-0 flex-col gap-1 rounded-2xl bg-layer-floor-0-grouped px-6 py-3 text-center">
+        <Typography variant="body-xs-regular" color="secondary" as="p">
           Payment code
         </Typography>
         <Typography
@@ -48,7 +51,7 @@ export function PaymentConfirmationSummarySheet({
         </Typography>
       </div>
 
-      <div className="mt-6 flex min-h-0 shrink-0 flex-col gap-2">
+      <div className="mt-3 flex min-h-0 shrink-0 flex-col gap-2">
         <Typography
           variant="heading-xs-accent"
           color="primary"
@@ -61,7 +64,7 @@ export function PaymentConfirmationSummarySheet({
           Summary
         </Typography>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           <ReceiptItem
             label="Receipt"
             amount={formatEurMajor(receiptTotal)}
@@ -91,7 +94,13 @@ export function PaymentConfirmationSummarySheet({
         />
       </div>
 
-      <div className="mt-6 shrink-0">
+      {showCashback ?
+        <div className="mt-3 shrink-0">
+          <PaymentConfirmationCashbackBanner />
+        </div>
+      : null}
+
+      <div className="mt-3 shrink-0">
         <Button
           variant="primary"
           size="lg"

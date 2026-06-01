@@ -9,7 +9,7 @@ import {
   useState,
 } from "react"
 import { createPortal } from "react-dom"
-import { BillAmountEntryBlock } from "@/features/payBill/components/shared/BillAmountEntryBlock"
+import { BillAmountDisplayRow } from "@/features/payBill/components/shared/BillAmountDisplayRow"
 import { useAnimatedBillCents } from "@/features/payBill/hooks/useAnimatedBillCents"
 import {
   applyNumpadKey,
@@ -44,10 +44,11 @@ const FONT_FEAT =
 const SHEET_MOTION =
   "transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
 
+/** Figma `15935:24418` — custom tip sheet heading. */
+const CUSTOM_TIP_HEADING = "Add a tip" as const
+
 /**
- * Custom tip bottom sheet inside the pay-bill shell (no Vaul/Radix) so opening it
- * does not run body scroll-lock or Safari `position: fixed` restore — that shifted
- * the tip screen behind the sheet.
+ * Custom tip bottom sheet inside the pay-bill shell (Figma `15935:24418`).
  */
 export function CustomTipModal({
   open,
@@ -163,7 +164,7 @@ export function CustomTipModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="custom-tip-sheet-title"
+        aria-labelledby="custom-tip-heading"
         style={sheetStyle}
         className={[
           "absolute inset-x-0 bottom-0 z-[201] flex max-h-[min(90dvh,100%)] min-h-[70%]",
@@ -172,63 +173,60 @@ export function CustomTipModal({
           sheetMotionClass,
         ].join(" ")}
       >
-        <h2 id="custom-tip-sheet-title" className="sr-only">
-          Add a custom tip
-        </h2>
+        <button
+          type="button"
+          aria-label="Close"
+          className={`${SHEET_CLOSE_ON_SURFACE_NESTED_CLASS} !right-3 !top-3 z-[2] !size-7`}
+          onClick={() => onOpenChange(false)}
+        >
+          <Cross size="xs" className={SHEET_CLOSE_ICON_ON_SURFACE_CLASS} aria-hidden />
+        </button>
 
-        <div className="relative shrink-0 px-6 pb-3 pt-6">
-          <button
-            type="button"
-            aria-label="Close"
-            className={`${SHEET_CLOSE_ON_SURFACE_NESTED_CLASS} !right-3 !top-3 z-[2] !size-7`}
-            onClick={() => onOpenChange(false)}
-          >
-            <Cross size="xs" className={SHEET_CLOSE_ICON_ON_SURFACE_CLASS} aria-hidden />
-          </button>
-          <div className="w-full px-10 text-center">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-6">
+          <div className="flex w-full flex-col items-center pb-6">
             <Typography
-              variant="body-l-accent"
+              id="custom-tip-heading"
+              variant="heading-m-accent"
               color="primary"
               align="center"
-              as="p"
-              aria-hidden
+              as="h2"
               inlineStyle={{
                 fontVariationSettings: "'wght' var(--font-weight-semibold)",
                 fontFeatureSettings: FONT_FEAT,
               }}
             >
-              Add a custom tip
+              {CUSTOM_TIP_HEADING}
             </Typography>
+          </div>
+
+          <div
+            ref={shellRef}
+            tabIndex={coarse ? -1 : 0}
+            onKeyDown={coarse ? undefined : onShellKeyDown}
+            className="flex w-full max-w-[min(100%,22rem)] shrink-0 outline-none"
+          >
+            <BillAmountDisplayRow
+              display={display}
+              amountRef={amountRef}
+              scaleWrapRef={scaleWrapRef}
+              hiddenInputRef={hiddenInputRef}
+              onHiddenInputChange={(raw) => {
+                setState(billStateFromFormattedInput(raw))
+              }}
+              inputName="customTipAmount"
+              inputAriaLabel="Custom tip amount in euros"
+              nativeInput={coarse}
+              autoFocusInput={coarse}
+              selectAllOnFirstFocus={coarse}
+              onTap={() => {
+                if (coarse) hiddenInputRef.current?.focus()
+                else shellRef.current?.focus()
+              }}
+            />
           </div>
         </div>
 
-        <div
-          ref={shellRef}
-          tabIndex={coarse ? -1 : 0}
-          onKeyDown={coarse ? undefined : onShellKeyDown}
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto outline-none"
-        >
-          <BillAmountEntryBlock
-            label="Tip amount"
-            coarse={coarse}
-            display={display}
-            amountRef={amountRef}
-            scaleWrapRef={scaleWrapRef}
-            hiddenInputRef={hiddenInputRef}
-            sectionClassName="relative flex flex-col items-center px-6 pt-[clamp(1.5rem,8vh,96px)] pb-4"
-            onTapAmount={() => {
-              if (coarse) hiddenInputRef.current?.focus()
-              else shellRef.current?.focus()
-            }}
-            onHiddenInputChange={(raw) => {
-              setState(billStateFromFormattedInput(raw))
-            }}
-            inputName="customTipAmount"
-            inputAriaLabel="Custom tip amount in euros"
-          />
-        </div>
-
-        <div className="flex shrink-0 flex-col gap-3 px-6 pt-2 pb-[max(1.5rem,var(--safe-area-bottom))]">
+        <div className="flex shrink-0 flex-col gap-3 p-6 pb-[max(1.5rem,var(--safe-area-bottom))]">
           <Button
             variant="primary"
             size="lg"
@@ -239,7 +237,7 @@ export function CustomTipModal({
               onOpenChange(false)
             }}
           >
-            Save
+            Add
           </Button>
         </div>
       </div>

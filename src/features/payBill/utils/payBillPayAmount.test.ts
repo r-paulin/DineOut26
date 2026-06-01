@@ -4,7 +4,7 @@ import { cashbackAmountEur, payAmountDue } from "./discountCalc"
 describe("payAmountDue and cashbackAmountEur", () => {
   it("DineOut: net receipt + tip is amount due; cashback is % of subtotal", () => {
     expect(payAmountDue(12, 0.6, 0)).toBe(12.6)
-    expect(cashbackAmountEur(12, 0.6, 20)).toBe(2.52)
+    expect(cashbackAmountEur(12, 0.6, 15)).toBe(1.89)
   })
 
   it("card/cash at venue: claimed % reduces pay; no cashback add-on", () => {

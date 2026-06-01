@@ -7,7 +7,7 @@ import { TipPill } from "@/features/payBill/components/TipScreen/TipPill"
 import { useTipScreenEntrance, useTipScreenEntranceLock } from "@/features/payBill/hooks/useTipScreenEntrance"
 import type { TipOption } from "@/features/payBill/payBill.types"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
-import { percentTipEur } from "@/features/payBill/utils/tipPresets"
+import { percentTipEur, TIP_SCREEN_PERCENT_PRESET_LIMIT } from "@/features/payBill/utils/tipPresets"
 
 const FONT_FEAT =
   "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
@@ -26,7 +26,7 @@ export interface TipScreenProps {
 }
 
 /**
- * Tip selection (Figma `15822:12199` default, `15767:50968` selected): 3×2 grid;
+ * Tip selection (Figma `15822:12199`): 5%, 10%, 15%, No tip, Other;
  * Continue only after the user picks an option; footer reserves CTA height to avoid layout shift.
  */
 export function TipScreen({
@@ -77,14 +77,15 @@ export function TipScreen({
   const options: TipOption[] = useMemo(() => {
     const noneOption: TipOption = {
       id: "none",
-      label: formatEurMajor(0),
-      secondaryLabel: "No tip",
+      label: "No tip",
       amount: 0,
     }
     const percents = (() => {
       const p = [...tipPercentPresets]
       if (!p.includes(5)) p.unshift(5)
-      return [...new Set(p)].sort((a, b) => a - b)
+      return [...new Set(p)]
+        .sort((a, b) => a - b)
+        .slice(0, TIP_SCREEN_PERCENT_PRESET_LIMIT)
     })()
     const presets = percents.map((pct, i) => {
       const eur = percentTipEur(receiptTotalEur, pct)
@@ -95,7 +96,6 @@ export function TipScreen({
         amount: eur,
       }
     })
-    /** Six tiles: 5%…presets, then No tip, then Other (last). */
     return [
       ...presets,
       noneOption,
@@ -106,6 +106,15 @@ export function TipScreen({
   useEffect(() => {
     customAmountRef.current = customAmount
   }, [customAmount])
+
+  const presetOptions = useMemo(
+    () => options.filter((o) => o.id.startsWith("p")),
+    [options],
+  )
+  const tailOptions = useMemo(
+    () => options.filter((o) => o.id === "none" || o.id === "other"),
+    [options],
+  )
 
   const selected = options.find((o) => o.id === selectedId)
   const tipValue: number | null =
@@ -142,6 +151,32 @@ export function TipScreen({
     setSelectedId("")
     setCustomAmount(null)
   }, [])
+
+  const renderTipPill = (opt: TipOption) => {
+    const isSel = selectedId === opt.id
+    const displayOpt =
+      opt.isCustom && customAmount != null ?
+        { ...opt, label: formatEurMajor(customAmount) }
+      : opt
+    return (
+      <TipPill
+        key={opt.id}
+        option={displayOpt}
+        isSelected={isSel}
+        onSelect={() => handleSelect(opt)}
+        onDeselect={() => {
+          if (opt.isCustom && isSel) {
+            if (rootRef.current) {
+              scrollTopRef.current = rootRef.current.scrollTop
+            }
+            setCustomModal(true)
+            return
+          }
+          handleDeselect()
+        }}
+      />
+    )
+  }
 
   const onContinuePress = useCallback(() => {
     if (!canContinue) return
@@ -208,41 +243,13 @@ export function TipScreen({
           ref={tipRowRef}
           className="mt-6 flex w-full max-w-[min(100%,24rem)] shrink-0 flex-col items-center gap-6 px-6 pb-6"
         >
-          <div className="grid w-full grid-cols-3 gap-2">
-            {options.map((opt) => {
-              const isSel = selectedId === opt.id
-              const displayOpt =
-                opt.isCustom && customAmount != null ?
-                  { ...opt, label: formatEurMajor(customAmount) }
-                : opt
-              return (
-                <TipPill
-                  key={opt.id}
-                  option={displayOpt}
-                  isSelected={isSel}
-                  onSelect={() => handleSelect(opt)}
-                  onDeselect={() => {
-                    if (opt.isCustom && isSel) {
-                      if (rootRef.current) {
-                        scrollTopRef.current = rootRef.current.scrollTop
-                      }
-                      setCustomModal(true)
-                      return
-                    }
-                    handleDeselect()
-                  }}
-                />
-              )
-            })}
-            {options.length % 3 !== 0 ?
-              Array.from({ length: 3 - (options.length % 3) }, (_, i) => (
-                <span
-                  key={`tip-grid-pad-${i}`}
-                  className="min-h-[60px] min-w-0 shrink-0"
-                  aria-hidden
-                />
-              ))
-            : null}
+          <div className="flex w-full flex-col gap-2">
+            <div className="grid w-full grid-cols-3 gap-2">
+              {presetOptions.map(renderTipPill)}
+            </div>
+            <div className="grid w-full grid-cols-2 gap-2">
+              {tailOptions.map(renderTipPill)}
+            </div>
           </div>
           <div className="w-full px-0">
             <Typography

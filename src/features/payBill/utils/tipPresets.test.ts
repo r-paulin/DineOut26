@@ -13,6 +13,6 @@ describe("tipPresets", () => {
   })
 
   it("exports default presets matching Figma", () => {
-    expect(DEFAULT_TIP_PERCENT_PRESETS).toEqual([5, 10, 15, 20])
+    expect(DEFAULT_TIP_PERCENT_PRESETS).toEqual([5, 10, 15])
   })
 })

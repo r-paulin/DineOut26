@@ -1,4 +1,5 @@
 export { SnackbarProvider, useSnackbar } from "@/shared/snackbar/SnackbarProvider"
+export { scheduleSnackbarAdd } from "@/shared/snackbar/scheduleSnackbarAdd"
 export {
   useSnackbarAnchorRef,
   useSnackbarBottomInset,

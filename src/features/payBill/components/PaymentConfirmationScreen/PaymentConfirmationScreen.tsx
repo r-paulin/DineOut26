@@ -5,7 +5,11 @@ import { PaymentConfirmationNavbar } from "@/features/payBill/components/Payment
 import { PaymentConfirmationSummarySheet } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationSummarySheet"
 import { PaymentSuccessTitle } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentSuccessTitle"
 import { PAY_CONFIRM_NAV_RESERVE } from "@/features/payBill/components/PaymentConfirmationScreen/paymentConfirmationLayout"
-import { usePaymentConfirmationReveal } from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
+import {
+  PAY_SUCCESS_CHECKMARK_START_PX,
+  usePaymentConfirmationReveal,
+} from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
+import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
 
 export interface PaymentConfirmationScreenProps {
   restaurantName: string
@@ -16,6 +20,8 @@ export interface PaymentConfirmationScreenProps {
   offer: ClaimedOffer | null
   onDismiss: () => void
   onDone: () => void
+  /** Open on summary sheet (paid offer banner revisit). */
+  startRevealed?: boolean
 }
 
 const CHECKMARK_IMG_PROPS = {
@@ -34,26 +40,27 @@ export function PaymentConfirmationScreen({
   receiptTotal,
   tip,
   paymentCode,
+  offer,
   onDismiss,
   onDone,
+  startRevealed = false,
 }: PaymentConfirmationScreenProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const heroBandRef = useRef<HTMLDivElement>(null)
   const imgWrapRef = useRef<HTMLDivElement>(null)
-  const titleCelebrationRef = useRef<HTMLDivElement>(null)
-  const titleSlotRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
 
-  const { phase } = usePaymentConfirmationReveal({
+  usePaymentConfirmationReveal({
     rootRef,
     heroBandRef,
     imgWrapRef,
-    titleCelebrationRef,
-    titleSlotRef,
+    titleRef,
     sheetRef,
+    startRevealed,
   })
 
-  const revealed = phase === "revealed"
+  const showCashback = effectivePayDiscountPercents(offer).discountAddPercent > 0
 
   return (
     <div
@@ -65,40 +72,31 @@ export function PaymentConfirmationScreen({
         onDismiss={onDismiss}
       />
 
-      <div
-        className="relative min-h-0 flex-1 overflow-hidden"
-        style={{ paddingTop: PAY_CONFIRM_NAV_RESERVE }}
-      >
+      <div className="relative min-h-0 flex-1 overflow-hidden">
         <div
           ref={heroBandRef}
-          className="absolute inset-x-0 top-0 z-10 flex items-center justify-center overflow-hidden px-6"
+          className="absolute inset-x-0 z-10 flex flex-col items-center justify-center overflow-hidden px-6"
+          style={{ top: PAY_CONFIRM_NAV_RESERVE }}
         >
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-6">
             <div
               ref={imgWrapRef}
-              className="relative size-[180px] shrink-0 will-change-transform [backface-visibility:hidden]"
+              className="relative shrink-0 will-change-transform [backface-visibility:hidden]"
+              style={{
+                width: PAY_SUCCESS_CHECKMARK_START_PX,
+                height: PAY_SUCCESS_CHECKMARK_START_PX,
+              }}
             >
-              <img {...CHECKMARK_IMG_PROPS} width={180} height={180} />
+              <img
+                {...CHECKMARK_IMG_PROPS}
+                width={PAY_SUCCESS_CHECKMARK_START_PX}
+                height={PAY_SUCCESS_CHECKMARK_START_PX}
+              />
             </div>
 
-            <div
-              ref={titleSlotRef}
-              className="relative w-full max-w-md shrink-0 overflow-hidden"
-            >
-              <div
-                ref={titleCelebrationRef}
-                className="w-full text-center"
-                aria-hidden={revealed}
-              >
-                <PaymentSuccessTitle variant="large" />
-              </div>
+            <div ref={titleRef} className="w-full max-w-md shrink-0 text-center">
+              <PaymentSuccessTitle variant="large" />
             </div>
-
-            {revealed ?
-              <p className="sr-only" aria-live="polite">
-                Payment successful
-              </p>
-            : null}
           </div>
         </div>
 
@@ -112,6 +110,7 @@ export function PaymentConfirmationScreen({
             receiptTotal={receiptTotal}
             tip={tip}
             paidAmount={paidAmount}
+            showCashback={showCashback}
             onDone={onDone}
           />
         </div>

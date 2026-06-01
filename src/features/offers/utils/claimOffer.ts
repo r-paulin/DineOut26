@@ -125,7 +125,7 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
     claimedAt,
     offerScheduleYmd,
     cashbackAmount: input.cashbackAmount ?? 2.5,
-    tipPresetAmounts: input.tipPresetAmounts ?? [5, 10, 15, 20],
+    tipPresetAmounts: input.tipPresetAmounts ?? [5, 10, 15],
     discountAddPercent,
   }
 }

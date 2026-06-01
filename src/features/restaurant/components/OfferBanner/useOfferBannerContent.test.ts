@@ -3,15 +3,21 @@ import type { ClaimedOffer } from "@/features/offers/offers.types"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import {
   buildOfferBannerContent,
+  buildPaidOfferBannerContent,
   buildStaticOfferBannerContent,
   formatLimitedAvailabilityLabel,
   formatOfferBannerArrivalLine,
+  formatOfferBannerCashbackEarnedLabel,
   formatOfferBannerClaimedDiscountLine,
+  formatOfferBannerDineOutUpsellSticker,
   formatOfferBannerHomeClaimedDetailLine,
   formatOfferBannerMinMaxLine,
+  formatOfferBannerPaidAmountLine,
   formatOfferBannerTitle,
+  OFFER_BANNER_PAID_CASH_SUBTITLE,
   roundMaxSavingEurUp,
 } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
+import type { PaidOfferRecord } from "@/features/offers/offers.types"
 
 const baseOffer: RestaurantOfferCardModel = {
   id: "o1",
@@ -243,5 +249,60 @@ describe("buildStaticOfferBannerContent", () => {
     })
     expect(c.action).toBeNull()
     expect(c.sticker).toBeNull()
+  })
+})
+
+describe("paid offer banner copy", () => {
+  it("formats paid amount and cashback earned labels", () => {
+    expect(formatOfferBannerPaidAmountLine(48)).toBe("Paid: 48,00 €")
+    expect(formatOfferBannerCashbackEarnedLabel(5)).toBe("€5 cashback earned")
+    expect(formatOfferBannerCashbackEarnedLabel(1.8)).toBe("€1,80 cashback earned")
+    expect(formatOfferBannerDineOutUpsellSticker()).toBe(
+      "Pay with DineOut next time and earn 15% back",
+    )
+  })
+})
+
+describe("buildPaidOfferBannerContent", () => {
+  const dineoutPaid: PaidOfferRecord = {
+    offerId: "o1",
+    restaurantSlug: "neiburgs",
+    discountPercent: 30,
+    paymentMethod: "dineout",
+    paidAmountEur: 48,
+    cashbackEarnedEur: 5,
+    paidAt: Date.now(),
+  }
+
+  const cashPaid: PaidOfferRecord = {
+    offerId: "o1",
+    restaurantSlug: "neiburgs",
+    discountPercent: 30,
+    paymentMethod: "card_or_cash",
+    paidAt: Date.now(),
+  }
+
+  it("DineOut paid: discount title, paid line, cashback action", () => {
+    const c = buildPaidOfferBannerContent({ paid: dineoutPaid, offer: baseOffer })
+    expect(c.headline).toBe("30% discount on food")
+    expect(c.dataLines[0]?.text).toBe("Paid: 48,00 €")
+    expect(c.action).toEqual({
+      kind: "cashback-earned",
+      label: "€5 cashback earned",
+      disabled: false,
+    })
+    expect(c.sticker).toBeNull()
+    expect(c.outerClaimed).toBe(true)
+  })
+
+  it("card/cash paid: subtitle and upsell sticker", () => {
+    const c = buildPaidOfferBannerContent({ paid: cashPaid, offer: baseOffer })
+    expect(c.headline).toBe("30% discount on food")
+    expect(c.dataLines[0]?.text).toBe(OFFER_BANNER_PAID_CASH_SUBTITLE)
+    expect(c.action).toBeNull()
+    expect(c.sticker).toEqual({
+      kind: "dineout-upsell",
+      text: "Pay with DineOut next time and earn 15% back",
+    })
   })
 })

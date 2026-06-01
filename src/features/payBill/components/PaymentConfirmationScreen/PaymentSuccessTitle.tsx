@@ -9,7 +9,7 @@ const SEMIBOLD = {
 } as const
 
 export interface PaymentSuccessTitleProps {
-  /** Centered hero entrance on brand canvas (Figma 15767). */
+  /** Centered hero on brand canvas (Figma `15823:25258` / `16396:41152`). */
   variant: "large" | "compact"
 }
 
@@ -29,16 +29,14 @@ export function PaymentSuccessTitle({ variant }: PaymentSuccessTitleProps) {
   }
 
   return (
-    <div className="w-full">
-      <Typography
-        variant="heading-s-accent"
-        color="primary-inverted"
-        as="p"
-        align="center"
-        inlineStyle={SEMIBOLD}
-      >
-        Payment successful
-      </Typography>
-    </div>
+    <Typography
+      variant="heading-m-accent"
+      color="primary-inverted"
+      as="p"
+      align="center"
+      inlineStyle={SEMIBOLD}
+    >
+      Payment successful
+    </Typography>
   )
 }

@@ -6,8 +6,15 @@ import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPe
  * Restaurant detail “I'm at the venue” footer promo. Shown when the user selects
  * “Pay with Bolt DineOut” in the claim flow and on the claimed-offer payment row.
  */
+export function formatDineOutStackablePaymentPromoText(
+  percent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
+): string {
+  return `Enjoy ${formatDiscountPercent(percent)}% off your first 2 payments with DineOut`
+}
+
+/** @deprecated Prefer {@link formatDineOutStackablePaymentPromoText}. */
 export const DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT =
-  "Enjoy 20% off your first 2 payments with DineOut" as const
+  formatDineOutStackablePaymentPromoText() as string
 
 /** Inline DineOut cashback banner — primary line (Figma `_Cashback` `16388:31188`). */
 export const DINEOUT_CASHBACK_BANNER_PRIMARY = "Eligible for cashback" as const

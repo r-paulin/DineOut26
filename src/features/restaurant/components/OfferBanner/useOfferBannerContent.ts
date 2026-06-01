@@ -1,6 +1,10 @@
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
-import type { ClaimedOffer } from "@/features/offers/offers.types"
+import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
 import { shouldShowScarcitySticker } from "@/features/offers/data/selectPrimaryTimedOffer"
+import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
+import { formatEurMajor } from "@/features/payBill/utils/formatEur"
+import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
+import { round2 } from "@/features/payBill/utils/discountCalc"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { formatOfferBannerValidityTime } from "@/features/restaurant/utils/formatOfferBannerValidityTime"
 import type { OfferBannerWindowPhase } from "@/features/restaurant/utils/offerBannerWindowPhase"
@@ -14,7 +18,11 @@ export type OfferBannerDataLine = {
   tone?: "primary" | "secondary" | "action-primary"
 }
 
-export type OfferBannerActionKind = "claim-now" | "pre-book-now" | "claimed"
+export type OfferBannerActionKind =
+  | "claim-now"
+  | "pre-book-now"
+  | "claimed"
+  | "cashback-earned"
 
 export type OfferBannerAction = {
   kind: OfferBannerActionKind
@@ -27,12 +35,14 @@ export type OfferBannerStickerKind =
   | "scarcity"
   | "expired"
   | "locked"
+  | "dineout-upsell"
 
 export type OfferBannerSticker =
   | { kind: "countdown" }
   | { kind: "scarcity"; text: string }
   | { kind: "expired"; text: string }
   | { kind: "locked"; text: string }
+  | { kind: "dineout-upsell"; text: string }
 
 export type OfferBannerImageVariant = "claimed" | "unclaimed"
 
@@ -108,6 +118,94 @@ export function formatOfferBannerHomeClaimedDetailLine(
   discountPercent: number,
 ): string {
   return `${formatOfferBannerClaimedDiscountLine(discountPercent)} · ${formatOfferBannerArrivalLine(claim)}`
+}
+
+/** Figma `16626:52014` — card/cash paid banner secondary line. */
+export const OFFER_BANNER_PAID_CASH_SUBTITLE = "Paid with card or cash" as const
+
+export function formatOfferBannerPaidAmountLine(eur: number): string {
+  return `Paid: ${formatEurMajor(eur)}`
+}
+
+/** Figma `16568:37078` — e.g. `€5 cashback earned`. */
+export function formatOfferBannerCashbackEarnedLabel(eur: number): string {
+  const formatted = formatEurMajor(round2(eur)).replace(" €", "")
+  const display =
+    formatted.endsWith(",00") ? formatted.slice(0, -3) : formatted
+  return `€${display} cashback earned`
+}
+
+export function formatOfferBannerDineOutUpsellSticker(
+  percent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
+): string {
+  return `Pay with DineOut next time and earn ${formatDiscountPercent(percent)}% back`
+}
+
+export interface BuildPaidOfferBannerContentArgs {
+  paid: PaidOfferRecord
+  offer: RestaurantOfferCardModel
+}
+
+export function buildPaidOfferBannerContent({
+  paid,
+  offer,
+}: BuildPaidOfferBannerContentArgs): OfferBannerContent {
+  const headline = formatOfferBannerTitle(
+    paid.discountPercent,
+    Boolean(offer.isAllDay),
+  )
+
+  if (paid.paymentMethod === "dineout") {
+    const paidLine =
+      paid.paidAmountEur != null ?
+        formatOfferBannerPaidAmountLine(paid.paidAmountEur)
+      : ""
+    const cashbackLabel =
+      paid.cashbackEarnedEur != null && paid.cashbackEarnedEur > 0 ?
+        formatOfferBannerCashbackEarnedLabel(paid.cashbackEarnedEur)
+      : null
+
+    return {
+      outerClaimed: true,
+      outerShellTone: "neutral",
+      innerClaimed: true,
+      headline,
+      dataLines:
+        paidLine ?
+          [{ text: paidLine, emphasis: "regular", tone: "primary" }]
+        : [],
+      action:
+        cashbackLabel ?
+          { kind: "cashback-earned", label: cashbackLabel, disabled: false }
+        : null,
+      sticker: null,
+      imageVariant: "claimed",
+      ariaLabel: cashbackLabel ?
+        `${headline}, ${paidLine}, ${cashbackLabel}`
+      : `${headline}, ${paidLine}`,
+    }
+  }
+
+  return {
+    outerClaimed: true,
+    outerShellTone: "neutral",
+    innerClaimed: true,
+    headline,
+    dataLines: [
+      {
+        text: OFFER_BANNER_PAID_CASH_SUBTITLE,
+        emphasis: "regular",
+        tone: "primary",
+      },
+    ],
+    action: null,
+    sticker: {
+      kind: "dineout-upsell",
+      text: formatOfferBannerDineOutUpsellSticker(),
+    },
+    imageVariant: "claimed",
+    ariaLabel: `${headline}, ${OFFER_BANNER_PAID_CASH_SUBTITLE}`,
+  }
 }
 
 export interface BuildOfferBannerContentArgs {

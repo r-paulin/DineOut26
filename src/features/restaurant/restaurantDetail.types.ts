@@ -1,4 +1,4 @@
-import type { ClaimedOffer } from "@/features/offers/offers.types"
+import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
 import type { RestaurantSlug } from "@/features/offers/data/restaurantOffers.types"
 import type { RestaurantAboutRestaurant } from "@/features/restaurant/components/RestaurantAbout/restaurantAbout.types"
 import type { RestaurantFixedOpenHoursRow } from "@/features/restaurant/data/restaurantFixedOpenHours"
@@ -161,8 +161,12 @@ export interface RestaurantDetailScreenProps {
   onOfferAvailablePress?: (offerId: string) => void
   /** Fires when the user taps a `claimed` offer (routing TBD). */
   onOfferClaimedPress?: (offerId: string) => void
+  /** Fires when the user taps a DineOut paid offer banner. */
+  onPaidOfferPress?: (offerId: string) => void
   /** Local / synced claims for {@link getOfferBannerState}; never infer `claimed` from tags alone. */
   userClaims: readonly UserClaim[]
   /** Full claim payloads keyed by offer id (banner claimed row: arrival + countdown). */
   claimedOffersById: Readonly<Record<string, ClaimedOffer>>
+  /** Post-payment offer rows (Figma `_ Offer Banner ALT 5`). */
+  paidOffersById?: Readonly<Record<string, PaidOfferRecord>>
 }

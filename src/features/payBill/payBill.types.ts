@@ -35,3 +35,17 @@ export interface PayBillFlowEntry {
 export function payBillSyntheticOfferId(restaurantSlug: string): string {
   return `dineout-pay-${restaurantSlug}`
 }
+
+/** Captured from {@link usePayBillStore} before reset on successful payment exit. */
+export interface PayBillCompletionSnapshot {
+  restaurantSlug: string
+  restaurantName: string
+  offerId: string | null
+  discountPercent: number
+  discountAddPercent: number
+  paidAmount: number
+  cashbackEarnedEur: number
+  receiptTotalEur: number
+  tipEur: number | null
+  paymentCode: string
+}

@@ -102,6 +102,25 @@ export interface ClaimedOffer {
   discountAddPercent?: number
 }
 
+/** Post-payment offer row on restaurant detail (Figma `_ Offer Banner ALT 5`). */
+export interface PaidOfferRecord {
+  offerId: string
+  restaurantSlug: string
+  restaurantName?: string
+  discountPercent: number
+  paymentMethod: PaymentMethod
+  /** DineOut in-app payment only. */
+  paidAmountEur?: number
+  /** DineOut in-app payment only — credited to Bolt Balance. */
+  cashbackEarnedEur?: number
+  /** DineOut in-app payment only — for reopening payment confirmation. */
+  paymentCode?: string
+  receiptTotalEur?: number
+  tipEur?: number | null
+  discountAddPercent?: number
+  paidAt: number
+}
+
 export type {
   GetTimePickerConfigOptions,
   OfferTimeConfig,

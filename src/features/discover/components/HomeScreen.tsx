@@ -8,7 +8,11 @@ import {
   useRef,
   useState,
 } from "react"
-import { useSnackbar, useSnackbarLayoutBaseline } from "@/shared/snackbar"
+import {
+  scheduleSnackbarAdd,
+  useSnackbar,
+  useSnackbarLayoutBaseline,
+} from "@/shared/snackbar"
 import { BottomNav } from "@/shared/components/BottomNav"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
 import {
@@ -37,6 +41,11 @@ import {
   isDiscoverEmptyTriggerFilter,
 } from "@/features/discover/utils/filterDiscoverOffers"
 import { removeClaimedOfferById } from "@/features/offers/utils/claimedOfferState"
+import {
+  buildPaidOfferRecordFromClaim,
+  buildPaidOfferRecordFromPaySnapshot,
+  paidOfferRecordToClaimStub,
+} from "@/features/offers/utils/buildPaidOfferRecord"
 import { updateClaimedOfferPaymentMethod } from "@/features/offers/utils/updateClaimedOfferPaymentMethod"
 import { formatClaimedArrivalDate } from "@/features/offers/utils/formatClaimedArrivalDate"
 import {
@@ -54,8 +63,9 @@ import { AdminPlacesScreen } from "@/features/restaurants/components/AdminPlaces
 import { useRestaurantCatalogSnapshot } from "@/features/restaurants/restaurantCatalogRuntime"
 import { findOfferByRestaurantId } from "@/features/offers/utils/findOfferByRestaurantId"
 import { PayBillFlow } from "@/features/payBill"
+import { PaymentConfirmationScreen } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationScreen"
 import { createPostPaymentHomeSnackbar } from "@/features/payBill/constants/postPaymentHomeSnackbar"
-import type { PayBillFlowEntry } from "@/features/payBill/payBill.types"
+import type { PayBillCompletionSnapshot, PayBillFlowEntry } from "@/features/payBill/payBill.types"
 import {
   AtVenueNoClaimedOffersSheet,
   getRestaurantDetailDemo,
@@ -68,6 +78,7 @@ import type {
   ClaimData,
   ClaimedOffer,
   ClaimOfferModalOffer,
+  PaidOfferRecord,
   PaymentMethod,
 } from "@/features/offers/offers.types"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
@@ -239,6 +250,12 @@ export function HomeScreen() {
   const [claimedByOfferId, setClaimedByOfferId] = useState<
     Record<string, ClaimedOffer>
   >({})
+  const [paidByOfferId, setPaidByOfferId] = useState<
+    Record<string, PaidOfferRecord>
+  >({})
+  const [paidConfirmationOfferId, setPaidConfirmationOfferId] = useState<
+    string | null
+  >(null)
   const [claimedView, setClaimedView] = useState<ClaimedOffer | null>(null)
   const [payBillEntry, setPayBillEntry] = useState<PayBillFlowEntry | null>(null)
   const [atVenueNoClaimPayInfoOpen, setAtVenueNoClaimPayInfoOpen] = useState(false)
@@ -526,26 +543,6 @@ export function HomeScreen() {
     setClaimedView(null)
   }, [])
 
-  const clearClaimedOfferAfterPayment = useCallback(
-    (offerId?: string, showSnackbar = false) => {
-      if (offerId) {
-        setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
-      }
-      setClaimedView(null)
-      setPendingClaimOffer(null)
-      if (showSnackbar) {
-        requestAnimationFrame(() => {
-          snackbar.add(
-            createPostPaymentHomeSnackbar(() => {
-              // Review flow not wired yet; placeholder lives in the toast.
-            }),
-          )
-        })
-      }
-    },
-    [snackbar],
-  )
-
   const handleOpenPayBill = useCallback(() => {
     if (!restaurantDetailSlug || !baseRestaurantDetail) return
     if (!baseRestaurantDetail.isOpen) {
@@ -600,13 +597,21 @@ export function HomeScreen() {
     ({
       restaurantSlug,
       offerId,
+      paidRecord,
       showSnackbar = false,
     }: {
       restaurantSlug: string
       offerId?: string
+      paidRecord?: PaidOfferRecord
       showSnackbar?: boolean
     }) => {
       openRestaurantDetail(restaurantSlug)
+      if (paidRecord) {
+        setPaidByOfferId((prev) => ({
+          ...prev,
+          [paidRecord.offerId]: paidRecord,
+        }))
+      }
       if (offerId) {
         setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
       }
@@ -614,45 +619,70 @@ export function HomeScreen() {
       setPayBillEntry(null)
       setPendingClaimOffer(null)
       if (showSnackbar) {
-        requestAnimationFrame(() => {
-          snackbar.add(
-            createPostPaymentHomeSnackbar(() => {
-              // Review flow not wired yet; placeholder lives in the toast.
-            }),
-          )
-        })
+        scheduleSnackbarAdd(snackbar.add, createPostPaymentHomeSnackbar(() => {
+          // Review flow not wired yet; placeholder lives in the toast.
+        }))
       }
     },
     [openRestaurantDetail, snackbar],
   )
 
-  const fulfillPaidOfferAndOpenRestaurant = useCallback(() => {
-    const slug = payBillEntry?.restaurantSlug
-    const offerId = payBillEntry?.offer?.offerId
-    if (!slug) {
-      setPayBillEntry(null)
-      return
-    }
-    finishSuccessfulPayment({ restaurantSlug: slug, offerId })
-  }, [finishSuccessfulPayment, payBillEntry])
+  const fulfillPaidOfferAndOpenRestaurant = useCallback(
+    (snapshot?: PayBillCompletionSnapshot | null) => {
+      const slug =
+        snapshot?.restaurantSlug ?? payBillEntry?.restaurantSlug
+      if (!slug) {
+        setPayBillEntry(null)
+        return
+      }
+      const paidRecord =
+        snapshot ? buildPaidOfferRecordFromPaySnapshot(snapshot) : null
+      finishSuccessfulPayment({
+        restaurantSlug: slug,
+        offerId: paidRecord?.offerId ?? payBillEntry?.offer?.offerId,
+        paidRecord: paidRecord ?? undefined,
+      })
+    },
+    [finishSuccessfulPayment, payBillEntry],
+  )
 
   const handlePayBillFlowClose = exitPayFlowToRestaurant
 
   const handlePayBillPaidDone = useCallback(() => {
-    requestAnimationFrame(() => {
-      snackbar.add(
-        createPostPaymentHomeSnackbar(() => {
-          // Review flow not wired yet; placeholder lives in the toast.
-        }),
-      )
-    })
+    scheduleSnackbarAdd(snackbar.add, createPostPaymentHomeSnackbar(() => {
+      // Review flow not wired yet; placeholder lives in the toast.
+    }))
   }, [snackbar])
 
   const handleConfirmBillClaimedComplete = useCallback(() => {
-    const offerId = claimedView?.offerId
-    if (!offerId) return
-    clearClaimedOfferAfterPayment(offerId, true)
-  }, [claimedView, clearClaimedOfferAfterPayment])
+    const claim = claimedView
+    if (!claim) return
+    const paidRecord = buildPaidOfferRecordFromClaim(claim)
+    finishSuccessfulPayment({
+      restaurantSlug: claim.restaurantSlug,
+      offerId: claim.offerId,
+      paidRecord,
+      showSnackbar: true,
+    })
+  }, [claimedView, finishSuccessfulPayment])
+
+  const handlePaidOfferPress = useCallback(
+    (offerId: string) => {
+      const paid = paidByOfferId[offerId]
+      if (!paid?.paymentCode) return
+      setPaidConfirmationOfferId(offerId)
+    },
+    [paidByOfferId],
+  )
+
+  const handlePaidConfirmationDismiss = useCallback(() => {
+    setPaidConfirmationOfferId(null)
+  }, [])
+
+  const paidConfirmationRecord =
+    paidConfirmationOfferId ?
+      paidByOfferId[paidConfirmationOfferId]
+    : null
 
   const handleClaimedOfferPaymentMethodChange = useCallback(
     (paymentMethod: PaymentMethod) => {
@@ -851,6 +881,7 @@ export function HomeScreen() {
           model={restaurantDetailModel}
           userClaims={userClaims}
           claimedOffersById={claimedByOfferId}
+          paidOffersById={paidByOfferId}
           onBack={() => {
             setPendingClaimOffer(null)
             if (claimedView) {
@@ -868,9 +899,34 @@ export function HomeScreen() {
             const c = claimedByOfferId[id]
             if (c) openClaimedOfferDetails(c)
           }}
+          onPaidOfferPress={handlePaidOfferPress}
           onPayBill={handleOpenPayBill}
         />
       ) : null}
+      {paidConfirmationRecord && portalRoot ?
+        <div className="fixed inset-0 z-[120] flex w-full justify-center bg-layer-floor-1">
+          <div
+            className="relative h-[var(--app-h)] w-full max-w-[var(--shell-width)] overflow-hidden bg-layer-floor-1 shadow-[0_0.25rem_0.75rem_rgba(0,0,0,0.2)]"
+            style={{ minHeight: "var(--app-h)", height: "var(--app-h)" }}
+          >
+            <PaymentConfirmationScreen
+              restaurantName={
+                paidConfirmationRecord.restaurantName ??
+                baseRestaurantDetail?.name ??
+                ""
+              }
+              paidAmount={paidConfirmationRecord.paidAmountEur ?? 0}
+              receiptTotal={paidConfirmationRecord.receiptTotalEur ?? 0}
+              tip={paidConfirmationRecord.tipEur ?? null}
+              paymentCode={paidConfirmationRecord.paymentCode ?? ""}
+              offer={paidOfferRecordToClaimStub(paidConfirmationRecord)}
+              startRevealed
+              onDismiss={handlePaidConfirmationDismiss}
+              onDone={handlePaidConfirmationDismiss}
+            />
+          </div>
+        </div>
+      : null}
       {payBillEntry && portalRoot ?
         <PayBillFlow
           key={`pay-${payBillEntry.offer?.offerId ?? payBillEntry.restaurantSlug}`}

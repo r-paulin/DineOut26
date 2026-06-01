@@ -35,6 +35,15 @@ export interface PayBillStoreState {
     discountAmount: number
     paymentMethodUi: "bolt_balance" | "card"
   }) => void
+  /** Atomic transition to payment confirmation after mock/API pay succeeds. */
+  completePayment: (payload: {
+    transactionId: string
+    paymentCode: string
+    paidAt: string
+    paidAmount: number
+    discountAmount: number
+    paymentMethodUi: "bolt_balance" | "card"
+  }) => void
   setSelectedCardId: (id: string | null) => void
   setCheckoutPaymentOptionId: (id: string) => void
 }
@@ -48,6 +57,7 @@ const initial = (): Omit<
   | "setTip"
   | "setIntentSnackbar"
   | "setPostPayment"
+  | "completePayment"
   | "setSelectedCardId"
   | "setCheckoutPaymentOptionId"
 > => ({
@@ -87,6 +97,16 @@ export const usePayBillStore = create<PayBillStoreState>((set) => ({
       paidAmount: payload.paidAmount,
       discountAmount: payload.discountAmount,
       paymentMethodUi: payload.paymentMethodUi,
+    }),
+  completePayment: (payload) =>
+    set({
+      transactionId: payload.transactionId,
+      paymentCode: payload.paymentCode,
+      paidAt: payload.paidAt,
+      paidAmount: payload.paidAmount,
+      discountAmount: payload.discountAmount,
+      paymentMethodUi: payload.paymentMethodUi,
+      step: "confirmation",
     }),
   setSelectedCardId: (selectedCardId) => set({ selectedCardId }),
   setCheckoutPaymentOptionId: (checkoutPaymentOptionId) =>

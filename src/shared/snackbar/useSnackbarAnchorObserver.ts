@@ -27,19 +27,25 @@ export function useSnackbarAnchorObserver(
       onInsetChangeRef.current(px)
     }
 
-    const measure = () => {
+    /** Debounced for continuous resize (discover dock drag). */
+    const measureDeferred = () => {
       cancelAnimationFrame(raf)
       raf = requestAnimationFrame(() => {
         applyMeasured(measureMaxSnackbarAnchorInset(root))
       })
     }
 
-    applyMeasured(measureMaxSnackbarAnchorInset(root))
+    /** Sync when anchors mount/unmount so inset updates before the next paint. */
+    const measureSync = () => {
+      applyMeasured(measureMaxSnackbarAnchorInset(root))
+    }
 
-    const ro = new ResizeObserver(measure)
+    measureSync()
+
+    const ro = new ResizeObserver(measureDeferred)
     ro.observe(root)
 
-    const mo = new MutationObserver(measure)
+    const mo = new MutationObserver(measureSync)
     mo.observe(root, {
       subtree: true,
       childList: true,
@@ -47,15 +53,15 @@ export function useSnackbarAnchorObserver(
       attributeFilter: ["data-snackbar-anchor"],
     })
 
-    window.addEventListener("resize", measure)
-    window.visualViewport?.addEventListener("resize", measure)
+    window.addEventListener("resize", measureDeferred)
+    window.visualViewport?.addEventListener("resize", measureDeferred)
 
     return () => {
       cancelAnimationFrame(raf)
       ro.disconnect()
       mo.disconnect()
-      window.removeEventListener("resize", measure)
-      window.visualViewport?.removeEventListener("resize", measure)
+      window.removeEventListener("resize", measureDeferred)
+      window.visualViewport?.removeEventListener("resize", measureDeferred)
     }
   }, [scope])
 }

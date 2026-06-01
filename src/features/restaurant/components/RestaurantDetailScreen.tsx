@@ -90,6 +90,8 @@ export function RestaurantDetailScreen({
   onOfferClaimedPress,
   userClaims,
   claimedOffersById,
+  paidOffersById = {},
+  onPaidOfferPress,
   onReportProblem,
 }: RestaurantDetailScreenProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -393,8 +395,10 @@ export function RestaurantDetailScreen({
                 offersByTabId={model.offersByTabId}
                 userClaims={userClaims}
                 claimedOffersById={claimedOffersById}
+                paidOffersById={paidOffersById}
                 onOfferAvailablePress={onOfferAvailablePress}
                 onOfferClaimedPress={onOfferClaimedPress}
+                onPaidOfferPress={onPaidOfferPress}
               />
             </div>
             <RestaurantDetailSectionDivider />

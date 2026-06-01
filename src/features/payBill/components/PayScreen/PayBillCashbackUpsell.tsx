@@ -1,29 +1,21 @@
 import { Typography } from "@bolteu/kalep-react"
 import payCashbackUpsellUrl from "@/features/payBill/assets/pay-cashback-upsell.png"
 import {
-  formatPayCashbackUpsellHeadline,
-  formatPayCashbackUpsellSecondary,
+  PAY_CASHBACK_UPSELL_DESCRIPTION,
+  PAY_CASHBACK_UPSELL_TITLE,
 } from "@/features/payBill/constants/payBillCashbackCopy"
 
 const FONT_FEAT =
   "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
-export interface PayBillCashbackUpsellProps {
-  cashbackEur: number
-  cashbackPercent: number
-}
-
 /**
  * Figma `16364:30051` — earn-back upsell flush above slide-to-pay (not a receipt discount row).
  */
-export function PayBillCashbackUpsell({
-  cashbackEur,
-  cashbackPercent,
-}: PayBillCashbackUpsellProps) {
+export function PayBillCashbackUpsell() {
   return (
     <section
       className="relative w-full shrink-0 overflow-hidden rounded-t-2xl bg-action-secondary pl-[60px] pr-6 pt-4 pb-4"
-      aria-label={formatPayCashbackUpsellHeadline(cashbackEur)}
+      aria-label={PAY_CASHBACK_UPSELL_TITLE}
     >
       <img
         src={payCashbackUpsellUrl}
@@ -41,7 +33,7 @@ export function PayBillCashbackUpsell({
           fontFeatureSettings: FONT_FEAT,
         }}
       >
-        {formatPayCashbackUpsellHeadline(cashbackEur)}
+        {PAY_CASHBACK_UPSELL_TITLE}
       </Typography>
       <Typography
         variant="body-s-regular"
@@ -49,7 +41,7 @@ export function PayBillCashbackUpsell({
         as="p"
         inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
       >
-        {formatPayCashbackUpsellSecondary(cashbackPercent)}
+        {PAY_CASHBACK_UPSELL_DESCRIPTION}
       </Typography>
     </section>
   )

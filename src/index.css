@@ -24,6 +24,8 @@
  */
 .dineout-snackbar-toaster[data-sonner-toaster] {
   z-index: 130 !important;
+  /* Sonner lifts the stack on hover (`data-expanded`); we use a flat stack + GSAP. */
+  transition: none !important;
   --width: 100% !important;
   --offset-left: var(--snackbar-screen-margin-x) !important;
   --offset-right: var(--snackbar-screen-margin-x) !important;
@@ -82,16 +84,24 @@
   box-sizing: border-box;
 }
 
+/* Sonner toggles `data-expanded` on mouse enter and applies stack offsets via
+ * `--y` / `height`. Keep mounted toasts fixed so hover does not shift on Y. */
+.dineout-snackbar-toaster [data-sonner-toast][data-mounted="true"],
+.dineout-snackbar-toaster
+  [data-sonner-toast][data-mounted="true"][data-expanded="true"],
+.dineout-snackbar-toaster
+  [data-sonner-toast][data-mounted="true"][data-expanded="false"] {
+  opacity: 1 !important;
+  transform: none !important;
+  --y: translateY(0) !important;
+  height: auto !important;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   /* Disable Sonner’s default enter/leave transitions on the host `<li>` so the
    * card can use GSAP; keep `animation` for swipe-dismiss keyframes. */
   .dineout-snackbar-toaster [data-sonner-toast] {
     transition: none !important;
-  }
-
-  .dineout-snackbar-toaster [data-sonner-toast][data-mounted="true"] {
-    opacity: 1 !important;
-    transform: none !important;
   }
 
   .dineout-snackbar-toaster [data-sonner-toast] > * {

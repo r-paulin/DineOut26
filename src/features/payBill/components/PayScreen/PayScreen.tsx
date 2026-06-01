@@ -169,8 +169,7 @@ export function PayScreen({
   const snackbar = useSnackbar()
   const intent = usePayBillStore((s) => s.intentSnackbar)
   const setIntent = usePayBillStore((s) => s.setIntentSnackbar)
-  const setPost = usePayBillStore((s) => s.setPostPayment)
-  const setStep = usePayBillStore((s) => s.setStep)
+  const completePayment = usePayBillStore((s) => s.completePayment)
   const checkoutPaymentOptionId = usePayBillStore((s) => s.checkoutPaymentOptionId)
   const setCheckoutPaymentOptionId = usePayBillStore((s) => s.setCheckoutPaymentOptionId)
 
@@ -257,7 +256,7 @@ export function PayScreen({
         discountPercent: d1,
         discountAddPercent: d2,
       })
-      setPost({
+      completePayment({
         transactionId: res.transactionId,
         paymentCode: res.paymentCode,
         paidAt: res.paidAt,
@@ -265,7 +264,6 @@ export function PayScreen({
         discountAmount: res.discountAmount,
         paymentMethodUi: methodUi,
       })
-      setStep("confirmation")
     } catch {
       snackbar.add({
         description: "Payment failed. Try again.",
@@ -281,8 +279,7 @@ export function PayScreen({
     offerId,
     restaurantSlug,
     receiptTotal,
-    setPost,
-    setStep,
+    completePayment,
     snackbar,
     tip,
   ])
@@ -394,10 +391,7 @@ export function PayScreen({
 
         <div className="flex shrink-0 flex-col bg-layer-floor-1">
           {cashbackEur > 0 ?
-            <PayBillCashbackUpsell
-              cashbackEur={cashbackEur}
-              cashbackPercent={d2}
-            />
+            <PayBillCashbackUpsell />
           : null}
           <footer
             data-snackbar-anchor=""
