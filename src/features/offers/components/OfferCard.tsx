@@ -97,7 +97,7 @@ function OfferCardCarousel({
           className={`absolute inset-0 ${R12} pointer-events-none`}
           style={{ background: IMAGE_GRAD }}
         />
-        <div className="absolute left-0 top-0 p-2 flex flex-col items-start">
+        <div className="absolute left-0 top-0 flex flex-col items-start gap-1 p-3">
           <OfferCardBadges
             campaign={offer.campaign}
             restaurantSlug={offer.restaurantSlug ?? offer.id}

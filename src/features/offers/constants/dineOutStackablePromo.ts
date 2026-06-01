@@ -9,8 +9,11 @@ import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPe
 export const DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT =
   "Enjoy 20% off your first 2 payments with DineOut" as const
 
-/** Claim modal inline notification — primary line (Figma MODAL / Claiming offer). */
-export const DINEOUT_CLAIM_INLINE_PRIMARY = "Cashback applied." as const
+/** Inline DineOut cashback banner — primary line (Figma `_Cashback` `16388:31188`). */
+export const DINEOUT_CASHBACK_BANNER_PRIMARY = "Eligible for cashback" as const
+
+/** @deprecated Use {@link DINEOUT_CASHBACK_BANNER_PRIMARY}. */
+export const DINEOUT_CLAIM_INLINE_PRIMARY = DINEOUT_CASHBACK_BANNER_PRIMARY
 
 /** Claim modal inline notification — secondary line (cashback in Bolt Balance). */
 export function formatDineOutClaimCashbackBannerSecondary(

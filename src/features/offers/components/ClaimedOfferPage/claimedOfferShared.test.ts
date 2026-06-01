@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   formatClaimedOfferFoodLabel,
+  formatClaimedOfferPaymentLabel,
   formatGuestCountLabel,
   formatWelcomeAtRestaurant,
 } from "./claimedOfferShared"
@@ -25,5 +26,14 @@ describe("formatGuestCountLabel", () => {
 describe("formatWelcomeAtRestaurant", () => {
   it("uses 'Welcome at' phrasing (Figma 16123:18340)", () => {
     expect(formatWelcomeAtRestaurant("Neiburgs")).toBe("Welcome at Neiburgs")
+  })
+})
+
+describe("formatClaimedOfferPaymentLabel", () => {
+  it("uses claimed-offer payment sheet copy", () => {
+    expect(formatClaimedOfferPaymentLabel("dineout")).toBe("Paying with Bolt DineOut")
+    expect(formatClaimedOfferPaymentLabel("card_or_cash")).toBe(
+      "Paying with card or cash",
+    )
   })
 })

@@ -32,7 +32,7 @@ export interface BottomSheetScrollContentProps {
   homeClaimedOfferCard?: RestaurantOfferCardModel | null
   userClaims?: readonly UserClaim[]
   claimedOffersById?: Readonly<Record<string, ClaimedOffer>>
-  onHomeClaimedOfferPress?: () => void
+  onHomeClaimedOfferPress?: (offerId: string) => void
   /** Prototype admin: open merged-catalog editor (localStorage). */
   onOpenAdminPlaces?: () => void
   liveNowFilter?: boolean
@@ -126,7 +126,9 @@ export function BottomSheetScrollContent({
               offer={homeClaimedOfferCard}
               userClaims={userClaims}
               claimedOffersById={claimedOffersById}
-              onClaimedPress={onHomeClaimedOfferPress}
+              onClaimedPress={() => {
+                onHomeClaimedOfferPress?.(homeClaimedOfferCard.id)
+              }}
             />
           </section>
         ) : null}

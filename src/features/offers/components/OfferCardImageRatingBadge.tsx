@@ -1,8 +1,5 @@
 import { Typography } from "@bolteu/kalep-react"
-import Star from "@bolteu/kalep-react-icons/dist/Star"
-
-/** Figma rating star fill (place cards + list meta). */
-const RATING_STAR_ICON_CLASS = "shrink-0 text-[#FFB200]"
+import { OfferCardListRatingStar } from "@/features/offers/components/OfferCardListRatingStar"
 
 /** e.g. `200+` → `(200+)`; catalog values already parenthesized pass through. */
 export function formatReviewCountForBadge(raw?: string): string | undefined {
@@ -14,11 +11,11 @@ export function formatReviewCountForBadge(raw?: string): string | undefined {
 
 export interface OfferCardImageRatingBadgeProps {
   rating: string
-  /** XL / map-opened: e.g. `(200+)`, shown after the score per Figma M badge. */
+  /** Shown after the score, e.g. `(200+)`. */
   reviewCount?: string
   /**
-   * `compact` — `_Place / Card / XS` hero (15735:21933), 20px pill, Body XS.
-   * `comfortable` — `_Place / Card / On Map - Opened` (15809:13976), taller pill, Body S.
+   * `compact` — carousel XS hero badge placement.
+   * `comfortable` — map-opened card hero (may add shadow).
    */
   density?: "compact" | "comfortable"
   /**
@@ -28,8 +25,65 @@ export interface OfferCardImageRatingBadgeProps {
   staticComfortable?: boolean
 }
 
+/** Figma `_Badge / Rating` (`16545:27772`). */
+const RATING_BADGE_PILL_CLASS =
+  "flex w-max shrink-0 flex-nowrap items-center justify-center gap-0.5 overflow-hidden rounded-[4px] bg-layer-floor-1 py-0.5 pl-0.5 pr-1"
+
+const RATING_BADGE_COMFORTABLE_SHADOW =
+  "shadow-[0_0.1rem_0.15rem_rgba(0,0,0,0.16)]"
+
+const RATING_BADGE_RATING_STYLE = {
+  letterSpacing: "-0.294px",
+  lineHeight: "1.125rem",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'tnum' 1",
+} as const
+
+const RATING_BADGE_REVIEW_STYLE = {
+  letterSpacing: "-0.084px",
+  lineHeight: "1.125rem",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+} as const
+
+function RatingBadgePill({
+  rating,
+  formattedReviewCount,
+  withShadow,
+}: {
+  rating: string
+  formattedReviewCount?: string
+  withShadow?: boolean
+}) {
+  return (
+    <div
+      className={[RATING_BADGE_PILL_CLASS, withShadow ? RATING_BADGE_COMFORTABLE_SHADOW : ""]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <OfferCardListRatingStar />
+      <Typography
+        as="span"
+        variant="body-s-accent"
+        color="primary"
+        inlineStyle={RATING_BADGE_RATING_STYLE}
+      >
+        {rating}
+      </Typography>
+      {formattedReviewCount ?
+        <Typography
+          as="span"
+          variant="body-s-regular"
+          color="secondary"
+          inlineStyle={RATING_BADGE_REVIEW_STYLE}
+        >
+          {formattedReviewCount}
+        </Typography>
+      : null}
+    </div>
+  )
+}
+
 /**
- * Figma rating pill: star `#FFB200`; score + optional review count follow density.
+ * Figma `_Badge / Rating` (`16545:27772`): 16px star, Body S compact score + review count.
  */
 export function OfferCardImageRatingBadge({
   rating,
@@ -38,66 +92,20 @@ export function OfferCardImageRatingBadge({
   staticComfortable = false,
 }: OfferCardImageRatingBadgeProps) {
   const formattedReviewCount = formatReviewCountForBadge(reviewCount)
+  const pill = (
+    <RatingBadgePill
+      rating={rating}
+      formattedReviewCount={formattedReviewCount}
+      withShadow={density === "comfortable"}
+    />
+  )
 
   if (density === "comfortable") {
-    const pill = (
-      <div className="flex w-max shrink-0 flex-nowrap items-center gap-1 rounded bg-layer-floor-1 px-2 py-0.5 shadow-[0_0.1rem_0.15rem_rgba(0,0,0,0.16)]">
-        <Star size="xs" className={RATING_STAR_ICON_CLASS} aria-hidden />
-        <Typography
-          as="span"
-          variant="body-s-accent"
-          color="primary"
-          inlineStyle={{ letterSpacing: "-0.00525rem", lineHeight: "1.25rem" }}
-        >
-          {rating}
-        </Typography>
-        {formattedReviewCount ?
-          <Typography
-            as="span"
-            variant="body-s-regular"
-            color="secondary"
-            inlineStyle={{ letterSpacing: "-0.00525rem", lineHeight: "1.25rem" }}
-          >
-            {formattedReviewCount}
-          </Typography>
-        : null}
-      </div>
-    )
     if (staticComfortable) {
       return pill
     }
-    return (
-      <div className="absolute bottom-3 right-3 z-[1]">{pill}</div>
-    )
+    return <div className="absolute bottom-3 right-3 z-[1]">{pill}</div>
   }
 
-  return (
-    <div className="absolute right-2 bottom-2 z-[1] flex min-h-5 items-center gap-1 rounded bg-layer-floor-1 py-0.5 pl-1 pr-1.5">
-      <Star
-        size="xs"
-        width={12}
-        height={12}
-        className={RATING_STAR_ICON_CLASS}
-        aria-hidden
-      />
-      <Typography
-        as="span"
-        variant="body-xs-accent"
-        color="primary"
-        inlineStyle={{ letterSpacing: 0, lineHeight: "1rem" }}
-      >
-        {rating}
-      </Typography>
-      {formattedReviewCount ?
-        <Typography
-          as="span"
-          variant="body-xs-regular"
-          color="secondary"
-          inlineStyle={{ letterSpacing: 0, lineHeight: "1rem" }}
-        >
-          {formattedReviewCount}
-        </Typography>
-      : null}
-    </div>
-  )
+  return <div className="absolute right-2 bottom-2 z-[1]">{pill}</div>
 }

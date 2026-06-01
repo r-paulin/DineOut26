@@ -13,19 +13,15 @@ import { ClaimedOfferCancelRow } from "@/features/offers/components/ClaimedOffer
 import { ClaimedOfferDetailsSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDetailsSection"
 import { ClaimedOfferDisclaimer } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDisclaimer"
 import { ClaimedOfferHeroSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferHeroSection"
-import { ClaimedOfferCardCashFooter } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferCardCashFooter"
-import { ClaimedOfferPayFooter } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferPayFooter"
-import { ClaimedOfferVenueSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferVenueSection"
+import { ClaimedOfferActionFooter } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferActionFooter"
+import { ClaimedOfferPaymentMethodSheet } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferPaymentMethodSheet"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 import { cancelOffer } from "@/features/offers/utils/claimOffer"
 import { Z_CLAIMED_OFFER_PAGE } from "@/features/restaurant/constants/screenLayers"
-import { CardDivider } from "@/shared/components/CardDivider"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
 import { useSnackbar } from "@/shared/snackbar"
-import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
-import { toTelHref } from "@/shared/utils/telHref"
 import { useOfferExpired } from "./useOfferCountdown"
 
 const EASE_ENTER = CustomEase.create("claimedEnter", "M0,0,C0.32,0.72,0,1,1,1")
@@ -37,8 +33,6 @@ const STAGGER_SCRIM_AFTER_PANEL_EXIT_S = 0
 export interface ClaimedOfferPageProps {
   restaurant: {
     name: string
-    address: string
-    phone: string
   }
   claim: {
     offerId: string
@@ -57,8 +51,13 @@ export interface ClaimedOfferPageProps {
   onCancelOffer: (offerId: string) => void
   /** When user chose Bolt DineOut at claim time, opens the in-app pay bill flow (parent provides navigation). */
   onPayWithBoltDineOut?: () => void
-  /** Card/cash: parent dismisses to home after venue payment (same outcome as pay flow Done). */
-  onCardCashDone?: () => void
+  /** After claimed-offer exit animation when opening pay bill. */
+  onPayWithBoltDineOutComplete?: () => void
+  /** Card/cash: parent dismisses to restaurant after venue payment. */
+  onConfirmBill?: () => void
+  /** After claimed-offer exit animation when confirming bill. */
+  onConfirmBillComplete?: () => void
+  onPaymentMethodChange?: (paymentMethod: PaymentMethod) => void
 }
 
 export interface ClaimedOfferPageHandle {
@@ -79,25 +78,33 @@ export const ClaimedOfferPage = forwardRef<
     onClose,
     onCancelOffer,
     onPayWithBoltDineOut,
-    onCardCashDone,
+    onPayWithBoltDineOutComplete,
+    onConfirmBill,
+    onConfirmBillComplete,
+    onPaymentMethodChange,
   },
   ref,
 ) {
   const onCloseRef = useRef(onClose)
   const onCancelOfferRef = useRef(onCancelOffer)
   const onPayWithBoltDineOutRef = useRef(onPayWithBoltDineOut)
-  const onCardCashDoneRef = useRef(onCardCashDone)
+  const onPayWithBoltDineOutCompleteRef = useRef(onPayWithBoltDineOutComplete)
+  const onConfirmBillRef = useRef(onConfirmBill)
+  const onConfirmBillCompleteRef = useRef(onConfirmBillComplete)
+  const onPaymentMethodChangeRef = useRef(onPaymentMethodChange)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [paymentMethodSheetOpen, setPaymentMethodSheetOpen] = useState(false)
+  const [sheetPortal, setSheetPortal] = useState<HTMLElement | null>(null)
   const [cancelPending, setCancelPending] = useState(false)
   const [cancelDialogPortal, setCancelDialogPortal] = useState<HTMLElement | null>(
     null,
   )
   const expired = useOfferExpired(claim.offerWindowCloses)
-  const showDineOutFooter = claim.paymentMethod === "dineout"
-  const showCardCashFooter = claim.paymentMethod === "card_or_cash"
+  const hasFooter = claim.paymentMethod === "dineout" || claim.paymentMethod === "card_or_cash"
 
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
     {
+      axis: "y",
       motionDurationS: MOTION_S,
       easeEnter: EASE_ENTER,
       easeExit: EASE_EXIT,
@@ -110,15 +117,23 @@ export const ClaimedOfferPage = forwardRef<
   const snackbar = useSnackbar()
   const snackbarAnchorRef = useRef<HTMLDivElement>(null)
 
-  const mapsHref = googleMapsSearchUrl(restaurant.address)
-  const telHref = toTelHref(restaurant.phone)
-
   useLayoutEffect(() => {
     onCloseRef.current = onClose
     onCancelOfferRef.current = onCancelOffer
     onPayWithBoltDineOutRef.current = onPayWithBoltDineOut
-    onCardCashDoneRef.current = onCardCashDone
-  }, [onClose, onCancelOffer, onPayWithBoltDineOut, onCardCashDone])
+    onPayWithBoltDineOutCompleteRef.current = onPayWithBoltDineOutComplete
+    onConfirmBillRef.current = onConfirmBill
+    onConfirmBillCompleteRef.current = onConfirmBillComplete
+    onPaymentMethodChangeRef.current = onPaymentMethodChange
+  }, [
+    onClose,
+    onCancelOffer,
+    onPayWithBoltDineOut,
+    onPayWithBoltDineOutComplete,
+    onConfirmBill,
+    onConfirmBillComplete,
+    onPaymentMethodChange,
+  ])
 
   useImperativeHandle(
     ref,
@@ -132,6 +147,7 @@ export const ClaimedOfferPage = forwardRef<
 
   useLayoutEffect(() => {
     setCancelDialogPortal(rootRef.current)
+    setSheetPortal(rootRef.current)
   }, [rootRef])
 
   const handleAnimatedClose = useCallback(() => {
@@ -164,20 +180,26 @@ export const ClaimedOfferPage = forwardRef<
 
   const handlePay = useCallback(() => {
     if (!onPayWithBoltDineOutRef.current) return
+    onPayWithBoltDineOutRef.current()
     runExit(() => {
-      onPayWithBoltDineOutRef.current?.()
+      onPayWithBoltDineOutCompleteRef.current?.()
     })
   }, [runExit])
 
-  const handleCardCashDone = useCallback(() => {
-    if (!onCardCashDoneRef.current) return
+  const handleConfirmBill = useCallback(() => {
+    if (!onConfirmBillRef.current && !onConfirmBillCompleteRef.current) return
+    onConfirmBillRef.current?.()
     runExit(() => {
-      onCardCashDoneRef.current?.()
+      onConfirmBillCompleteRef.current?.()
     })
   }, [runExit])
+
+  const handlePaymentMethodChange = useCallback((next: PaymentMethod) => {
+    onPaymentMethodChangeRef.current?.(next)
+  }, [])
 
   const lightBodyBottomPad =
-    showDineOutFooter || showCardCashFooter ?
+    hasFooter ?
       claimedOfferLayout.lightBodyPadWithFooter
     : claimedOfferLayout.lightBodyPadNoFooter
 
@@ -197,7 +219,7 @@ export const ClaimedOfferPage = forwardRef<
       />
       <div
         ref={panelRef}
-        className="relative z-[1] flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-special-brand-alt shadow-[-6px_0_20px_rgba(0,0,0,0.06)]"
+        className="relative z-[1] flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-special-brand-alt"
       >
         <button
           type="button"
@@ -226,16 +248,11 @@ export const ClaimedOfferPage = forwardRef<
               discountPercent={claim.discountPercent}
               offerDetailLabel={claim.offerDetailLabel}
               paymentMethod={claim.paymentMethod}
-            />
-
-            <CardDivider />
-
-            <ClaimedOfferVenueSection
-              restaurantName={restaurant.name}
-              address={restaurant.address}
-              phone={restaurant.phone}
-              mapsHref={mapsHref}
-              telHref={telHref ?? null}
+              onPaymentMethodPress={
+                onPaymentMethodChange ?
+                  () => setPaymentMethodSheetOpen(true)
+                : undefined
+              }
             />
 
             <ClaimedOfferCancelRow onCancel={() => setCancelDialogOpen(true)} />
@@ -253,20 +270,25 @@ export const ClaimedOfferPage = forwardRef<
           </div>
         </div>
 
-        {showDineOutFooter ?
-          <ClaimedOfferPayFooter
+        {hasFooter ?
+          <ClaimedOfferActionFooter
             anchorRef={snackbarAnchorRef}
+            paymentMethod={claim.paymentMethod}
             discountPercent={claim.discountPercent}
             expired={expired}
             onPay={handlePay}
-          />
-        : showCardCashFooter ?
-          <ClaimedOfferCardCashFooter
-            expired={expired}
-            onDone={handleCardCashDone}
+            onConfirmBill={handleConfirmBill}
           />
         : null}
       </div>
+
+      <ClaimedOfferPaymentMethodSheet
+        open={paymentMethodSheetOpen}
+        onOpenChange={setPaymentMethodSheetOpen}
+        value={claim.paymentMethod}
+        onChange={handlePaymentMethodChange}
+        container={sheetPortal}
+      />
 
       <Dialog
         isOpen={cancelDialogOpen}

@@ -30,6 +30,7 @@ export type {
   SheetVerticalOfferSectionProps,
 } from "./components"
 export {
+  DINEOUT_CASHBACK_BANNER_PRIMARY,
   DINEOUT_CLAIM_INLINE_PRIMARY,
   DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT,
   formatDineOutClaimCashbackBannerSecondary,

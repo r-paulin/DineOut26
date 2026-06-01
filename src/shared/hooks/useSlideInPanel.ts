@@ -4,6 +4,7 @@ import gsap from "gsap"
 import { CustomEase } from "gsap/CustomEase"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 import { slideOffScreenXPx } from "@/shared/utils/slideOffScreenXPx"
+import { slideOffScreenYPx } from "@/shared/utils/slideOffScreenYPx"
 
 gsap.registerPlugin(CustomEase)
 
@@ -11,6 +12,8 @@ gsap.registerPlugin(CustomEase)
 export type SlidePanelEase = string | ((ratio: number) => number)
 
 export interface UseSlideInPanelOptions {
+  /** Slide axis: `x` from right (default), `y` from bottom. */
+  axis?: "x" | "y"
   motionDurationS: number
   easeEnter: SlidePanelEase
   easeExit: SlidePanelEase
@@ -19,15 +22,16 @@ export interface UseSlideInPanelOptions {
 }
 
 /**
- * GSAP slide-in from the right + scrim fade for full-screen shell panels
- * (restaurant detail, claimed offer). Keeps transforms off React `style` so
- * re-renders do not fight tweens.
+ * GSAP slide-in panel + scrim fade for full-screen shell panels.
+ * Horizontal: restaurant detail, pay picker. Vertical: claimed offer.
+ * Keeps transforms off React `style` so re-renders do not fight tweens.
  */
 export function useSlideInPanel(
   options: UseSlideInPanelOptions,
   defaultOnCompleteRef: MutableRefObject<() => void>,
 ) {
   const {
+    axis = "x",
     motionDurationS,
     easeEnter,
     easeExit,
@@ -46,15 +50,20 @@ export function useSlideInPanel(
     const panel = panelRef.current
     if (!root || !scrim || !panel) return
 
+    const offProp = axis === "y" ? "y" : "x"
+    const offValue =
+      axis === "y" ?
+        slideOffScreenYPx(panel, root)
+      : slideOffScreenXPx(panel, root)
+
     if (prefersReducedMotion()) {
       gsap.set(scrim, { opacity: 1 })
-      gsap.set(panel, { x: 0, clearProps: "transform" })
+      gsap.set(panel, { [offProp]: 0, clearProps: "transform" })
       return
     }
 
-    const offX = slideOffScreenXPx(panel, root)
     gsap.set(scrim, { opacity: 0 })
-    gsap.set(panel, { x: offX, force3D: true })
+    gsap.set(panel, { [offProp]: offValue, force3D: true })
 
     const ctx = gsap.context(() => {
       gsap
@@ -67,7 +76,7 @@ export function useSlideInPanel(
         .to(
           panel,
           {
-            x: 0,
+            [offProp]: 0,
             duration: motionDurationS,
             ease: easeEnter,
             force3D: true,
@@ -79,7 +88,7 @@ export function useSlideInPanel(
     return () => {
       ctx.revert()
     }
-  }, [motionDurationS, easeEnter, staggerPanelAfterScrimS])
+  }, [axis, motionDurationS, easeEnter, staggerPanelAfterScrimS])
 
   const runExit = useCallback(
     (after?: () => void) => {
@@ -99,7 +108,12 @@ export function useSlideInPanel(
         return
       }
 
-      const offX = slideOffScreenXPx(panel, root)
+      const offProp = axis === "y" ? "y" : "x"
+      const offValue =
+        axis === "y" ?
+          slideOffScreenYPx(panel, root)
+        : slideOffScreenXPx(panel, root)
+
       gsap.killTweensOf([scrim, panel])
       gsap
         .timeline({
@@ -112,7 +126,7 @@ export function useSlideInPanel(
         .to(
           panel,
           {
-            x: offX,
+            [offProp]: offValue,
             duration: motionDurationS,
             ease: easeExit,
             force3D: true,
@@ -129,7 +143,13 @@ export function useSlideInPanel(
           staggerScrimAfterPanelExitS,
         )
     },
-    [motionDurationS, easeExit, staggerScrimAfterPanelExitS, defaultOnCompleteRef],
+    [
+      axis,
+      motionDurationS,
+      easeExit,
+      staggerScrimAfterPanelExitS,
+      defaultOnCompleteRef,
+    ],
   )
 
   return { rootRef, scrimRef, panelRef, runExit }

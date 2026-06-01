@@ -74,7 +74,7 @@ export function OfferCardListGallery({
           className={`pointer-events-none absolute inset-0 ${R12}`}
           style={{ background: IMAGE_GRAD }}
         />
-        <div className="absolute left-3 top-3 flex max-w-[90%] flex-col items-start">
+        <div className="absolute left-3 top-3 flex max-w-[90%] flex-col items-start gap-1">
           <OfferCardBadges
             campaign={campaign}
             restaurantSlug={restaurantSlug}

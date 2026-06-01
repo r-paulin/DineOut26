@@ -7,6 +7,9 @@ export const Z_RESTAURANT_SHEET_CONTENT = 1401
 
 /** Claimed offer full-screen page (above restaurant sheets / about). */
 export const Z_CLAIMED_OFFER_PAGE = 1500
+/** Payment method sheet opened from claimed offer page. */
+export const Z_CLAIMED_OFFER_SHEET_OVERLAY = 1510
+export const Z_CLAIMED_OFFER_SHEET_CONTENT = 1511
 /** Claim offer full-screen modal. */
 export const Z_CLAIM_MODAL_OVERLAY = 1600
 export const Z_CLAIM_MODAL_CONTENT = 1601

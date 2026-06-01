@@ -14,7 +14,9 @@ import {
   Z_RESTAURANT_SHEET_OVERLAY,
 } from "@/features/restaurant/constants/screenLayers"
 import {
+  SHEET_CLOSE_ICON_ON_SURFACE_CLASS,
   SHEET_CLOSE_ICON_OVER_MEDIA_CLASS,
+  SHEET_CLOSE_ON_SURFACE_CLASS,
   SHEET_CLOSE_OVER_MEDIA_CLASS,
 } from "@/shared/utils/sheetCloseButtonClass"
 import {
@@ -109,6 +111,13 @@ export function ClaimPromoSheetShell({
 }: ClaimPromoSheetShellProps) {
   const isFit = sheetHeight === "fit"
   const hasPinnedFooter = footer != null
+  const closeOverHero = hero !== "none"
+  const closeButtonClass =
+    closeOverHero ? SHEET_CLOSE_OVER_MEDIA_CLASS : SHEET_CLOSE_ON_SURFACE_CLASS
+  const closeIconClass =
+    closeOverHero ?
+      SHEET_CLOSE_ICON_OVER_MEDIA_CLASS
+    : SHEET_CLOSE_ICON_ON_SURFACE_CLASS
   const [motionActive, setMotionActive] = useState(open)
 
   const handleOpenChange = useCallback(
@@ -171,12 +180,12 @@ export function ClaimPromoSheetShell({
           <Drawer.Close asChild>
             <button
               type="button"
-              className={SHEET_CLOSE_OVER_MEDIA_CLASS}
+              className={closeButtonClass}
               aria-label="Close"
             >
               <Cross
                 size="xs"
-                className={SHEET_CLOSE_ICON_OVER_MEDIA_CLASS}
+                className={closeIconClass}
                 aria-hidden
               />
             </button>

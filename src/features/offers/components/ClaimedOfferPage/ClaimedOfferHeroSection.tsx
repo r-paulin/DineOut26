@@ -3,6 +3,7 @@ import { BoltDineOutLogo } from "@/features/offers/components/ClaimedOfferPage/B
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import {
   HERO_ON_DARK_TEXT_STYLE,
+  PIN_COUNTDOWN_TEXT_STYLE,
   SEMIBOLD,
   formatWelcomeAtRestaurant,
 } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
@@ -47,10 +48,10 @@ function ClaimedOfferPinCountdown({ offerWindowCloses }: { offerWindowCloses: st
       aria-atomic="true"
     >
       <Typography
-        variant="body-s-regular"
+        variant="body-xs-regular"
         as="p"
         align="center"
-        inlineStyle={HERO_ON_DARK_TEXT_STYLE}
+        inlineStyle={PIN_COUNTDOWN_TEXT_STYLE}
       >
         {label}
       </Typography>
@@ -68,7 +69,7 @@ export function ClaimedOfferHeroSection({
   return (
     <section data-mode="dark" className={claimedOfferLayout.hero}>
       <div className={claimedOfferLayout.heroLogoRow}>
-        <BoltDineOutLogo variant="onDark" />
+        <BoltDineOutLogo />
       </div>
 
       <div className={claimedOfferLayout.heroCopy}>

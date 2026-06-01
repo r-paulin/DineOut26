@@ -37,6 +37,7 @@ import {
   isDiscoverEmptyTriggerFilter,
 } from "@/features/discover/utils/filterDiscoverOffers"
 import { removeClaimedOfferById } from "@/features/offers/utils/claimedOfferState"
+import { updateClaimedOfferPaymentMethod } from "@/features/offers/utils/updateClaimedOfferPaymentMethod"
 import { formatClaimedArrivalDate } from "@/features/offers/utils/formatClaimedArrivalDate"
 import {
   offerWindowBaseDateFromSchedule,
@@ -67,6 +68,7 @@ import type {
   ClaimData,
   ClaimedOffer,
   ClaimOfferModalOffer,
+  PaymentMethod,
 } from "@/features/offers/offers.types"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
 
@@ -294,15 +296,48 @@ export function HomeScreen() {
     }
   }, [latestClaimedOfferForHome, catalogSnapshot])
 
-  const handleHomeClaimedOfferPress = useCallback(() => {
-    if (!latestClaimedOfferForHome) return
-    setClaimedView(latestClaimedOfferForHome)
-  }, [latestClaimedOfferForHome])
+  const openClaimedOfferDetails = useCallback(
+    (claim: ClaimedOffer) => {
+      openRestaurantDetail(claim.restaurantSlug)
+      closeSectionList()
+      setSearchOpen(false)
+      setPendingClaimOffer(null)
+      setPostClaimSuccess(null)
+      setClaimedView(claim)
+    },
+    [closeSectionList, openRestaurantDetail, setSearchOpen],
+  )
+
+  const handleHomeClaimedOfferPress = useCallback(
+    (offerId: string) => {
+      const claim = claimedByOfferId[offerId]
+      if (!claim) return
+      openClaimedOfferDetails(claim)
+    },
+    [claimedByOfferId, openClaimedOfferDetails],
+  )
+
+  const handleDiscoverRestaurantPress = useCallback(
+    (slug: string) => {
+      const model = getRestaurantDetailDemo(slug)
+      const activeClaim = findActiveClaimForRestaurant(
+        slug,
+        model,
+        claimedByOfferId,
+      )
+      if (activeClaim) {
+        openClaimedOfferDetails(activeClaim)
+        return
+      }
+      openRestaurantDetail(slug)
+    },
+    [claimedByOfferId, openClaimedOfferDetails, openRestaurantDetail],
+  )
 
   const claimedOfferPageRestaurant = useMemo(() => {
     if (!claimedView) return null
     const d = getRestaurantDetailDemo(claimedView.restaurantSlug)
-    return { name: d.name, address: d.address, phone: d.phone }
+    return { name: d.name }
   }, [claimedView, catalogSnapshot])
 
   useLayoutEffect(() => {
@@ -476,17 +511,40 @@ export function HomeScreen() {
     [closeRestaurantDetail],
   )
 
-  const handlePayFromClaimedOffer = useCallback(() => {
+  const handlePayFromClaimedOfferPrepare = useCallback(() => {
     if (!claimedView) return
     const claim = claimedView
     const detail = getRestaurantDetailDemo(claim.restaurantSlug)
-    setClaimedView(null)
     setPayBillEntry({
       restaurantName: detail.name,
       restaurantSlug: claim.restaurantSlug,
       offer: claim,
     })
   }, [claimedView, catalogSnapshot])
+
+  const handlePayFromClaimedOfferComplete = useCallback(() => {
+    setClaimedView(null)
+  }, [])
+
+  const clearClaimedOfferAfterPayment = useCallback(
+    (offerId?: string, showSnackbar = false) => {
+      if (offerId) {
+        setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
+      }
+      setClaimedView(null)
+      setPendingClaimOffer(null)
+      if (showSnackbar) {
+        requestAnimationFrame(() => {
+          snackbar.add(
+            createPostPaymentHomeSnackbar(() => {
+              // Review flow not wired yet; placeholder lives in the toast.
+            }),
+          )
+        })
+      }
+    },
+    [snackbar],
+  )
 
   const handleOpenPayBill = useCallback(() => {
     if (!restaurantDetailSlug || !baseRestaurantDetail) return
@@ -500,7 +558,7 @@ export function HomeScreen() {
       claimedByOfferId,
     )
     if (claim) {
-      setClaimedView(claim)
+      openClaimedOfferDetails(claim)
       return
     }
     setPendingAtVenuePayBillEntry({
@@ -509,7 +567,7 @@ export function HomeScreen() {
       offer: null,
     })
     setAtVenueNoClaimPayInfoOpen(true)
-  }, [baseRestaurantDetail, claimedByOfferId, restaurantDetailSlug])
+  }, [baseRestaurantDetail, claimedByOfferId, openClaimedOfferDetails, restaurantDetailSlug])
 
   const handleAtVenueNoClaimPayInfoContinue = useCallback(() => {
     if (!pendingAtVenuePayBillEntry) return
@@ -538,40 +596,81 @@ export function HomeScreen() {
     setPayBillEntry(null)
   }, [])
 
-  const fulfillPaidOfferAndExitHome = useCallback(() => {
+  const finishSuccessfulPayment = useCallback(
+    ({
+      restaurantSlug,
+      offerId,
+      showSnackbar = false,
+    }: {
+      restaurantSlug: string
+      offerId?: string
+      showSnackbar?: boolean
+    }) => {
+      openRestaurantDetail(restaurantSlug)
+      if (offerId) {
+        setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
+      }
+      setClaimedView(null)
+      setPayBillEntry(null)
+      setPendingClaimOffer(null)
+      if (showSnackbar) {
+        requestAnimationFrame(() => {
+          snackbar.add(
+            createPostPaymentHomeSnackbar(() => {
+              // Review flow not wired yet; placeholder lives in the toast.
+            }),
+          )
+        })
+      }
+    },
+    [openRestaurantDetail, snackbar],
+  )
+
+  const fulfillPaidOfferAndOpenRestaurant = useCallback(() => {
+    const slug = payBillEntry?.restaurantSlug
     const offerId = payBillEntry?.offer?.offerId
-    if (offerId) {
-      setClaimedByOfferId((prev) => {
-        if (!(offerId in prev)) return prev
-        const next = { ...prev }
-        delete next[offerId]
-        return next
-      })
+    if (!slug) {
+      setPayBillEntry(null)
+      return
     }
-    setPayBillEntry(null)
-    closeRestaurantDetail()
-  }, [closeRestaurantDetail, payBillEntry])
+    finishSuccessfulPayment({ restaurantSlug: slug, offerId })
+  }, [finishSuccessfulPayment, payBillEntry])
 
   const handlePayBillFlowClose = exitPayFlowToRestaurant
 
   const handlePayBillPaidDone = useCallback(() => {
-    snackbar.add(
-      createPostPaymentHomeSnackbar(() => {
-        // Review flow not wired yet; placeholder lives in the toast.
-      }),
-    )
+    requestAnimationFrame(() => {
+      snackbar.add(
+        createPostPaymentHomeSnackbar(() => {
+          // Review flow not wired yet; placeholder lives in the toast.
+        }),
+      )
+    })
   }, [snackbar])
 
-  const handleCardCashClaimedDone = useCallback(() => {
+  const handleConfirmBillClaimedComplete = useCallback(() => {
     const offerId = claimedView?.offerId
-    if (offerId) {
-      setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
-    }
-    setClaimedView(null)
-    setPendingClaimOffer(null)
-    closeRestaurantDetail()
-    handlePayBillPaidDone()
-  }, [claimedView, closeRestaurantDetail, handlePayBillPaidDone])
+    if (!offerId) return
+    clearClaimedOfferAfterPayment(offerId, true)
+  }, [claimedView, clearClaimedOfferAfterPayment])
+
+  const handleClaimedOfferPaymentMethodChange = useCallback(
+    (paymentMethod: PaymentMethod) => {
+      const offerId = claimedView?.offerId
+      if (!offerId || !claimedView) return
+      const updated = updateClaimedOfferPaymentMethod(claimedView, paymentMethod)
+      setClaimedView(updated)
+      setClaimedByOfferId((prev) => {
+        const current = prev[offerId]
+        if (!current) return prev
+        return {
+          ...prev,
+          [offerId]: updateClaimedOfferPaymentMethod(current, paymentMethod),
+        }
+      })
+    },
+    [claimedView],
+  )
 
   const filterBarProps = {
     getChipLabel,
@@ -612,7 +711,7 @@ export function HomeScreen() {
     onClearFocus,
     scrollToTopSignal,
     onSeeAllSection: openSectionList,
-    onRestaurantPress: openRestaurantDetail,
+    onRestaurantPress: handleDiscoverRestaurantPress,
     homeClaimedOfferCard,
     userClaims,
     claimedOffersById: claimedByOfferId,
@@ -680,7 +779,7 @@ export function HomeScreen() {
                     }
                     liveNowFilter={liveNowFilter}
                     onClose={onClearFocus}
-                    onRestaurantPress={openRestaurantDetail}
+                    onRestaurantPress={handleDiscoverRestaurantPress}
                   />
                 </div>
               </div>
@@ -728,7 +827,7 @@ export function HomeScreen() {
           activeTab={activeTab}
           onTabChange={onTabChange}
           surface="flat"
-          onRestaurantPress={openRestaurantDetail}
+          onRestaurantPress={handleDiscoverRestaurantPress}
           {...filterBarProps}
         />
       ) : null}
@@ -739,7 +838,7 @@ export function HomeScreen() {
           activeTab={activeTab}
           onTabChange={onTabChange}
           surface="flat"
-          onRestaurantPress={openRestaurantDetail}
+          onRestaurantPress={handleDiscoverRestaurantPress}
           {...filterBarProps}
         />
       ) : null}
@@ -767,7 +866,7 @@ export function HomeScreen() {
           onOfferAvailablePress={handleOfferAvailablePress}
           onOfferClaimedPress={(id) => {
             const c = claimedByOfferId[id]
-            if (c) setClaimedView(c)
+            if (c) openClaimedOfferDetails(c)
           }}
           onPayBill={handleOpenPayBill}
         />
@@ -778,7 +877,7 @@ export function HomeScreen() {
           entry={payBillEntry}
           portalContainer={portalRoot}
           onClose={handlePayBillFlowClose}
-          onExitAfterPayment={fulfillPaidOfferAndExitHome}
+          onExitAfterPayment={fulfillPaidOfferAndOpenRestaurant}
           onPaidDone={handlePayBillPaidDone}
         />
       : null}
@@ -803,8 +902,10 @@ export function HomeScreen() {
           claim={claimedView}
           onClose={handleClaimedOfferClose}
           onCancelOffer={handleCancelClaimedOffer}
-          onPayWithBoltDineOut={handlePayFromClaimedOffer}
-          onCardCashDone={handleCardCashClaimedDone}
+          onPayWithBoltDineOut={handlePayFromClaimedOfferPrepare}
+          onPayWithBoltDineOutComplete={handlePayFromClaimedOfferComplete}
+          onConfirmBillComplete={handleConfirmBillClaimedComplete}
+          onPaymentMethodChange={handleClaimedOfferPaymentMethodChange}
         />
       ) : null}
       {postClaimSuccess ?

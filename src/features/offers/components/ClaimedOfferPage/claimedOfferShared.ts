@@ -1,6 +1,7 @@
 import type { PaymentMethod } from "@/features/offers/offers.types"
+import { CLAIMED_OFFER_PAYMENT_LABELS } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
 
-export const ROW_ICON_CLASS = "shrink-0 text-action-primary"
+export const ROW_ICON_CLASS = "shrink-0 text-neutral-primary"
 
 export const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
@@ -9,6 +10,13 @@ export const SEMIBOLD = {
 /** Figma `static/content/primary-light` on `bg-special-brand-alt` hero. */
 export const HERO_ON_DARK_TEXT_STYLE = {
   color: "var(--color-static-content-primary-light)",
+} as const
+
+/** Figma PIN countdown — Body XS compact on dark PIN card (`16161:32302`). */
+export const PIN_COUNTDOWN_TEXT_STYLE = {
+  color: "var(--content-secondary-inverted)",
+  lineHeight: "15px",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1",
 } as const
 
 /** Figma claimed-offer details row — e.g. "30% discount on food" (`16123:18340`). */
@@ -23,8 +31,8 @@ export function formatClaimedOfferDiscountSubtitle(discountPercent: number): str
 
 export function formatClaimedOfferPaymentLabel(paymentMethod: PaymentMethod): string {
   return paymentMethod === "dineout" ?
-      "Paying with Bolt DineOut"
-    : "Paying by card or cash"
+      CLAIMED_OFFER_PAYMENT_LABELS.dineout
+    : CLAIMED_OFFER_PAYMENT_LABELS.cardOrCash
 }
 
 export function formatWelcomeAtRestaurant(restaurantName: string): string {

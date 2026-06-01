@@ -30,8 +30,9 @@ export const claimedOfferLayout = {
   /** Figma `16144:200886` — live offer window line below PIN digits. */
   pinFrameCountdown: "justify-self-stretch text-center",
   pinDigitsRow: "flex w-full flex-wrap justify-center justify-self-stretch gap-2",
+  /** Figma PIN cell — 48×56, 8px radius, brand-alt fill (`16144:200902`). */
   pinDigit:
-    "flex size-14 shrink-0 items-center justify-center rounded-[var(--sheet-radius)] bg-special-brand-alt",
+    "flex h-14 w-12 shrink-0 items-center justify-center rounded-[8px] bg-special-brand-alt p-2.5",
   /**
    * Light body below hero — rounded top overlaps brand hero (Figma shelf).
    * `flex-1` fills short viewports (no green gap); no `min-h-0`/`overflow-hidden`
@@ -40,12 +41,9 @@ export const claimedOfferLayout = {
   lightBody:
     "relative z-[1] -mt-4 flex flex-1 flex-col rounded-t-[var(--sheet-radius)] bg-layer-floor-1",
   sectionHeadingPx: "px-6",
-  /** Offer details block (divider separates venue). */
+  /** Offer details block — flat list, no section title. */
   offerDetailsBlock: "shrink-0 pt-6",
-  detailsList: "m-0 mt-2 flex list-none flex-col p-0",
-  /** Venue block below {@link CardDivider} — rounded shelf like Pay bill summary. */
-  venueBlock:
-    "flex shrink-0 flex-col overflow-hidden rounded-t-2xl bg-layer-floor-1 pt-6 shadow-[var(--elevation-1)]",
+  detailsList: "m-0 flex list-none flex-col p-0",
   disclaimer: "flex shrink-0 flex-col gap-3 px-6 pt-6",
   /** White-body bottom reserve for fixed pay footer (must not live on green pageScroll). */
   lightBodyPadWithFooter: "pb-[10.5rem]",

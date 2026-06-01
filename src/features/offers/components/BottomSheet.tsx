@@ -35,7 +35,7 @@ export interface BottomSheetProps {
   homeClaimedOfferCard?: RestaurantOfferCardModel | null
   userClaims?: readonly UserClaim[]
   claimedOffersById?: Readonly<Record<string, ClaimedOffer>>
-  onHomeClaimedOfferPress?: () => void
+  onHomeClaimedOfferPress?: (offerId: string) => void
   /** Prototype admin catalog editor (persists to localStorage). */
   onOpenAdminPlaces?: () => void
   /** When true, sheet is `relative` inside a parent fixed bottom dock (HomeScreen). */
