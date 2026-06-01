@@ -66,6 +66,15 @@ export function measureHeroHostHeightPx(heroBand: HTMLElement): number {
   return host.getBoundingClientRect().height
 }
 
+/** Pixel offset from screen root top to the hero band (absolute nav header height). */
+export function measurePayConfirmNavReservePx(root: HTMLElement): number {
+  const header = root.querySelector("header")
+  if (!header) return 0
+  const rootTop = root.getBoundingClientRect().top
+  const headerBottom = header.getBoundingClientRect().bottom
+  return Math.max(0, Math.round(headerBottom - rootTop))
+}
+
 export function heroBandHeightForSheetInset(
   hostHeightPx: number,
   sheetInsetPx: number,

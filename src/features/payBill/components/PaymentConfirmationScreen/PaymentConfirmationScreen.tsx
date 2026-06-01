@@ -4,12 +4,10 @@ import paySuccessCheckmarkUrl from "@/features/payBill/assets/pay-success-checkm
 import { PaymentConfirmationNavbar } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationNavbar"
 import { PaymentConfirmationSummarySheet } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationSummarySheet"
 import { PaymentSuccessTitle } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentSuccessTitle"
-import { PAY_CONFIRM_NAV_RESERVE } from "@/features/payBill/components/PaymentConfirmationScreen/paymentConfirmationLayout"
 import {
   PAY_SUCCESS_CHECKMARK_START_PX,
   usePaymentConfirmationReveal,
 } from "@/features/payBill/components/PaymentConfirmationScreen/usePaymentConfirmationReveal"
-import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
 
 export interface PaymentConfirmationScreenProps {
   restaurantName: string
@@ -17,7 +15,9 @@ export interface PaymentConfirmationScreenProps {
   receiptTotal: number
   tip: number | null
   paymentCode: string
-  offer: ClaimedOffer | null
+  offer?: ClaimedOffer | null
+  /** Post-payment cashback credited to Bolt Balance. */
+  cashbackEarnedEur?: number
   onDismiss: () => void
   onDone: () => void
   /** Open on summary sheet (paid offer banner revisit). */
@@ -40,7 +40,7 @@ export function PaymentConfirmationScreen({
   receiptTotal,
   tip,
   paymentCode,
-  offer,
+  cashbackEarnedEur = 0,
   onDismiss,
   onDone,
   startRevealed = false,
@@ -51,7 +51,7 @@ export function PaymentConfirmationScreen({
   const titleRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
 
-  usePaymentConfirmationReveal({
+  const { phase } = usePaymentConfirmationReveal({
     rootRef,
     heroBandRef,
     imgWrapRef,
@@ -60,7 +60,8 @@ export function PaymentConfirmationScreen({
     startRevealed,
   })
 
-  const showCashback = effectivePayDiscountPercents(offer).discountAddPercent > 0
+  const revealed = phase === "revealed"
+  const showCashback = cashbackEarnedEur > 0
 
   return (
     <div
@@ -76,7 +77,6 @@ export function PaymentConfirmationScreen({
         <div
           ref={heroBandRef}
           className="absolute inset-x-0 z-10 flex flex-col items-center justify-center overflow-hidden px-6"
-          style={{ top: PAY_CONFIRM_NAV_RESERVE }}
         >
           <div className="flex flex-col items-center gap-6">
             <div
@@ -97,6 +97,12 @@ export function PaymentConfirmationScreen({
             <div ref={titleRef} className="w-full max-w-md shrink-0 text-center">
               <PaymentSuccessTitle variant="large" />
             </div>
+
+            {revealed ?
+              <p className="sr-only" aria-live="polite">
+                Payment successful
+              </p>
+            : null}
           </div>
         </div>
 
@@ -111,6 +117,7 @@ export function PaymentConfirmationScreen({
             tip={tip}
             paidAmount={paidAmount}
             showCashback={showCashback}
+            cashbackEur={cashbackEarnedEur}
             onDone={onDone}
           />
         </div>

@@ -44,6 +44,7 @@ import { removeClaimedOfferById } from "@/features/offers/utils/claimedOfferStat
 import {
   buildPaidOfferRecordFromClaim,
   buildPaidOfferRecordFromPaySnapshot,
+  isPaidOfferPaymentDetailsAvailable,
   paidOfferRecordToClaimStub,
 } from "@/features/offers/utils/buildPaidOfferRecord"
 import { updateClaimedOfferPaymentMethod } from "@/features/offers/utils/updateClaimedOfferPaymentMethod"
@@ -82,6 +83,7 @@ import type {
   PaymentMethod,
 } from "@/features/offers/offers.types"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
+import { useModalOverlayLock } from "@/shared/hooks/useModalOverlayLock"
 
 const MapLayer = lazy(() =>
   import("@/features/map/components/MapLayer").then((m) => ({
@@ -669,7 +671,7 @@ export function HomeScreen() {
   const handlePaidOfferPress = useCallback(
     (offerId: string) => {
       const paid = paidByOfferId[offerId]
-      if (!paid?.paymentCode) return
+      if (!paid || !isPaidOfferPaymentDetailsAvailable(paid)) return
       setPaidConfirmationOfferId(offerId)
     },
     [paidByOfferId],
@@ -683,6 +685,14 @@ export function HomeScreen() {
     paidConfirmationOfferId ?
       paidByOfferId[paidConfirmationOfferId]
     : null
+
+  const paidConfirmationShellRef = useRef<HTMLDivElement>(null)
+
+  useModalOverlayLock({
+    active: paidConfirmationRecord != null,
+    containerRef: paidConfirmationShellRef,
+    onEscape: handlePaidConfirmationDismiss,
+  })
 
   const handleClaimedOfferPaymentMethodChange = useCallback(
     (paymentMethod: PaymentMethod) => {
@@ -906,6 +916,7 @@ export function HomeScreen() {
       {paidConfirmationRecord && portalRoot ?
         <div className="fixed inset-0 z-[120] flex w-full justify-center bg-layer-floor-1">
           <div
+            ref={paidConfirmationShellRef}
             className="relative h-[var(--app-h)] w-full max-w-[var(--shell-width)] overflow-hidden bg-layer-floor-1 shadow-[0_0.25rem_0.75rem_rgba(0,0,0,0.2)]"
             style={{ minHeight: "var(--app-h)", height: "var(--app-h)" }}
           >
@@ -920,6 +931,7 @@ export function HomeScreen() {
               tip={paidConfirmationRecord.tipEur ?? null}
               paymentCode={paidConfirmationRecord.paymentCode ?? ""}
               offer={paidOfferRecordToClaimStub(paidConfirmationRecord)}
+              cashbackEarnedEur={paidConfirmationRecord.cashbackEarnedEur ?? 0}
               startRevealed
               onDismiss={handlePaidConfirmationDismiss}
               onDone={handlePaidConfirmationDismiss}

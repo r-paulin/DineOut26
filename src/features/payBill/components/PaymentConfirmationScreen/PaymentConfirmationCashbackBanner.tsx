@@ -1,7 +1,8 @@
 import { Typography } from "@bolteu/kalep-react"
 import dineoutCashbackCoinUrl from "@/features/offers/assets/dineout-cashback-coin.png"
+import { DINEOUT_CASHBACK_COIN_SLOT_PX } from "@/features/offers/constants/dineoutCashbackCoinLayout"
 import {
-  PAY_CONFIRM_CASHBACK_DESCRIPTION,
+  formatPayConfirmCashbackDescription,
   PAY_CONFIRM_CASHBACK_TITLE,
 } from "@/features/payBill/constants/payBillCashbackCopy"
 
@@ -19,15 +20,26 @@ const COMPACT_BODY_M_LINE = {
 const COIN_IMAGE_CLASS =
   "absolute max-w-none size-[194.47%] left-[-62.79%] top-[-47.22%]"
 
+export interface PaymentConfirmationCashbackBannerProps {
+  cashbackEur: number
+}
+
 /**
  * Figma `_Cashback` (`16413:122635`) — post-payment cashback confirmation in the paid sheet.
  */
-export function PaymentConfirmationCashbackBanner() {
+export function PaymentConfirmationCashbackBanner({
+  cashbackEur,
+}: PaymentConfirmationCashbackBannerProps) {
+  const description = formatPayConfirmCashbackDescription(cashbackEur)
+
   return (
     <div className="relative min-h-[56px] min-w-[15rem] w-full overflow-hidden rounded-xl bg-action-secondary py-2 pl-16 pr-3">
       <div
         className="pointer-events-none absolute bottom-0 left-0 overflow-hidden"
-        style={{ width: COIN_SLOT_PX, height: COIN_SLOT_PX }}
+        style={{
+          width: DINEOUT_CASHBACK_COIN_SLOT_PX,
+          height: DINEOUT_CASHBACK_COIN_SLOT_PX,
+        }}
         aria-hidden
       >
         <img
@@ -60,7 +72,7 @@ export function PaymentConfirmationCashbackBanner() {
             fontFeatureSettings: FONT_FEAT,
           }}
         >
-          {PAY_CONFIRM_CASHBACK_DESCRIPTION}
+          {description}
         </Typography>
       </div>
     </div>

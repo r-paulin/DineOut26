@@ -2,9 +2,8 @@ import gsap from "gsap"
 import type { RefObject } from "react"
 import { useLayoutEffect, useState } from "react"
 import {
-  heroBandHeightForSheetInset,
   measureConfirmSheetInsetPx,
-  measureHeroHostHeightPx,
+  measurePayConfirmNavReservePx,
 } from "@/features/payBill/components/PaymentConfirmationScreen/paymentConfirmationLayout"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
@@ -35,35 +34,30 @@ function applyCheckmarkSize(imgWrap: HTMLElement, px: number): void {
   })
 }
 
-function heroTopPx(heroBand: HTMLElement): number {
-  const top = parseFloat(getComputedStyle(heroBand).top)
-  return Number.isFinite(top) ? top : 0
-}
-
-/** Pin hero between nav (CSS `top`) and host bottom; flex centers checkmark + title. */
-function applyHeroBandExpanded(heroBand: HTMLElement): void {
-  const hostH = measureHeroHostHeightPx(heroBand)
-  const topPx = heroTopPx(heroBand)
+/** Pin hero below absolute nav and above host bottom; flex centers checkmark + title. */
+function applyHeroBandExpanded(heroBand: HTMLElement, navTopPx: number): void {
   gsap.set(heroBand, {
     left: 0,
     right: 0,
-    top: topPx,
-    bottom: "auto",
-    height: Math.max(0, Math.round(hostH - topPx)),
+    top: navTopPx,
+    bottom: 0,
+    height: "auto",
     width: "100%",
   })
 }
 
 /** Pin hero bottom to sheet top so content stays centered in the green strip above the sheet. */
-function applyHeroBandAboveSheet(heroBand: HTMLElement, sheetInsetPx: number): void {
-  const hostH = measureHeroHostHeightPx(heroBand)
-  const topPx = heroTopPx(heroBand)
+function applyHeroBandAboveSheet(
+  heroBand: HTMLElement,
+  navTopPx: number,
+  sheetInsetPx: number,
+): void {
   gsap.set(heroBand, {
     left: 0,
     right: 0,
-    top: topPx,
-    bottom: "auto",
-    height: Math.max(0, heroBandHeightForSheetInset(hostH, sheetInsetPx) - topPx),
+    top: navTopPx,
+    bottom: sheetInsetPx,
+    height: "auto",
     width: "100%",
   })
 }
@@ -139,15 +133,18 @@ export function usePaymentConfirmationReveal({
         return false
       }
 
+      const navTopPx = measurePayConfirmNavReservePx(root)
+      if (navTopPx <= 0) return false
+
       const host = heroBand.parentElement
 
       const syncHeroToSheet = () => {
         if (!isSheetRevealed(sheet)) return
-        applyHeroBandAboveSheet(heroBand, measureSheetInset(sheet))
+        applyHeroBandAboveSheet(heroBand, navTopPx, measureSheetInset(sheet))
       }
 
       if (startRevealed || prefersReducedMotion()) {
-        applyHeroBandAboveSheet(heroBand, measureSheetInset(sheet))
+        applyHeroBandAboveSheet(heroBand, navTopPx, measureSheetInset(sheet))
         gsap.set(sheet, { yPercent: 0 })
         applyCheckmarkSize(imgWrap, PAY_SUCCESS_CHECKMARK_FINAL_PX)
         gsap.set(imgWrap, { opacity: 1, y: 0 })
@@ -156,7 +153,7 @@ export function usePaymentConfirmationReveal({
           if (!cancelled) setPhase("revealed")
         })
       } else {
-        applyHeroBandExpanded(heroBand)
+        applyHeroBandExpanded(heroBand, navTopPx)
         gsap.set(sheet, { yPercent: 100 })
         gsap.set(title, { autoAlpha: 0 })
         applyCheckmarkSize(imgWrap, PAY_SUCCESS_CHECKMARK_START_PX)
@@ -168,7 +165,7 @@ export function usePaymentConfirmationReveal({
         ctx = gsap.context(() => {
           const tl = gsap.timeline({
             onComplete: () => {
-              applyHeroBandAboveSheet(heroBand, measureSheetInset(sheet))
+              applyHeroBandAboveSheet(heroBand, navTopPx, measureSheetInset(sheet))
               gsap.set(sheet, { yPercent: 0 })
               gsap.set(imgWrap, { clearProps: "opacity" })
               gsap.set(title, { autoAlpha: 1 })
@@ -201,14 +198,8 @@ export function usePaymentConfirmationReveal({
           tl.call(
             () => {
               const sheetInsetPx = measureSheetInset(sheet)
-              const hostH = measureHeroHostHeightPx(heroBand)
-              const topPx = heroTopPx(heroBand)
-              const targetH = Math.max(
-                0,
-                heroBandHeightForSheetInset(hostH, sheetInsetPx) - topPx,
-              )
               gsap.to(heroBand, {
-                height: targetH,
+                bottom: sheetInsetPx,
                 duration: SHEET_IN_S,
                 ease: "power2.out",
                 overwrite: "auto",

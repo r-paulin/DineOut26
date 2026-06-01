@@ -184,19 +184,23 @@ export function CustomTipModal({
 
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-6">
           <div className="flex w-full flex-col items-center pb-6">
-            <Typography
+            <h2
               id="custom-tip-heading"
-              variant="heading-m-accent"
-              color="primary"
-              align="center"
-              as="h2"
-              inlineStyle={{
-                fontVariationSettings: "'wght' var(--font-weight-semibold)",
-                fontFeatureSettings: FONT_FEAT,
-              }}
+              className="m-0 w-full text-center"
             >
-              {CUSTOM_TIP_HEADING}
-            </Typography>
+              <Typography
+                variant="heading-m-accent"
+                color="primary"
+                align="center"
+                as="span"
+                inlineStyle={{
+                  fontVariationSettings: "'wght' var(--font-weight-semibold)",
+                  fontFeatureSettings: FONT_FEAT,
+                }}
+              >
+                {CUSTOM_TIP_HEADING}
+              </Typography>
+            </h2>
           </div>
 
           <div

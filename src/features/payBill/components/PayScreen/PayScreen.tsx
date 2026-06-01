@@ -391,7 +391,10 @@ export function PayScreen({
 
         <div className="flex shrink-0 flex-col bg-layer-floor-1">
           {cashbackEur > 0 ?
-            <PayBillCashbackUpsell />
+            <PayBillCashbackUpsell
+              cashbackEur={cashbackEur}
+              cashbackPercent={d2}
+            />
           : null}
           <footer
             data-snackbar-anchor=""

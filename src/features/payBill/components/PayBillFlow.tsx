@@ -160,6 +160,7 @@ export function PayBillFlow({
           tip={tip}
           paymentCode={paymentCode}
           offer={entry.offer}
+          cashbackEarnedEur={discountAmount}
           onDismiss={exitAfterPayment}
           onDone={completeAfterConfirmation}
         />

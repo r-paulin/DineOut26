@@ -12,6 +12,7 @@ export interface PaymentConfirmationSummarySheetProps {
   tip: number | null
   paidAmount: number
   showCashback?: boolean
+  cashbackEur?: number
   onDone: () => void
 }
 
@@ -22,6 +23,7 @@ export function PaymentConfirmationSummarySheet({
   tip,
   paidAmount,
   showCashback = false,
+  cashbackEur = 0,
   onDone,
 }: PaymentConfirmationSummarySheetProps) {
   return (
@@ -94,9 +96,9 @@ export function PaymentConfirmationSummarySheet({
         />
       </div>
 
-      {showCashback ?
+      {showCashback && cashbackEur > 0 ?
         <div className="mt-3 shrink-0">
-          <PaymentConfirmationCashbackBanner />
+          <PaymentConfirmationCashbackBanner cashbackEur={cashbackEur} />
         </div>
       : null}
 
