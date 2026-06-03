@@ -19,6 +19,7 @@ import { getRestaurantLogoCandidates } from "@/features/restaurant/data/restaura
 import { getMergedRestaurantCatalogEntry } from "@/features/restaurants/restaurantCatalogRuntime"
 import { RESTAURANTS_BY_SLUG } from "@/features/restaurants/restaurants.catalog"
 import { RESTAURANT_WEEKLY_OPEN_HOURS } from "@/features/restaurant/data/restaurantFixedOpenHours"
+import { RESTAURANT_MENU_GALLERY_IMAGES } from "@/features/restaurant/constants/restaurantMenuImages"
 import type { RestaurantAboutRestaurant } from "@/features/restaurant/components/RestaurantAbout/restaurantAbout.types"
 import type {
   RestaurantDetailModel,
@@ -78,13 +79,6 @@ function reviewCountFromSuffix(suffix: string): number {
   const m = suffix.match(/(\d+)/)
   return m ? parseInt(m[1], 10) : 0
 }
-
-/** Figma RESTAURANT / Menu — static demo pages for every venue. */
-const MENU_GALLERY_IMAGES: readonly string[] = [
-  "/images/restaurant-menu-1.png",
-  "/images/restaurant-menu-2.png",
-  "/images/restaurant-menu-3.png",
-]
 
 function buildRatingSheet(row: SearchResultRigaRow): RestaurantRatingSheetModel {
   const base = Number.parseFloat(row.rating) || 4.5
@@ -218,7 +212,7 @@ function buildRestaurantAbout(
   slug: RestaurantSlug,
   ctx: {
     isOpenNow: boolean
-    openingHours: string
+    hoursRowSubtitle: string
     address: string
     phone: string
     whatWeServe: string[]
@@ -234,6 +228,7 @@ function buildRestaurantAbout(
     row.primaryImage,
   ]
   const website = getMergedRestaurantCatalogEntry(slug)!.website
+  const socialHandle = slug.replace(/-/g, "")
 
   return {
     name: row.name,
@@ -242,7 +237,7 @@ function buildRestaurantAbout(
     priceRange: row.displayPrice.replace(/–/g, "-"),
     images,
     isOpenNow: ctx.isOpenNow,
-    openingHours: ctx.openingHours,
+    hoursRowSubtitle: ctx.hoursRowSubtitle,
     menuUrl: website,
     address: ctx.address,
     phone: ctx.phone,
@@ -251,7 +246,7 @@ function buildRestaurantAbout(
       slug === "three-chefs" ?
         ABOUT_DESCRIPTION_THREE_CHEFS
       : `${row.name} is a well-regarded Riga venue known for its welcoming atmosphere and consistently well-executed plates. Guests return for attentive service and a menu that celebrates local and seasonal ingredients.`,
-    serviceTypes: ["Dine-in", "Pickup", "Robot delivery", "DineOut"],
+    serviceTypes: ["Delivery", "Pickup", "Robot delivery", "Scheduled pickup", "DineOut"],
     whatWeServe: ctx.whatWeServe,
     amenities: ctx.amenities,
     otherDetails: [
@@ -262,6 +257,10 @@ function buildRestaurantAbout(
       { label: "Alcohol service license", value: "LV-AKT-2023-88" },
       { label: "Fire safety certificate", value: "Valid until 2027" },
     ],
+    reserveUrl: website,
+    instagramUrl: `https://instagram.com/${socialHandle}`,
+    tiktokUrl: `https://tiktok.com/@${socialHandle}`,
+    facebookUrl: `https://facebook.com/${socialHandle}`,
   }
 }
 
@@ -369,12 +368,12 @@ export function getRestaurantDetailDemo(slug: string): RestaurantDetailModel {
     openHoursSheetHeading: hoursUi.openHoursSheetHeading,
     openHoursSheetSubtitle: hoursUi.openHoursSheetSubtitle,
     menuRowValue: "Restaurant menu",
-    menuGalleryImages: [...MENU_GALLERY_IMAGES],
+    menuGalleryImages: [...RESTAURANT_MENU_GALLERY_IMAGES],
     address: demoAddress,
     phone: catalog.phone,
     about: buildRestaurantAbout(row, key, {
       isOpenNow: hoursUi.isOpenNow,
-      openingHours: hoursUi.summaryRangeToday,
+      hoursRowSubtitle: hoursUi.venueHoursRowSubtitle,
       address: demoAddress,
       phone: catalog.phone,
       whatWeServe: [...catalog.whatWeServe],

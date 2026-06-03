@@ -53,7 +53,6 @@ export function RestaurantAbout({
 
   const ratingLabel = restaurant.rating.toFixed(1)
   const reviewsParen = `(${restaurant.reviewCount.toLocaleString()} reviews)`
-  const menuRowValue = restaurant.menuRowValue ?? "Restaurant menu"
 
   const ratingBadge = onOpenReviews ? (
     <button
@@ -121,7 +120,7 @@ export function RestaurantAbout({
         </div>
       </div>
 
-      <div className="min-w-0 px-6 pb-3">
+      <div className="pb-3">
         <RestaurantGallery
           images={restaurant.images}
           onSelectIndex={openGalleryAt}
@@ -134,15 +133,18 @@ export function RestaurantAbout({
       <div className="pt-2">
         <VenueInfoRows
           isOpenNow={restaurant.isOpenNow}
-          openingHours={restaurant.openingHours}
+          hoursRowSubtitle={restaurant.hoursRowSubtitle}
           menuUrl={restaurant.menuUrl}
-          menuRowValue={menuRowValue}
           address={restaurant.address}
           phone={restaurant.phone}
           website={restaurant.website}
           openExternalUrl={openExternalUrl}
           onOpenHours={onOpenHours}
           onOpenMenuGallery={onOpenMenuGallery}
+          reserveUrl={restaurant.reserveUrl}
+          instagramUrl={restaurant.instagramUrl}
+          tiktokUrl={restaurant.tiktokUrl}
+          facebookUrl={restaurant.facebookUrl}
         />
       </div>
 

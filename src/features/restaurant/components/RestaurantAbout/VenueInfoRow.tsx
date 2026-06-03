@@ -1,19 +1,30 @@
+import Calendar from "@bolteu/kalep-react-icons/dist/Calendar"
 import Call from "@bolteu/kalep-react-icons/dist/Call"
 import Globe from "@bolteu/kalep-react-icons/dist/Globe"
+import LogoFacebook from "@bolteu/kalep-react-icons/dist/LogoFacebook"
+import LogoInstagram from "@bolteu/kalep-react-icons/dist/LogoInstagram"
+import LogoTiktok from "@bolteu/kalep-react-icons/dist/LogoTiktok"
 import Pin from "@bolteu/kalep-react-icons/dist/Pin"
 import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
+import type { ReactNode } from "react"
 import { ListItem } from "@/shared/components/ListItem"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { toTelHref } from "@/shared/utils/telHref"
 
 const ROW_ICON_CLASS = "size-6 shrink-0"
 
+/** Figma `16643:33363` — About venue list copy. */
+const ABOUT_MENU_ROW_VALUE = "Menu" as const
+const ABOUT_MENU_ROW_LABEL = "Browse dishes and prices" as const
+const ABOUT_PHONE_ROW_LABEL = "Phone number" as const
+const ABOUT_WEBSITE_ROW_LABEL = "Website" as const
+
 export interface VenueInfoRowsProps {
   isOpenNow: boolean
-  openingHours: string
+  /** Hours row subtitle, e.g. `Closes 23:00`. */
+  hoursRowSubtitle: string
   menuUrl: string
-  menuRowValue: string
   address: string
   phone: string
   website: string
@@ -22,16 +33,20 @@ export interface VenueInfoRowsProps {
   onOpenHours?: () => void
   /** When set, menu row opens the in-app menu gallery instead of `menuUrl`. */
   onOpenMenuGallery?: () => void
+  reserveUrl?: string
+  instagramUrl?: string
+  tiktokUrl?: string
+  facebookUrl?: string
 }
 
-function websiteHostname(website: string): string {
+function websiteDisplayLabel(website: string): string {
   try {
     const u = new URL(
       website.startsWith("http") ? website : `https://${website}`,
     )
-    return u.hostname.replace(/^www\./, "")
+    return u.hostname
   } catch {
-    return website
+    return website.replace(/^https?:\/\//, "")
   }
 }
 
@@ -39,21 +54,72 @@ function websiteHref(website: string): string {
   return website.startsWith("http") ? website : `https://${website}`
 }
 
+function VenueLinkRow({
+  icon,
+  label,
+  href,
+  onPress,
+  openExternalUrl,
+}: {
+  icon: ReactNode
+  label: string
+  href?: string
+  onPress?: () => void
+  openExternalUrl: (url: string) => void
+}) {
+  return (
+    <li className="m-0 p-0">
+      {href ?
+        <ListItem
+          icon={icon}
+          iconTone="primary"
+          lineOrder="valueFirst"
+          value={label}
+          label=""
+          href={href}
+          horizontalPadding="none"
+          showSeparator={false}
+          onAnchorClick={(e) => {
+            e.preventDefault()
+            openExternalUrl(href)
+          }}
+          aria-label={label}
+        />
+      : <ListItem
+          icon={icon}
+          iconTone="primary"
+          lineOrder="valueFirst"
+          value={label}
+          label=""
+          interactive={Boolean(onPress)}
+          onPress={onPress}
+          horizontalPadding="none"
+          showSeparator={false}
+          aria-label={label}
+        />
+      }
+    </li>
+  )
+}
+
 /**
- * Venue info list: hours (opens hours sheet when `onOpenHours` is set), menu (in-app
- * gallery when `onOpenMenuGallery` is set, else external `menuUrl`), address, phone, website.
+ * About venue info list (Figma `16643:33363`): hours, menu, address, phone, website,
+ * then optional reserve / social rows.
  */
 export function VenueInfoRows({
   isOpenNow,
-  openingHours,
+  hoursRowSubtitle,
   menuUrl,
-  menuRowValue,
   address,
   phone,
   website,
   openExternalUrl,
   onOpenHours,
   onOpenMenuGallery,
+  reserveUrl,
+  instagramUrl,
+  tiktokUrl,
+  facebookUrl,
 }: VenueInfoRowsProps) {
   const telHref = toTelHref(phone)
   const mapsUrl = googleMapsSearchUrl(address)
@@ -61,14 +127,14 @@ export function VenueInfoRows({
   const hoursStatusLabel = isOpenNow ? "Open now" : "Closed"
 
   return (
-    <ul className="m-0 flex list-none flex-col px-6 p-0 [&>li:not(:last-child)]:border-b [&>li:not(:last-child)]:border-solid [&>li:not(:last-child)]:border-separator">
+    <ul className="m-0 flex list-none flex-col px-6 p-0 pb-6 [&>li:not(:last-child)]:border-b [&>li:not(:last-child)]:border-solid [&>li:not(:last-child)]:border-separator">
       <li className="m-0 p-0">
         <ListItem
           icon={<Time size="lg" className={ROW_ICON_CLASS} aria-hidden />}
           iconTone="primary"
           lineOrder="valueFirst"
           value={hoursStatusLabel}
-          label={openingHours}
+          label={hoursRowSubtitle}
           showChevron
           interactive={Boolean(onOpenHours)}
           onPress={onOpenHours}
@@ -76,33 +142,32 @@ export function VenueInfoRows({
           showSeparator={false}
           aria-label={
             onOpenHours
-              ? `Opening hours, ${hoursStatusLabel}, ${openingHours}`
+              ? `Opening hours, ${hoursStatusLabel}, ${hoursRowSubtitle}`
               : undefined
           }
           labelColor={isOpenNow ? "secondary" : "tertiary"}
         />
       </li>
       <li className="m-0 p-0">
-        {onOpenMenuGallery ? (
+        {onOpenMenuGallery ?
           <ListItem
             icon={<Receipt size="lg" className={ROW_ICON_CLASS} aria-hidden />}
             iconTone="primary"
             lineOrder="valueFirst"
-            label="Check the menu and pricing"
-            value={menuRowValue}
+            label={ABOUT_MENU_ROW_LABEL}
+            value={ABOUT_MENU_ROW_VALUE}
             interactive
             onPress={onOpenMenuGallery}
             horizontalPadding="none"
             showSeparator={false}
-            aria-label={`Restaurant menu, ${menuRowValue}`}
+            aria-label={`${ABOUT_MENU_ROW_VALUE}, ${ABOUT_MENU_ROW_LABEL}`}
           />
-        ) : (
-          <ListItem
+        : <ListItem
             icon={<Receipt size="lg" className={ROW_ICON_CLASS} aria-hidden />}
             iconTone="primary"
             lineOrder="valueFirst"
-            label="Check the menu and pricing"
-            value={menuRowValue}
+            label={ABOUT_MENU_ROW_LABEL}
+            value={ABOUT_MENU_ROW_VALUE}
             href={menuUrl}
             horizontalPadding="none"
             showSeparator={false}
@@ -110,9 +175,9 @@ export function VenueInfoRows({
               e.preventDefault()
               openExternalUrl(menuUrl)
             }}
-            aria-label={`Restaurant menu, ${menuRowValue}`}
+            aria-label={`${ABOUT_MENU_ROW_VALUE}, ${ABOUT_MENU_ROW_LABEL}`}
           />
-        )}
+        }
       </li>
       <li className="m-0 p-0">
         <ListItem
@@ -132,38 +197,37 @@ export function VenueInfoRows({
         />
       </li>
       <li className="m-0 p-0">
-        {telHref ? (
+        {telHref ?
           <ListItem
             icon={<Call size="lg" className={ROW_ICON_CLASS} aria-hidden />}
             iconTone="primary"
             lineOrder="valueFirst"
-            label="Phone"
+            label={ABOUT_PHONE_ROW_LABEL}
             value={phone}
             href={telHref}
             horizontalPadding="none"
             showSeparator={false}
             aria-label={`Call ${phone}`}
           />
-        ) : (
-          <ListItem
+        : <ListItem
             icon={<Call size="lg" className={ROW_ICON_CLASS} aria-hidden />}
             iconTone="primary"
             lineOrder="valueFirst"
-            label="Phone"
+            label={ABOUT_PHONE_ROW_LABEL}
             value={phone}
             interactive={false}
             horizontalPadding="none"
             showSeparator={false}
           />
-        )}
+        }
       </li>
       <li className="m-0 p-0">
         <ListItem
           icon={<Globe size="lg" className={ROW_ICON_CLASS} aria-hidden />}
           iconTone="primary"
           lineOrder="valueFirst"
-          label="Website"
-          value={websiteHostname(website)}
+          label={ABOUT_WEBSITE_ROW_LABEL}
+          value={websiteDisplayLabel(website)}
           href={siteHref}
           horizontalPadding="none"
           showSeparator={false}
@@ -171,9 +235,41 @@ export function VenueInfoRows({
             e.preventDefault()
             openExternalUrl(siteHref)
           }}
-          aria-label={`Open website ${websiteHostname(website)}`}
+          aria-label={`Open website ${websiteDisplayLabel(website)}`}
         />
       </li>
+      {reserveUrl ?
+        <VenueLinkRow
+          icon={<Calendar size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+          label="Reserve"
+          href={reserveUrl}
+          openExternalUrl={openExternalUrl}
+        />
+      : null}
+      {instagramUrl ?
+        <VenueLinkRow
+          icon={<LogoInstagram size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+          label="Instagram"
+          href={instagramUrl}
+          openExternalUrl={openExternalUrl}
+        />
+      : null}
+      {tiktokUrl ?
+        <VenueLinkRow
+          icon={<LogoTiktok size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+          label="TikTok"
+          href={tiktokUrl}
+          openExternalUrl={openExternalUrl}
+        />
+      : null}
+      {facebookUrl ?
+        <VenueLinkRow
+          icon={<LogoFacebook size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+          label="Facebook"
+          href={facebookUrl}
+          openExternalUrl={openExternalUrl}
+        />
+      : null}
     </ul>
   )
 }

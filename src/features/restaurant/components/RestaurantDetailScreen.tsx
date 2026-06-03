@@ -29,6 +29,7 @@ import { RestaurantDetailQuickActions } from "./RestaurantDetailQuickActions"
 import { RestaurantDetailSectionDivider } from "./RestaurantDetailSectionDivider"
 import { RestaurantDetailStatsBar } from "./RestaurantDetailStatsBar"
 import { RestaurantAbout } from "./RestaurantAbout"
+import { RestaurantDetailMenuSection } from "./RestaurantDetailMenuSection"
 import { RestaurantDetailVenueSection } from "./RestaurantDetailVenueSection"
 import { RestaurantMenuGalleryModal } from "./RestaurantMenuGalleryModal"
 import { RestaurantOpenHoursSheet } from "./RestaurantOpenHoursSheet"
@@ -95,6 +96,7 @@ export function RestaurantDetailScreen({
   onReportProblem,
 }: RestaurantDetailScreenProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const menuSectionRef = useRef<HTMLElement>(null)
   const aboutScrollRef = useRef<HTMLDivElement>(null)
   /** In-panel About stack (covers main scroll only). */
   const stackAreaRef = useRef<HTMLDivElement>(null)
@@ -116,6 +118,7 @@ export function RestaurantDetailScreen({
   const [ratingSheetOpen, setRatingSheetOpen] = useState(false)
   const [openHoursSheetOpen, setOpenHoursSheetOpen] = useState(false)
   const [menuGalleryOpen, setMenuGalleryOpen] = useState(false)
+  const [menuGalleryInitialIndex, setMenuGalleryInitialIndex] = useState(0)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [reportProblemOpen, setReportProblemOpen] = useState(false)
   const { titleOpacity, onScroll } = useRestaurantDetailHeaderTitle()
@@ -208,11 +211,20 @@ export function RestaurantDetailScreen({
     setMenuGalleryOpen(true)
   }, [onOpenPriceInfo])
 
-  const handleOpenMenuGallery = useCallback(() => {
+  const scrollToMenuSection = useCallback(() => {
     if (onOpenMenu === null) return
     onOpenMenu?.()
-    setMenuGalleryOpen(true)
+    menuSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }, [onOpenMenu])
+
+  const openMenuGalleryAt = useCallback((index = 0) => {
+    setMenuGalleryInitialIndex(index)
+    setMenuGalleryOpen(true)
+  }, [])
+
+  const handleOpenMenuGallery = useCallback(() => {
+    openMenuGalleryAt(0)
+  }, [openMenuGalleryAt])
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current
@@ -365,7 +377,7 @@ export function RestaurantDetailScreen({
               />
               <RestaurantDetailQuickActions
                 onOpenMenu={
-                  onOpenMenu === null ? undefined : handleOpenMenuGallery
+                  onOpenMenu === null ? undefined : scrollToMenuSection
                 }
                 onOpenDirections={
                   onOpenMaps ?
@@ -402,6 +414,12 @@ export function RestaurantDetailScreen({
               />
             </div>
             <RestaurantDetailSectionDivider />
+            <RestaurantDetailMenuSection
+              ref={menuSectionRef}
+              imageUrls={model.menuGalleryImages}
+              onOpenGallery={openMenuGalleryAt}
+            />
+            <RestaurantDetailSectionDivider />
             <RestaurantDetailVenueSection
               name={model.name}
               cuisineTags={model.cuisineTags}
@@ -411,10 +429,9 @@ export function RestaurantDetailScreen({
               address={model.address}
               phone={model.phone}
               onOpenHours={handleOpenHours}
-              onOpenMenu={handleOpenMenuGallery}
               onOpenMaps={onOpenMaps}
               onCall={onCall}
-              onMoreAboutVenue={openAbout}
+              onOpenAbout={openAbout}
               onOpenReportProblem={() => {
                 setReportProblemOpen(true)
               }}
@@ -505,14 +522,14 @@ export function RestaurantDetailScreen({
         isOpen={openHoursSheetOpen}
         onOpenChange={setOpenHoursSheetOpen}
         container={portalRoot}
-        heading={model.openHoursSheetHeading}
-        subtitle={model.openHoursSheetSubtitle}
         weeklyRows={model.weeklyOpenHours}
       />
       <RestaurantMenuGalleryModal
         isOpen={menuGalleryOpen}
         onOpenChange={setMenuGalleryOpen}
         imageUrls={model.menuGalleryImages}
+        initialSlideIndex={menuGalleryInitialIndex}
+        layout="vertical"
         container={portalRoot}
       />
       <RestaurantReportProblemSheet

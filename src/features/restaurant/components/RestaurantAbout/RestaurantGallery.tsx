@@ -4,11 +4,15 @@ const R12 = "rounded-[12px]"
 const IMAGE_GRAD =
   "linear-gradient(180deg, rgba(0,0,0,0) 53.5%, rgba(0,0,0,0.5) 100%)"
 const GALLERY_H = 271
-const W_HERO = 271
-const W_COL = 158
+/** Figma About / Venue side column width. */
+const SIDE_COL_W = 130
 
+/** Same bleed pattern as {@link OfferCardListGallery}: no `w-full` so `-mx-6` widens the row. */
 const SCROLL_ROW =
-  "flex min-w-0 w-full flex-row gap-3 overflow-x-auto overflow-y-hidden [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden touch-pan-x [overscroll-behavior-x:contain]"
+  "flex flex-row gap-3 overflow-x-auto overflow-y-hidden pb-0 -mx-6 [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden touch-pan-x [overscroll-behavior-x:contain]"
+
+/** Scrolls away on swipe so the mosaic can go edge-to-edge after the first snap. */
+const LEADING_INSET = "1.5rem"
 
 export interface RestaurantGalleryProps {
   images: readonly string[]
@@ -40,7 +44,7 @@ function StackImage({
 }
 
 /**
- * Horizontal snap mosaic: hero + stack (first screen), tail column (peek).
+ * Horizontal snap mosaic: full-width hero + stack (first screen), tail column (peek).
  * Expects at least four image URLs (indices 0–3 shown; “More…” opens full gallery).
  */
 export function RestaurantGallery({
@@ -69,11 +73,19 @@ export function RestaurantGallery({
 
   return (
     <div className={SCROLL_ROW} style={{ height: `${GALLERY_H}px` }}>
-      <div className="flex shrink-0 snap-start gap-3">
+      <div className="w-6 shrink-0 snap-none" aria-hidden />
+      <div
+        className="flex shrink-0 snap-start snap-always gap-3"
+        style={{
+          height: GALLERY_H,
+          width: `calc(100% - ${LEADING_INSET})`,
+          minWidth: `calc(100% - ${LEADING_INSET})`,
+        }}
+      >
         <button
           type="button"
-          className={`relative shrink-0 overflow-hidden ${R12} cursor-pointer border-none bg-neutral-secondary p-0`}
-          style={{ width: W_HERO, height: GALLERY_H }}
+          className={`relative min-h-0 min-w-0 flex-1 overflow-hidden ${R12} cursor-pointer border-none bg-neutral-secondary p-0`}
+          style={{ height: GALLERY_H }}
           onClick={() => {
             onSelectIndex(0)
           }}
@@ -92,7 +104,7 @@ export function RestaurantGallery({
 
         <div
           className="flex shrink-0 flex-col gap-3"
-          style={{ width: W_COL, height: GALLERY_H }}
+          style={{ width: SIDE_COL_W, height: GALLERY_H }}
         >
           <StackImage src={b} onPress={() => onSelectIndex(1)} />
           <StackImage src={c} onPress={() => onSelectIndex(2)} />
@@ -100,8 +112,8 @@ export function RestaurantGallery({
       </div>
 
       <div
-        className="flex shrink-0 snap-start flex-col gap-3"
-        style={{ width: W_COL, height: GALLERY_H }}
+        className="flex shrink-0 snap-start snap-always flex-col gap-3"
+        style={{ width: SIDE_COL_W, height: GALLERY_H }}
       >
         <StackImage src={d} onPress={() => onSelectIndex(3)} />
         <button

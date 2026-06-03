@@ -1,8 +1,9 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import Call from "@bolteu/kalep-react-icons/dist/Call"
+import Food from "@bolteu/kalep-react-icons/dist/Food"
 import Pin from "@bolteu/kalep-react-icons/dist/Pin"
-import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
+import { RESTAURANT_DETAIL_SECTION_TITLE_CLASS } from "@/features/restaurant/components/restaurantDetailSectionTitle"
 import type { RestaurantDetailModel } from "@/features/restaurant/restaurantDetail.types"
 import { ListItem } from "@/shared/components/ListItem"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
@@ -20,10 +21,10 @@ export interface RestaurantDetailVenueSectionProps
     | "isOpen"
   > {
   onOpenHours?: () => void
-  onOpenMenu?: () => void
   onOpenMaps?: () => void
   onCall?: () => void
-  onMoreAboutVenue?: () => void
+  /** Figma `16762:69736` — opens in-stack About page. */
+  onOpenAbout?: () => void
   onOpenReportProblem?: () => void
 }
 
@@ -32,9 +33,9 @@ const ROW_ICON_CLASS = "size-6 shrink-0"
 const VENUE_HEADING_CLASS =
   "m-0 p-0 text-primary text-xl font-semibold leading-[1.5625rem] tracking-[-0.02125rem] [font-variation-settings:'wght'_var(--font-weight-semibold)]"
 
-/** Figma `16123:18077` — section title. */
-const VENUE_SECTION_TITLE_CLASS =
-  "m-0 p-0 text-primary text-[1.75rem] font-semibold leading-[2.25rem] tracking-[-0.616px] [font-feature-settings:'cv03'_on,'cv04'_on] [font-variation-settings:'wght'_var(--font-weight-semibold)]"
+/** Figma `16762:69736` — venue About list row. */
+const VENUE_ABOUT_ROW_VALUE = "About venue" as const
+const VENUE_ABOUT_ROW_LABEL = "Social media, amenities and more" as const
 
 export function RestaurantDetailVenueSection({
   name,
@@ -45,10 +46,9 @@ export function RestaurantDetailVenueSection({
   address,
   phone,
   onOpenHours,
-  onOpenMenu,
   onOpenMaps,
   onCall,
-  onMoreAboutVenue,
+  onOpenAbout,
   onOpenReportProblem,
 }: RestaurantDetailVenueSectionProps) {
   const telHref = toTelHref(phone)
@@ -62,7 +62,7 @@ export function RestaurantDetailVenueSection({
     >
       <div className="relative z-[1] -mt-px w-full min-w-0 overflow-hidden rounded-t-lg bg-layer-floor-1">
         <header className="px-6 pt-6">
-          <h2 className={VENUE_SECTION_TITLE_CLASS} id="restaurant-detail-venue-heading">
+          <h2 className={RESTAURANT_DETAIL_SECTION_TITLE_CLASS} id="restaurant-detail-venue-heading">
             Venue
           </h2>
         </header>
@@ -123,22 +123,6 @@ export function RestaurantDetailVenueSection({
         </li>
         <li className="m-0 p-0">
           <ListItem
-            icon={
-              <Receipt size="lg" className={ROW_ICON_CLASS} aria-hidden />
-            }
-            iconTone="primary"
-            lineOrder="valueFirst"
-            label="Browse dishes and prices"
-            value="Menu"
-            interactive={Boolean(onOpenMenu)}
-            onPress={onOpenMenu}
-            aria-label="Menu, Browse dishes and prices"
-            horizontalPadding="none"
-            showSeparator={false}
-          />
-        </li>
-        <li className="m-0 p-0">
-          <ListItem
             icon={<Pin size="lg" className={ROW_ICON_CLASS} aria-hidden />}
             iconTone="primary"
             lineOrder="valueFirst"
@@ -180,31 +164,32 @@ export function RestaurantDetailVenueSection({
             />
           )}
         </li>
+        <li className="m-0 p-0">
+          <ListItem
+            icon={<Food size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+            iconTone="primary"
+            lineOrder="valueFirst"
+            value={VENUE_ABOUT_ROW_VALUE}
+            label={VENUE_ABOUT_ROW_LABEL}
+            interactive={Boolean(onOpenAbout)}
+            onPress={onOpenAbout}
+            aria-label={`${VENUE_ABOUT_ROW_VALUE}, ${VENUE_ABOUT_ROW_LABEL}`}
+            horizontalPadding="none"
+            showSeparator={false}
+          />
+        </li>
       </ul>
-      {onMoreAboutVenue || onOpenReportProblem ?
+      {onOpenReportProblem ?
         <div className="flex flex-col gap-3 px-6 py-6">
-          {onMoreAboutVenue ?
-            <Button
-              type="button"
-              variant="secondary"
-              size="lg"
-              fullWidth
-              onClick={onMoreAboutVenue}
-            >
-              More about venue
-            </Button>
-          : null}
-          {onOpenReportProblem ?
-            <Button
-              type="button"
-              variant="secondary"
-              size="lg"
-              fullWidth
-              onClick={onOpenReportProblem}
-            >
-              Report a problem
-            </Button>
-          : null}
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            onClick={onOpenReportProblem}
+          >
+            Report a problem
+          </Button>
         </div>
       : null}
     </section>

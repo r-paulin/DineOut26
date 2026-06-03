@@ -6,10 +6,9 @@ export interface RestaurantAboutRestaurant {
   /** At least four image URLs for the mosaic + gallery modal. */
   images: string[]
   isOpenNow: boolean
-  openingHours: string
+  /** Hours row subtitle (Figma), e.g. `Closes 23:00`. */
+  hoursRowSubtitle: string
   menuUrl: string
-  /** Second line on the menu row; defaults to “Restaurant menu” in the screen. */
-  menuRowValue?: string
   address: string
   phone: string
   website: string
@@ -18,6 +17,10 @@ export interface RestaurantAboutRestaurant {
   whatWeServe: string[]
   amenities: string[]
   otherDetails: { label: string; value: string }[]
+  reserveUrl?: string
+  instagramUrl?: string
+  tiktokUrl?: string
+  facebookUrl?: string
 }
 
 export interface RestaurantAboutProps {

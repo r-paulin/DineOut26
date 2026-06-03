@@ -16,7 +16,6 @@ import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 export interface RestaurantMenuGalleryModalProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  /** Horizontal gallery (large menu photography). */
   imageUrls: readonly string[]
   /** Accessible name for the dialog. */
   ariaLabel?: string
@@ -25,7 +24,12 @@ export interface RestaurantMenuGalleryModalProps {
   initialSlideIndex?: number
   /** Venue photos use cover; menu pages use contain. */
   imageObjectFit?: "contain" | "cover"
+  /** Figma `16643:34904` vertical menu stack vs horizontal venue photos. */
+  layout?: "horizontal" | "vertical"
 }
+
+const VERTICAL_CLOSE_BTN =
+  "inline-flex size-6 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-primary-inverted outline-none ring-inset ring-action-primary focus-visible:ring-2"
 
 function MenuZoomableSlide({
   src,
@@ -66,9 +70,9 @@ function MenuZoomableSlide({
 }
 
 /**
- * Fullscreen menu photo viewer (portaled): Kalep **static** dark surface
- * (`bg-static-key-dark`), horizontal paging, pinch / ctrl-wheel zoom.
- * **GSAP** enter/exit (fade + light scale) for a native-style modal feel.
+ * Fullscreen photo viewer (portaled): Kalep **static** dark surface.
+ * **horizontal** — venue photos with paging, counter, pinch zoom.
+ * **vertical** — menu pages (Figma RESTAURANT / Menu), close-only nav.
  */
 export function RestaurantMenuGalleryModal({
   isOpen,
@@ -78,6 +82,7 @@ export function RestaurantMenuGalleryModal({
   container,
   initialSlideIndex = 0,
   imageObjectFit = "contain",
+  layout = "horizontal",
 }: RestaurantMenuGalleryModalProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<Array<HTMLDivElement | null>>([])
@@ -85,6 +90,7 @@ export function RestaurantMenuGalleryModal({
   const tlRef = useRef<gsap.core.Timeline | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [mounted, setMounted] = useState(false)
+  const isVertical = layout === "vertical"
   const host = container ?? (typeof document !== "undefined" ? document.body : null)
 
   const close = useCallback(() => {
@@ -108,7 +114,13 @@ export function RestaurantMenuGalleryModal({
       const node = slideRefs.current[idx]
       if (!root) return
       if (node) {
-        root.scrollLeft = node.offsetLeft
+        if (isVertical) {
+          root.scrollTop = node.offsetTop
+        } else {
+          root.scrollLeft = node.offsetLeft
+        }
+      } else if (isVertical) {
+        root.scrollTop = 0
       } else {
         root.scrollLeft = 0
       }
@@ -117,7 +129,7 @@ export function RestaurantMenuGalleryModal({
     apply()
     const id = window.requestAnimationFrame(apply)
     return () => window.cancelAnimationFrame(id)
-  }, [isOpen, imageUrls, initialSlideIndex])
+  }, [isOpen, imageUrls, initialSlideIndex, isVertical])
 
   useEffect(() => {
     if (!visible) return
@@ -142,7 +154,7 @@ export function RestaurantMenuGalleryModal({
   }, [])
 
   useLayoutEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || isVertical) return
     const root = scrollRef.current
     const urls = imageUrls
     if (!root || urls.length === 0) return
@@ -165,7 +177,7 @@ export function RestaurantMenuGalleryModal({
 
     nodes.forEach((n) => io.observe(n))
     return () => io.disconnect()
-  }, [isOpen, imageUrls])
+  }, [isOpen, imageUrls, isVertical])
 
   useLayoutEffect(() => {
     tlRef.current?.kill()
@@ -239,6 +251,65 @@ export function RestaurantMenuGalleryModal({
 
   const count = imageUrls.length
   const counter = `${activeIndex + 1} of ${count}`
+
+  if (isVertical) {
+    return createPortal(
+      <div
+        ref={rootRef}
+        className="pointer-events-auto fixed inset-0 mx-auto flex min-h-0 w-full max-w-[var(--shell-width)] flex-col bg-static-key-dark"
+        style={{ zIndex: Z_RESTAURANT_SHEET_CONTENT }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel}
+      >
+        <p className="sr-only">
+          Scroll vertically to browse menu pages. Press Escape to close.
+        </p>
+
+        <div className="flex w-full shrink-0 flex-col gap-[15px] pt-[max(1.5rem,var(--safe-area-top))]">
+          <div className="flex w-full items-center gap-4 px-6">
+            <button
+              type="button"
+              className={VERTICAL_CLOSE_BTN}
+              aria-label="Close menu"
+              onClick={close}
+            >
+              <Cross size="md" aria-hidden />
+            </button>
+          </div>
+          <div
+            className="h-px w-full shrink-0 bg-[var(--color-border-separator)]"
+            aria-hidden
+          />
+        </div>
+
+        <div
+          ref={scrollRef}
+          className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-3 pb-[max(1.5rem,var(--safe-area-bottom))] pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {imageUrls.map((src, i) => (
+            <div
+              key={`${src}-${i}`}
+              ref={(el) => {
+                setSlideRef(i, el)
+              }}
+              data-slide-index={i}
+              className="relative w-full shrink-0 aspect-[553/737]"
+            >
+              <img
+                src={src}
+                alt={`${ariaLabel} page ${i + 1} of ${count}`}
+                decoding="async"
+                draggable={false}
+                className="pointer-events-none absolute inset-0 size-full object-cover select-none"
+              />
+            </div>
+          ))}
+        </div>
+      </div>,
+      host,
+    )
+  }
 
   return createPortal(
     <div
