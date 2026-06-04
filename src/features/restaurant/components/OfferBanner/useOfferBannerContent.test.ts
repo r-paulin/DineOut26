@@ -23,7 +23,7 @@ const baseOffer: RestaurantOfferCardModel = {
   expiresAt: Number.MAX_SAFE_INTEGER,
   tags: ["enabled"],
   discountPercent: 30,
-  title: "Claim 30% discount on food",
+  title: "Claim 30% discount on menu",
   date: "Today",
   timeWindow: "Arrive between 10:00 - 17:00",
   restaurantImage: "/x.jpg",
@@ -50,11 +50,11 @@ const claim: ClaimedOffer = {
 
 describe("formatOfferBannerTitle", () => {
   it("formats discount headline", () => {
-    expect(formatOfferBannerTitle(20)).toBe("20% discount on food")
+    expect(formatOfferBannerTitle(20)).toBe("20% discount on menu")
   })
 
   it("uses food copy for 10% all-day", () => {
-    expect(formatOfferBannerTitle(10, true)).toBe("10% discount on food")
+    expect(formatOfferBannerTitle(10, true)).toBe("10% discount on menu")
   })
 })
 
@@ -112,7 +112,7 @@ describe("buildOfferBannerContent", () => {
       windowPhase: "active",
       hasOtherClaimAtVenue: false,
     })
-    expect(c.headline).toBe("30% discount on food")
+    expect(c.headline).toBe("30% discount on menu")
     expect(c.dataLines).toHaveLength(1)
     expect(c.dataLines[0]?.text).toContain("Today")
     expect(c.action).toEqual({
@@ -284,7 +284,7 @@ describe("buildPaidOfferBannerContent", () => {
 
   it("DineOut paid: discount title, paid line, cashback action", () => {
     const c = buildPaidOfferBannerContent({ paid: dineoutPaid, offer: baseOffer })
-    expect(c.headline).toBe("30% discount on food")
+    expect(c.headline).toBe("30% discount on menu")
     expect(c.dataLines[0]?.text).toBe("Paid: 48,00 €")
     expect(c.action).toEqual({
       kind: "cashback-earned",
@@ -297,7 +297,7 @@ describe("buildPaidOfferBannerContent", () => {
 
   it("card/cash paid: subtitle and upsell sticker", () => {
     const c = buildPaidOfferBannerContent({ paid: cashPaid, offer: baseOffer })
-    expect(c.headline).toBe("30% discount on food")
+    expect(c.headline).toBe("30% discount on menu")
     expect(c.dataLines[0]?.text).toBe(OFFER_BANNER_PAID_CASH_SUBTITLE)
     expect(c.action).toBeNull()
     expect(c.sticker).toEqual({

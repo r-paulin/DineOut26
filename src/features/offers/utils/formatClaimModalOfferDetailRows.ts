@@ -1,3 +1,4 @@
+import { OFFER_APPLICABLE_TOTAL_BILL } from "@/features/offers/constants/offerApplicabilityCopy"
 import type { ClaimOfferModalOffer } from "@/features/offers/offers.types"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import { formatOfferDetailAvailability } from "@/features/offers/utils/formatOfferDetailRows"
@@ -20,6 +21,6 @@ export function formatClaimModalOfferDetailRows(
       label: "Available",
       value: formatOfferDetailAvailability(offer.date, offer.timeWindow),
     },
-    { label: "Applicable", value: "Food only" },
+    { label: "Applicable", value: OFFER_APPLICABLE_TOTAL_BILL },
   ]
 }

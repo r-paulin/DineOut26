@@ -4,6 +4,10 @@ import CheckFlower from "@bolteu/kalep-react-icons/dist/CheckFlower"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import { useEffect, useId, type ReactElement } from "react"
 import { CLAIM_PROMO_HERO_SRC } from "@/features/offers/constants/claimFlowHero"
+import {
+  OFFER_APPLICABLE_TOTAL_BILL_INFO_SUBTITLE,
+  OFFER_APPLICABLE_TOTAL_BILL_INFO_TITLE,
+} from "@/features/offers/constants/offerApplicabilityCopy"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
 import { markWalkInOfferInfoSeenThisSession } from "@/features/restaurant/utils/walkInOfferInfoSession"
 
@@ -20,9 +24,8 @@ const ROWS = [
       "A walk-in offer allows you to dine-out without needing a booking. Venues create these offers when they have space tables to fill. If the venue is busy, you may have to wait to get seated.",
   },
   {
-    title: "Food only discount",
-    subtitle:
-      "The discount applies to food items only. Drinks and set menus are excluded.",
+    title: OFFER_APPLICABLE_TOTAL_BILL_INFO_TITLE,
+    subtitle: OFFER_APPLICABLE_TOTAL_BILL_INFO_SUBTITLE,
   },
   {
     title: "One offer per visit",

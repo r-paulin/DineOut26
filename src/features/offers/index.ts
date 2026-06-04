@@ -31,8 +31,10 @@ export type {
 } from "./components"
 export {
   DINEOUT_CASHBACK_BANNER_PRIMARY,
+  DINEOUT_CASHBACK_BANNER_SECONDARY,
   DINEOUT_CLAIM_INLINE_PRIMARY,
   DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT,
+  formatDineOutClaimCashbackBannerHeadline,
   formatDineOutClaimCashbackBannerSecondary,
 } from "./constants/dineOutStackablePromo"
 export {

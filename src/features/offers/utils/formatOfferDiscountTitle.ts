@@ -1,9 +1,16 @@
+/** Product copy — discount scope (banners, claim modal, offer rows). */
+export const OFFER_DISCOUNT_ON_MENU = "on menu" as const
+
+function formatDiscountOnMenu(discountPercent: number): string {
+  return `${discountPercent}% discount ${OFFER_DISCOUNT_ON_MENU}`
+}
+
 /** Headline for banners and claim UI (no "Claim" prefix). */
 export function formatOfferDiscountTitle(
   discountPercent: number,
   _isAllDay: boolean,
 ): string {
-  return `${discountPercent}% discount on food`
+  return formatDiscountOnMenu(discountPercent)
 }
 
 /** Card / modal title on restaurant offer rows. */
@@ -14,5 +21,5 @@ export function formatOfferClaimCardTitle(
   if (isAllDay && discountPercent === 10) {
     return formatOfferDiscountTitle(10, true)
   }
-  return `Claim ${discountPercent}% discount on food`
+  return `Claim ${formatDiscountOnMenu(discountPercent)}`
 }

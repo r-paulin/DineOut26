@@ -23,7 +23,7 @@ describe("formatClaimModalOfferDetailRows", () => {
     expect(rows).toEqual([
       { label: "Minimum order", value: "10,00 €" },
       { label: "Available", value: "Today, 19:00 - 23:00" },
-      { label: "Applicable", value: "Food only" },
+      { label: "Applicable", value: "Total bill" },
     ])
   })
 })

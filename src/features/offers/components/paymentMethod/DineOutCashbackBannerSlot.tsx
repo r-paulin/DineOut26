@@ -1,6 +1,10 @@
 import { Typography } from "@bolteu/kalep-react"
 import { useLayoutEffect, useRef, useState, type ReactNode, type TransitionEvent } from "react"
 import { DineOutCashbackBanner } from "@/features/offers/components/DineOutCashbackBanner"
+import {
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE,
+} from "@/features/offers/constants/paymentMethodSheetCopy"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
 const PROMO_TRANSITION_MS = 300
@@ -121,12 +125,12 @@ export interface PaymentMethodOptionLabels {
 }
 
 export const CLAIM_FLOW_PAYMENT_LABELS: PaymentMethodOptionLabels = {
-  dineout: "Pay with Bolt DineOut",
+  dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
   cardOrCash: "Pay by card or cash",
 } as const
 
 export const CLAIMED_OFFER_PAYMENT_LABELS: PaymentMethodOptionLabels = {
-  dineout: "Paying with Bolt DineOut",
+  dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE,
   cardOrCash: "Paying with card or cash",
 } as const
 

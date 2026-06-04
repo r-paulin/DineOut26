@@ -73,7 +73,7 @@ export function PaymentSelector({
   showHeader = true,
   showSectionSeparator = true,
   groupName = "claim-offer-payment",
-  bannerSlotClassName = "px-6 pb-3 pt-3",
+  bannerSlotClassName = "px-6 pb-6",
   detailPresentation = "banner",
 }: PaymentSelectorProps) {
   const isDineout = value === "dineout"

@@ -8,7 +8,7 @@ import {
 
 describe("formatClaimedOfferFoodLabel", () => {
   it("formats percent and food copy per Figma", () => {
-    expect(formatClaimedOfferFoodLabel(30)).toBe("30% discount on food")
+    expect(formatClaimedOfferFoodLabel(30)).toBe("30% discount on menu")
   })
 })
 
@@ -31,7 +31,7 @@ describe("formatWelcomeAtRestaurant", () => {
 
 describe("formatClaimedOfferPaymentLabel", () => {
   it("uses claimed-offer payment sheet copy", () => {
-    expect(formatClaimedOfferPaymentLabel("dineout")).toBe("Paying with Bolt DineOut")
+    expect(formatClaimedOfferPaymentLabel("dineout")).toBe("Paying via Bolt Food app")
     expect(formatClaimedOfferPaymentLabel("card_or_cash")).toBe(
       "Paying with card or cash",
     )

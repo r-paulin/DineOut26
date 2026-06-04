@@ -33,8 +33,8 @@ export function RestaurantDetailOffersEmptyState() {
         No offers on this day
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
-        No offer posted for this date — you can still pay with DineOut for extra
-        savings at checkout.
+        There are currently no offers in this venue. Try another location or
+        check back soon.
       </Typography>
     </div>
   )

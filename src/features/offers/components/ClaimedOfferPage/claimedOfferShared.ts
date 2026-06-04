@@ -1,5 +1,6 @@
 import type { PaymentMethod } from "@/features/offers/offers.types"
 import { CLAIMED_OFFER_PAYMENT_LABELS } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
+import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
 
 export const ROW_ICON_CLASS = "shrink-0 text-neutral-primary"
 
@@ -19,9 +20,9 @@ export const PIN_COUNTDOWN_TEXT_STYLE = {
   fontFeatureSettings: "'cv03' 1, 'cv04' 1",
 } as const
 
-/** Figma claimed-offer details row — e.g. "30% discount on food" (`16123:18340`). */
+/** Figma claimed-offer details row — e.g. "30% discount on menu" (`16123:18340`). */
 export function formatClaimedOfferFoodLabel(discountPercent: number): string {
-  return `${discountPercent}% discount on food`
+  return formatOfferDiscountTitle(discountPercent, false)
 }
 
 /** Pay footer subtitle (Figma `16123:18340`). */

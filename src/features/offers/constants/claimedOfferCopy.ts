@@ -1,3 +1,4 @@
+import { PAYMENT_METHOD_DINEOUT_OPTION_LABEL } from "@/features/offers/constants/paymentMethodSheetCopy"
 import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
 import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
 
@@ -5,7 +6,7 @@ import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPe
 export function formatClaimedOfferFooterPromoText(
   percent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
 ): string {
-  return `Pay with Bolt DineOut. Get ${formatDiscountPercent(percent)}% back.`
+  return `${PAYMENT_METHOD_DINEOUT_OPTION_LABEL}. Get ${formatDiscountPercent(percent)}% back.`
 }
 
 export const CLAIMED_OFFER_WELCOME_INSTRUCTION =

@@ -4,6 +4,8 @@ import {
   formatPaymentMethodDineoutDetail,
   getPaymentMethodOptionDetail,
   PAYMENT_METHOD_CARD_CASH_DETAIL,
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE,
   PAYMENT_METHOD_SHEET_INTRO,
   PAYMENT_METHOD_SHEET_TITLE,
 } from "./paymentMethodSheetCopy"
@@ -13,6 +15,13 @@ describe("paymentMethodSheetCopy", () => {
     expect(PAYMENT_METHOD_SHEET_TITLE).toBe("Payment method")
     expect(PAYMENT_METHOD_SHEET_INTRO).toBe(
       "Pay at the venue after dining. Choose your preferred payment method.",
+    )
+  })
+
+  it("uses Bolt Food app payment option labels", () => {
+    expect(PAYMENT_METHOD_DINEOUT_OPTION_LABEL).toBe("Pay via Bolt Food app")
+    expect(PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE).toBe(
+      "Paying via Bolt Food app",
     )
   })
 

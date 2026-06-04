@@ -2,6 +2,14 @@ import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constant
 import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 
+/** Figma `16393:40712` — DineOut radio option (claim flow). */
+export const PAYMENT_METHOD_DINEOUT_OPTION_LABEL =
+  "Pay via Bolt Food app" as const
+
+/** Same option when editing payment on claimed-offer sheet (present tense). */
+export const PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE =
+  "Paying via Bolt Food app" as const
+
 /** Figma `16393:40712` — MODAL / Payment method. */
 export const PAYMENT_METHOD_SHEET_TITLE = "Payment method" as const
 

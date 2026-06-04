@@ -43,7 +43,7 @@ export function ClaimedOfferActionFooter({
     expired ?
       "Offer expired, payment unavailable"
     : isDineout ?
-      `Pay bill with Bolt DineOut, ${discountSubtitle}`
+      `Pay bill via Bolt Food app, ${discountSubtitle}`
     : `${CLAIMED_OFFER_CARD_CASH_DONE_LABEL}, ${discountSubtitle}`
 
   const primaryButtonLabel =

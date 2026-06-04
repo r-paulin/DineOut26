@@ -1,5 +1,6 @@
 import { Typography } from "@bolteu/kalep-react"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
+import { OFFER_APPLICABLE_TOTAL_BILL_DISCLAIMER } from "@/features/offers/constants/offerApplicabilityCopy"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 
 const DEFAULT_MIN_ORDER_EUR = 10
@@ -19,7 +20,7 @@ export function ClaimedOfferDisclaimer({
         {`Minimum order value: ${formatEurMajor(minOrderEur)}.`}
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
-        Applies to food items only.
+        {OFFER_APPLICABLE_TOTAL_BILL_DISCLAIMER}
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
         Offers are valid only for the selected number of guests and arrival time.
