@@ -12,22 +12,17 @@ export type OfferCampaignSurface = "cardBadge" | "mapPin" | "mapPinSelected"
 
 const ICON_SHRINK = "shrink-0"
 
-/** Figma `static/content/secondary-light` — inactive PercentFlower on dark badges. */
-const ICON_INACTIVE_ON_DARK_PILL = `${ICON_SHRINK} text-[var(--color-static-content-secondary-light)]`
-
 export function getOfferCampaignPillClass(surface: OfferCampaignSurface): string {
   if (surface === "mapPinSelected") return "bg-danger-primary"
-  if (surface === "mapPin") return "bg-layer-floor-1"
-  return "bg-neutral-primary"
+  return "bg-layer-floor-1"
 }
 
-/** Card-badge icon sits on the red segment — no inner chip (Figma `16159:22611`). */
+/** Card-badge icon on unified white pill — no inner chip (Figma `16390:34941`). */
 export function getOfferCampaignIconChipClass(
-  surface: OfferCampaignSurface,
+  _surface: OfferCampaignSurface,
   _iconActive: boolean,
   _comfortable: boolean,
 ): string | null {
-  if (surface === "cardBadge") return null
   return null
 }
 
@@ -39,12 +34,7 @@ export function getOfferCampaignIconClass(
     return `${ICON_SHRINK} text-static-key-light`
   }
   if (!iconActive) {
-    return surface === "cardBadge" ?
-        ICON_INACTIVE_ON_DARK_PILL
-      : `${ICON_SHRINK} text-tertiary`
-  }
-  if (surface === "cardBadge") {
-    return `${ICON_SHRINK} text-static-key-light`
+    return `${ICON_SHRINK} text-tertiary`
   }
   return `${ICON_SHRINK} text-danger-primary`
 }

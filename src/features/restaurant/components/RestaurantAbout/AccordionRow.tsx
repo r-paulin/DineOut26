@@ -45,6 +45,7 @@ export function AccordionRow({
       <div className="px-6">
         <button
           type="button"
+          data-no-press
           className={`flex h-14 w-full shrink-0 cursor-pointer items-center justify-between border-0 border-solid border-separator bg-transparent text-left ${
             expanded ? "border-b-0" : "border-b"
           }`}
@@ -54,7 +55,7 @@ export function AccordionRow({
           <Typography variant="body-m-accent" color="primary" as="span">
             {title}
           </Typography>
-          <span className="flex shrink-0 text-action-primary" aria-hidden>
+          <span className="flex shrink-0 text-tertiary" aria-hidden>
             {expanded ? (
               <ChevronUp size="lg" />
             ) : (

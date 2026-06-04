@@ -1,6 +1,3 @@
-import { Typography } from "@bolteu/kalep-react"
-import ArrowLeft from "@bolteu/kalep-react-icons/dist/ArrowLeft"
-import ShareIosOutlined from "@bolteu/kalep-react-icons/dist/ShareIosOutlined"
 import gsap from "gsap"
 import { CustomEase } from "gsap/CustomEase"
 import {
@@ -33,6 +30,7 @@ import { RestaurantDetailMenuSection } from "./RestaurantDetailMenuSection"
 import { RestaurantDetailVenueSection } from "./RestaurantDetailVenueSection"
 import { RestaurantMenuGalleryModal } from "./RestaurantMenuGalleryModal"
 import { RestaurantOpenHoursSheet } from "./RestaurantOpenHoursSheet"
+import { RestaurantOverlayNavHeader } from "./RestaurantOverlayNavHeader"
 import { RestaurantRatingSheet } from "./RestaurantRatingSheet"
 import { RestaurantReportProblemSheet } from "./RestaurantReportProblemSheet"
 
@@ -59,10 +57,6 @@ const DETAIL_MOTION_S = 0.6
  */
 const STAGGER_PANEL_AFTER_SCRIM_S = 0
 const STAGGER_SCRIM_AFTER_PANEL_EXIT_S = 0
-
-/** Figma 15886:44808 — 24px icons in ~44px touch targets, no chrome shadow. */
-const ABOUT_OVERLAY_NAV_BTN =
-  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0 text-primary shadow-none outline-none ring-0 hover:bg-active-neutral-secondary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-action-primary"
 
 /**
  * Full-screen restaurant detail: scrollable body, prototype data from
@@ -444,45 +438,16 @@ export function RestaurantDetailScreen({
               role="region"
               aria-label={`About ${model.name}`}
             >
-              <div className="flex w-full shrink-0 flex-col gap-[15px] bg-layer-floor-1 pt-[max(1.5rem,var(--safe-area-top))]">
-                <div className="flex w-full items-center gap-4 px-6">
-                  <button
-                    type="button"
-                    className={ABOUT_OVERLAY_NAV_BTN}
-                    aria-label="Back to restaurant"
-                    onClick={handleAnimatedCloseAbout}
-                  >
-                    <ArrowLeft size="md" className="text-primary" aria-hidden />
-                  </button>
-                  <div
-                    className="flex min-w-0 flex-1 justify-center overflow-hidden px-2 text-center"
-                    style={{ opacity: aboutTitleOpacity }}
-                  >
-                    <Typography
-                      variant="body-m-accent"
-                      color="primary"
-                      as="span"
-                      noWrap
-                    >
-                      {model.name}
-                    </Typography>
-                  </div>
-                  <button
-                    type="button"
-                    className={ABOUT_OVERLAY_NAV_BTN}
-                    aria-label="Share restaurant"
-                    onClick={() => {
-                      void handleShare()
-                    }}
-                  >
-                    <ShareIosOutlined size="md" className="text-primary" aria-hidden />
-                  </button>
-                </div>
-                <div
-                  className="h-px w-full shrink-0 bg-[var(--color-border-separator)]"
-                  aria-hidden
-                />
-              </div>
+              <RestaurantOverlayNavHeader
+                title={model.name}
+                titleOpacity={aboutTitleOpacity}
+                backAriaLabel="Back to restaurant"
+                shareAriaLabel="Share restaurant"
+                onBack={handleAnimatedCloseAbout}
+                onShare={() => {
+                  void handleShare()
+                }}
+              />
               <div
                 ref={aboutScrollRef}
                 className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain bg-layer-floor-1"

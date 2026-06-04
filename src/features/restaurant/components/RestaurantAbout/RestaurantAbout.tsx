@@ -9,6 +9,15 @@ import { RestaurantGallery } from "./RestaurantGallery"
 import { useRestaurantAbout } from "./useRestaurantAbout"
 import { VenueInfoRows } from "./VenueInfoRow"
 
+/** Figma Heading XS / XS Accent (`15886:38896`) — About us section title. */
+const ABOUT_SECTION_HEADING_STYLE = {
+  fontSize: "var(--Heading-XS-font-size, 20px)",
+  lineHeight: "var(--Heading-XS-line-height, 25px)",
+  letterSpacing: "-0.34px",
+  fontVariationSettings: "'wght' var(--font-weight-semibold)",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+} as const
+
 const DISCLAIMER_P1 =
   "The partner commits to only offer products that comply with the applicable rules of European Union law. All partners on the DineOut platform shall be considered traders within the meaning of Directive (EU) 2005/29."
 
@@ -155,10 +164,7 @@ export function RestaurantAbout({
           variant="heading-xs-accent"
           color="primary"
           as="h2"
-          inlineStyle={{
-            fontVariationSettings:
-              "'wght' var(--font-weight-bold), 'opsz' 20",
-          }}
+          inlineStyle={ABOUT_SECTION_HEADING_STYLE}
         >
           About us
         </Typography>

@@ -14,6 +14,9 @@ import { toTelHref } from "@/shared/utils/telHref"
 
 const ROW_ICON_CLASS = "size-6 shrink-0"
 
+/** Figma About venue link rows (reserve / social) — 56px min touch height. */
+const LINK_ROW_CLASS = "min-h-[56px] justify-center"
+
 /** Figma `16643:33363` — About venue list copy. */
 const ABOUT_MENU_ROW_VALUE = "Menu" as const
 const ABOUT_MENU_ROW_LABEL = "Browse dishes and prices" as const
@@ -79,6 +82,7 @@ function VenueLinkRow({
           href={href}
           horizontalPadding="none"
           showSeparator={false}
+          className={LINK_ROW_CLASS}
           onAnchorClick={(e) => {
             e.preventDefault()
             openExternalUrl(href)
@@ -95,6 +99,7 @@ function VenueLinkRow({
           onPress={onPress}
           horizontalPadding="none"
           showSeparator={false}
+          className={LINK_ROW_CLASS}
           aria-label={label}
         />
       }

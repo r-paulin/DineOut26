@@ -8,6 +8,20 @@ import { OfferCardImageRatingBadge } from "./OfferCardImageRatingBadge"
 const IMAGE_GRAD =
   "linear-gradient(180deg, rgba(0,0,0,0) 53.5%, rgba(0,0,0,0.5) 100%)"
 
+/** Figma `15809:13965` / `15809:13961` — Body S regular/accent meta rows. */
+const MAP_CARD_BODY_S_FONT = {
+  fontFamily: 'var(--font-family, "Inter Variable")',
+  fontSize: "var(--Body-S-font-size, 14px)",
+  lineHeight: "var(--body-s-line-height, 20px)",
+  letterSpacing: "-0.084px",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+} as const
+
+const MAP_CARD_TITLE_FONT = {
+  letterSpacing: "-0.34px",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+} as const
+
 export interface MapPlaceCardOpenedProps {
   offer: OfferCardModel
   onClose: () => void
@@ -141,46 +155,86 @@ export function MapPlaceCardOpened({
           <>
             <Typography
               as="h2"
-              variant="heading-s-accent"
+              variant="heading-xs-accent"
               color="primary"
               noWrap
-              inlineStyle={{ letterSpacing: "-0.03rem" }}
+              inlineStyle={MAP_CARD_TITLE_FONT}
             >
               {view.name}
             </Typography>
             <div className="flex min-w-0 items-baseline gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
               {view.isOpen ? (
                 <>
-                  <Typography variant="body-s-regular" color="positive-primary" as="span">
+                  <Typography
+                    variant="body-s-accent"
+                    color="positive-primary"
+                    as="span"
+                    inlineStyle={MAP_CARD_BODY_S_FONT}
+                  >
                     Open
                   </Typography>
-                  <Typography variant="body-s-regular" color="secondary" as="span">
+                  <Typography
+                    variant="body-s-regular"
+                    color="secondary"
+                    as="span"
+                    inlineStyle={MAP_CARD_BODY_S_FONT}
+                  >
                     {"\u00a0\u00b7\u00a0"}
                   </Typography>
                   {view.closesAt ? (
-                    <Typography variant="body-s-regular" color="primary" as="span">
+                    <Typography
+                      variant="body-s-regular"
+                      color="primary"
+                      as="span"
+                      inlineStyle={MAP_CARD_BODY_S_FONT}
+                    >
                       {`Closes ${view.closesAt}`}
                     </Typography>
                   ) : (
-                    <Typography variant="body-s-regular" color="primary" as="span">
+                    <Typography
+                      variant="body-s-regular"
+                      color="primary"
+                      as="span"
+                      inlineStyle={MAP_CARD_BODY_S_FONT}
+                    >
                       {offer.area}
                     </Typography>
                   )}
                 </>
               ) : (
-                <Typography variant="body-s-accent" color="danger-primary" as="span">
+                <Typography
+                  variant="body-s-accent"
+                  color="danger-primary"
+                  as="span"
+                  inlineStyle={MAP_CARD_BODY_S_FONT}
+                >
                   Closed
                 </Typography>
               )}
             </div>
             <div className="flex min-w-0 flex-wrap items-baseline gap-1">
-              <Typography variant="body-s-regular" color="secondary" as="span">
+              <Typography
+                variant="body-s-regular"
+                color="secondary"
+                as="span"
+                inlineStyle={MAP_CARD_BODY_S_FONT}
+              >
                 {cuisineLine}
               </Typography>
-              <Typography variant="body-s-regular" color="tertiary" as="span">
+              <Typography
+                variant="body-s-regular"
+                color="tertiary"
+                as="span"
+                inlineStyle={MAP_CARD_BODY_S_FONT}
+              >
                 ·
               </Typography>
-              <Typography variant="body-s-regular" color="secondary" as="span">
+              <Typography
+                variant="body-s-regular"
+                color="secondary"
+                as="span"
+                inlineStyle={MAP_CARD_BODY_S_FONT}
+              >
                 {view.priceRange}
               </Typography>
             </div>

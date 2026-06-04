@@ -123,15 +123,13 @@ describe("campaignTimeWindowDisplayActive", () => {
 })
 
 describe("offer campaign visual classes", () => {
-  it("cardBadge uses split pill; white icon on red segment (Figma 16159:22611)", () => {
-    expect(getOfferCampaignPillClass("cardBadge")).toBe("bg-neutral-primary")
+  it("cardBadge uses unified white pill icon colors (Figma 16390:34941)", () => {
+    expect(getOfferCampaignPillClass("cardBadge")).toBe("bg-layer-floor-1")
     expect(getOfferCampaignIconClass("cardBadge", true)).toContain(
-      "text-static-key-light",
+      "text-danger-primary",
     )
     expect(getOfferCampaignIconChipClass("cardBadge", true, false)).toBeNull()
-    expect(getOfferCampaignIconClass("cardBadge", false)).toContain(
-      "static-content-secondary-light",
-    )
+    expect(getOfferCampaignIconClass("cardBadge", false)).toContain("text-tertiary")
   })
 
   it("mapPin uses white pill; selected uses danger primary", () => {

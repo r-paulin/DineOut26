@@ -6,10 +6,8 @@ import type { OfferCardCampaign } from "@/features/offers/offers.types"
 import { hasCampaignBadges } from "@/features/offers/utils/mapPlaceCardView"
 import { buildTimedOfferBadgeModels } from "@/features/offers/utils/offerBadgeStack"
 import {
-  getOfferCampaignIconClass,
   useOfferDisplayNow,
 } from "@/features/offers/utils/offerDisplayActive"
-import type { OfferCampaignSurface } from "@/features/offers/utils/offerDisplayActive"
 
 export interface OfferCardBadgesProps {
   campaign: OfferCardCampaign
@@ -20,15 +18,15 @@ export interface OfferCardBadgesProps {
   restaurantSlug?: string
   /**
    * `compact` — carousel XS / list gallery (Figma `_Badge / Discount` `16390:33012`).
-   * `comfortable` — map-opened card: split red icon + dark content pill.
+   * `comfortable` — map-opened card (same unified pill as compact).
    */
   density?: "compact" | "comfortable"
   /** When true (discover “Live now”), hide non-live windows; icons stay active on visible rows. */
   liveNowFilter?: boolean
 }
 
-/** Figma `_Badge / Discount` (`16390:33012`) — white pill on card hero. */
-const COMPACT_DISCOUNT_BADGE_CLASS =
+/** Figma `_Badge / Discount` (`16390:34941`) — white pill on card hero / map opened. */
+const DISCOUNT_BADGE_CLASS =
   "inline-flex w-max shrink-0 flex-nowrap items-center gap-0.5 overflow-hidden rounded-[4px] bg-layer-floor-1 py-0.5 pl-0.5 pr-1"
 
 const COMPACT_BADGE_FONT_FEAT =
@@ -49,7 +47,7 @@ function compactDiscountBadgeIconClass(iconActive: boolean): string {
 }
 
 /**
- * Figma carousel / list hero badges (`16390:33012`) and map split pill (`16159:22611`).
+ * Figma `_Badge / Discount` (`16390:34941`) — unified white pill on carousel and map-opened card.
  */
 export function OfferCardBadges({
   campaign,
@@ -84,22 +82,15 @@ export function OfferCardBadges({
             key={i}
             density={density}
             icon={
-              <OfferCampaignPercentIcon
-                density={density}
-                iconActive={row.iconActive}
-              />
+              <OfferCampaignPercentIcon iconActive={row.iconActive} />
             }
             content={
               row.kind === "offer" ?
                 <OfferBadgeOfferCopy
                   discountLabel={row.discountLabel}
                   timeWindow={row.timeWindow}
-                  comfortable={comfortable}
                 />
-              : <OverflowOfferCopy
-                  count={row.count}
-                  comfortable={comfortable}
-                />
+              : <OverflowOfferCopy count={row.count} />
             }
           />
         ))}
@@ -113,14 +104,11 @@ export function OfferCardBadges({
   const primaryPill = (
     <CampaignPill
       density={density}
-      icon={
-        <OfferCampaignPercentIcon density={density} iconActive />
-      }
+      icon={<OfferCampaignPercentIcon iconActive />}
       content={
         <OfferBadgeOfferCopy
           discountLabel={discountLabel}
           timeWindow={timeWindow}
-          comfortable={comfortable}
         />
       }
     />
@@ -131,15 +119,8 @@ export function OfferCardBadges({
       <CampaignPill
         density={density}
         className={comfortable ? "absolute left-0 top-7 z-[1] w-max" : undefined}
-        icon={
-          <OfferCampaignPercentIcon density={density} iconActive />
-        }
-        content={
-          <OverflowOfferCopy
-            count={extraOffers}
-            comfortable={comfortable}
-          />
-        }
+        icon={<OfferCampaignPercentIcon iconActive />}
+        content={<OverflowOfferCopy count={extraOffers} />}
       />
     : null
 
@@ -160,67 +141,21 @@ export function OfferCardBadges({
   )
 }
 
-const BADGE_COPY_LINE = { letterSpacing: 0 } as const
-
 function OfferBadgeOfferCopy({
   discountLabel,
   timeWindow,
-  comfortable,
 }: {
   discountLabel?: string
   timeWindow?: string
-  comfortable: boolean
 }) {
-  if (!comfortable) {
-    return (
-      <span className="inline-flex items-center gap-0.5">
-        {discountLabel ?
-          <Typography
-            as="span"
-            variant="body-s-accent"
-            color="primary"
-            inlineStyle={COMPACT_BADGE_LINE}
-          >
-            {discountLabel}
-          </Typography>
-        : null}
-        {timeWindow ?
-          <>
-            <Typography
-              as="span"
-              variant="body-s-accent"
-              color="secondary"
-              inlineStyle={COMPACT_BADGE_LINE}
-              aria-hidden
-            >
-              {"\u00b7"}
-            </Typography>
-            <Typography
-              as="span"
-              variant="body-s-regular"
-              color="secondary"
-              inlineStyle={COMPACT_BADGE_LINE}
-            >
-              {timeWindow}
-            </Typography>
-          </>
-        : null}
-      </span>
-    )
-  }
-
-  const accentVariant = "body-s-accent"
-  const regularVariant = "body-s-regular"
-  const lineHeight = "1.25rem"
-
   return (
     <span className="inline-flex items-center gap-0.5">
       {discountLabel ?
         <Typography
           as="span"
-          variant={accentVariant}
-          color="primary-inverted"
-          inlineStyle={{ ...BADGE_COPY_LINE, lineHeight }}
+          variant="body-s-accent"
+          color="primary"
+          inlineStyle={COMPACT_BADGE_LINE}
         >
           {discountLabel}
         </Typography>
@@ -229,21 +164,18 @@ function OfferBadgeOfferCopy({
         <>
           <Typography
             as="span"
-            variant={accentVariant}
-            color="primary-inverted"
-            inlineStyle={{ ...BADGE_COPY_LINE, lineHeight }}
+            variant="body-s-accent"
+            color="secondary"
+            inlineStyle={COMPACT_BADGE_LINE}
+            aria-hidden
           >
             {"\u00b7"}
           </Typography>
           <Typography
             as="span"
-            variant={regularVariant}
+            variant="body-s-regular"
             color="secondary"
-            inlineStyle={{
-              ...BADGE_COPY_LINE,
-              lineHeight,
-              color: "var(--color-static-content-secondary-light)",
-            }}
+            inlineStyle={COMPACT_BADGE_LINE}
           >
             {timeWindow}
           </Typography>
@@ -253,61 +185,24 @@ function OfferBadgeOfferCopy({
   )
 }
 
-function OverflowOfferCopy({
-  count,
-  comfortable,
-}: {
-  count: number
-  comfortable: boolean
-}) {
-  if (!comfortable) {
-    return (
-      <Typography
-        as="span"
-        variant="body-s-accent"
-        color="primary"
-        inlineStyle={COMPACT_BADGE_LINE}
-      >
-        {count === 1 ? "+1 offer" : `+${count} offers`}
-      </Typography>
-    )
-  }
-
-  const lineHeight = "1.25rem"
+function OverflowOfferCopy({ count }: { count: number }) {
   return (
     <Typography
       as="span"
       variant="body-s-accent"
-      color="primary-inverted"
-      inlineStyle={{ ...BADGE_COPY_LINE, lineHeight }}
+      color="primary"
+      inlineStyle={COMPACT_BADGE_LINE}
     >
       {count === 1 ? "+1 offer" : `+${count} offers`}
     </Typography>
   )
 }
 
-function OfferCampaignPercentIcon({
-  iconActive,
-  density = "compact",
-  surface = "cardBadge",
-}: {
-  iconActive: boolean
-  density?: "compact" | "comfortable"
-  surface?: OfferCampaignSurface
-}) {
-  if (density === "compact") {
-    return (
-      <PercentFlower
-        size="xs"
-        className={compactDiscountBadgeIconClass(iconActive)}
-        aria-hidden
-      />
-    )
-  }
+function OfferCampaignPercentIcon({ iconActive }: { iconActive: boolean }) {
   return (
     <PercentFlower
-      size="sm"
-      className={getOfferCampaignIconClass(surface, iconActive)}
+      size="xs"
+      className={compactDiscountBadgeIconClass(iconActive)}
       aria-hidden
     />
   )
@@ -316,7 +211,6 @@ function OfferCampaignPercentIcon({
 function CampaignPill({
   icon,
   content,
-  density = "compact",
   className,
 }: {
   icon: ReactNode
@@ -324,26 +218,10 @@ function CampaignPill({
   density?: "compact" | "comfortable"
   className?: string
 }) {
-  if (density !== "comfortable") {
-    return (
-      <div className={`${COMPACT_DISCOUNT_BADGE_CLASS} ${className ?? ""}`.trim()}>
-        {icon}
-        {content}
-      </div>
-    )
-  }
-
-  const iconSegment =
-    "flex shrink-0 items-center justify-center rounded-l-[4px] bg-danger-primary p-1.5"
-  const contentSegment =
-    "inline-flex shrink items-center justify-center gap-0.5 rounded-r-[4px] bg-neutral-primary py-1.5 pl-1 pr-2"
-
   return (
-    <div
-      className={`inline-flex w-max shrink-0 flex-nowrap items-center ${className ?? ""}`.trim()}
-    >
-      <div className={iconSegment}>{icon}</div>
-      <div className={contentSegment}>{content}</div>
+    <div className={`${DISCOUNT_BADGE_CLASS} ${className ?? ""}`.trim()}>
+      {icon}
+      {content}
     </div>
   )
 }
