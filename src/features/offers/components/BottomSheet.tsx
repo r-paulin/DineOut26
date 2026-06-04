@@ -7,8 +7,8 @@ import type {
   SheetSnap,
 } from "@/features/offers/offers.types"
 import { useBottomSheet } from "@/features/offers/hooks/useBottomSheet"
-import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
+import type { HomeClaimedOfferItem } from "@/features/discover/components/HomeClaimedOffersCarousel"
 import { BottomSheetScrollContent } from "./BottomSheetScrollContent"
 import { DINEOUT_PROMO_IMG_WRAP } from "./dineOutPromoFigmaAssets"
 import { DineOutPromoSheet } from "./DineOutPromoSheet"
@@ -32,10 +32,10 @@ export interface BottomSheetProps {
   scrollToTopSignal?: number
   onSeeAllSection?: (payload: { title: string }) => void
   onRestaurantPress?: (slug: string) => void
-  homeClaimedOfferCard?: RestaurantOfferCardModel | null
+  homeClaimedOffers?: readonly HomeClaimedOfferItem[]
   userClaims?: readonly UserClaim[]
   claimedOffersById?: Readonly<Record<string, ClaimedOffer>>
-  onHomeClaimedOfferPress?: (offerId: string) => void
+  onHomeClaimedOfferPress?: (claim: ClaimedOffer) => void
   /** Prototype admin catalog editor (persists to localStorage). */
   onOpenAdminPlaces?: () => void
   /** When true, sheet is `relative` inside a parent fixed bottom dock (HomeScreen). */
@@ -67,7 +67,7 @@ export function BottomSheet({
   scrollToTopSignal,
   onSeeAllSection,
   onRestaurantPress,
-  homeClaimedOfferCard = null,
+  homeClaimedOffers = [],
   userClaims = [],
   claimedOffersById = {},
   onHomeClaimedOfferPress,
@@ -153,8 +153,8 @@ export function BottomSheet({
       ) : null}
       {showDragHandle ? (
         <div
-          className={`flex-none h-8 flex items-center justify-center bg-layer-floor-1 cursor-grab touch-none active:cursor-grabbing rounded-t-[var(--sheet-radius)] ${
-            showStickyHeader ? "-mt-4 relative z-[1]" : ""
+          className={`flex-none h-8 flex shrink-0 items-center justify-center border-0 border-b-0 shadow-none bg-layer-floor-1 cursor-grab touch-none active:cursor-grabbing rounded-t-[var(--sheet-radius)] ${
+            showStickyHeader ? "-mt-4 -mb-px relative z-[1]" : ""
           }`}
           onPointerDown={beginDrag}
           role="separator"
@@ -164,28 +164,36 @@ export function BottomSheet({
           <span className="w-12 h-1.5 rounded-full bg-[var(--color-border-separator)]" />
         </div>
       ) : null}
-      <BottomSheetScrollContent
-        snap={snap}
-        beginDrag={beginDrag}
-        carouselTodayRef={carouselTodayRef}
-        offersToday={offersToday}
-        offersDinner={offersDinner}
-        offersNearYou={offersNearYou}
-        offersAllRestaurants={offersAllRestaurants}
-        focusRestaurantId={focusRestaurantId}
-        onClearFocus={onClearFocus}
-        scrollToTopSignal={scrollToTopSignal}
-        onSeeAllSection={onSeeAllSection}
-        onRestaurantPress={onRestaurantPress}
-        homeClaimedOfferCard={homeClaimedOfferCard}
-        userClaims={userClaims}
-        claimedOffersById={claimedOffersById}
-        onHomeClaimedOfferPress={onHomeClaimedOfferPress}
-        onOpenAdminPlaces={onOpenAdminPlaces}
-        liveNowFilter={liveNowFilter}
-        showFilteredEmpty={showFilteredEmpty}
-        onResetFilters={onResetFilters}
-      />
+      <div
+        className={
+          showStickyHeader && showDragHandle
+            ? "-mt-px relative z-0 flex min-h-0 flex-1 flex-col"
+            : "flex min-h-0 flex-1 flex-col"
+        }
+      >
+        <BottomSheetScrollContent
+          snap={snap}
+          beginDrag={beginDrag}
+          carouselTodayRef={carouselTodayRef}
+          offersToday={offersToday}
+          offersDinner={offersDinner}
+          offersNearYou={offersNearYou}
+          offersAllRestaurants={offersAllRestaurants}
+          focusRestaurantId={focusRestaurantId}
+          onClearFocus={onClearFocus}
+          scrollToTopSignal={scrollToTopSignal}
+          onSeeAllSection={onSeeAllSection}
+          onRestaurantPress={onRestaurantPress}
+          homeClaimedOffers={homeClaimedOffers}
+          userClaims={userClaims}
+          claimedOffersById={claimedOffersById}
+          onHomeClaimedOfferPress={onHomeClaimedOfferPress}
+          onOpenAdminPlaces={onOpenAdminPlaces}
+          liveNowFilter={liveNowFilter}
+          showFilteredEmpty={showFilteredEmpty}
+          onResetFilters={onResetFilters}
+        />
+      </div>
     </div>
   )
 }

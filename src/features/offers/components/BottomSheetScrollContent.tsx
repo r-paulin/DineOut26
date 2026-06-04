@@ -5,8 +5,8 @@ import type {
   OfferCardModel,
   SheetSnap,
 } from "@/features/offers/offers.types"
-import { OfferBanner } from "@/features/restaurant/components/OfferBanner/OfferBanner"
-import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
+import { HomeClaimedOffersCarousel } from "@/features/discover/components/HomeClaimedOffersCarousel"
+import type { HomeClaimedOfferItem } from "@/features/discover/components/HomeClaimedOffersCarousel"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
 import { DiscoverFilteredEmptyState } from "@/features/discover/components/DiscoverFilteredEmptyState"
 import { OfferCard } from "./OfferCard"
@@ -28,11 +28,11 @@ export interface BottomSheetScrollContentProps {
   /** User tapped “All” on a carousel section — open full list for that slice. */
   onSeeAllSection?: (payload: { title: string }) => void
   onRestaurantPress?: (slug: string) => void
-  /** Most recently claimed offer row (Figma DINEOUT header `_ Offer Banner`). */
-  homeClaimedOfferCard?: RestaurantOfferCardModel | null
+  /** Claimed offer banners on home (Figma `16671:55011`). */
+  homeClaimedOffers?: readonly HomeClaimedOfferItem[]
   userClaims?: readonly UserClaim[]
   claimedOffersById?: Readonly<Record<string, ClaimedOffer>>
-  onHomeClaimedOfferPress?: (offerId: string) => void
+  onHomeClaimedOfferPress?: (claim: ClaimedOffer) => void
   /** Prototype admin: open merged-catalog editor (localStorage). */
   onOpenAdminPlaces?: () => void
   liveNowFilter?: boolean
@@ -57,7 +57,7 @@ export function BottomSheetScrollContent({
   scrollToTopSignal,
   onSeeAllSection,
   onRestaurantPress,
-  homeClaimedOfferCard = null,
+  homeClaimedOffers = [],
   userClaims = [],
   claimedOffersById = {},
   onHomeClaimedOfferPress,
@@ -116,22 +116,22 @@ export function BottomSheetScrollContent({
       <div
         className={`flex min-h-0 flex-1 flex-col gap-1 ${isMin ? "pointer-events-none" : ""}`}
       >
-        {homeClaimedOfferCard ? (
-          <section
-            className="flex flex-col gap-2 -mx-1 pb-2"
-            aria-label="Your claimed offer"
+        {homeClaimedOffers.length > 0 ?
+          <div
+            className={
+              homeClaimedOffers.length > 1 ?
+                "min-w-0 overflow-x-visible"
+              : "min-w-0"
+            }
           >
-            <OfferBanner
-              context="home"
-              offer={homeClaimedOfferCard}
+            <HomeClaimedOffersCarousel
+              items={homeClaimedOffers}
               userClaims={userClaims}
               claimedOffersById={claimedOffersById}
-              onClaimedPress={() => {
-                onHomeClaimedOfferPress?.(homeClaimedOfferCard.id)
-              }}
+              onOfferPress={onHomeClaimedOfferPress}
             />
-          </section>
-        ) : null}
+          </div>
+        : null}
 
         {showFilteredEmpty && onResetFilters ?
           <DiscoverFilteredEmptyState onResetFilters={onResetFilters} />

@@ -66,6 +66,17 @@ export function computeOfferWindowCloseIso(args: {
     args.offerStart != null ? parseHHMMToMinutes(args.offerStart) : null
   const overnight = startM != null && offerEndM < startM
 
+  if (
+    startM == null &&
+    offerEndM < 12 * 60 &&
+    offerEndM < workEndM
+  ) {
+    const d = new Date(args.baseDate)
+    d.setDate(d.getDate() + 1)
+    d.setHours(Math.floor(offerEndM / 60), offerEndM % 60, 0, 0)
+    return d.toISOString()
+  }
+
   if (overnight) {
     const workEndAbsolute =
       workEndM < startM! ? workEndM + 24 * 60 : workEndM

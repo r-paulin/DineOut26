@@ -2,6 +2,7 @@ import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import { IconButton, Typography } from "@bolteu/kalep-react"
 import type { OfferCardModel } from "@/features/offers/offers.types"
 import { mapOfferToRestaurantCardView } from "@/features/offers/utils/mapPlaceCardView"
+import { useOfferDisplayNow } from "@/features/offers/utils/offerDisplayActive"
 import { OfferCardBadges } from "./OfferCardBadges"
 import { OfferCardImageRatingBadge } from "./OfferCardImageRatingBadge"
 
@@ -43,7 +44,8 @@ export function MapPlaceCardOpened({
   filterPending = false,
   liveNowFilter = false,
 }: MapPlaceCardOpenedProps) {
-  const view = mapOfferToRestaurantCardView(offer)
+  const now = useOfferDisplayNow(true)
+  const view = mapOfferToRestaurantCardView(offer, now)
   const slug = offer.restaurantSlug ?? offer.id
   const cuisineLine =
     view.cuisineTags.length > 0

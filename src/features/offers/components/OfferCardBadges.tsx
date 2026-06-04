@@ -6,6 +6,7 @@ import type { OfferCardCampaign } from "@/features/offers/offers.types"
 import { hasCampaignBadges } from "@/features/offers/utils/mapPlaceCardView"
 import { buildTimedOfferBadgeModels } from "@/features/offers/utils/offerBadgeStack"
 import {
+  campaignTimeWindowDisplayActive,
   useOfferDisplayNow,
 } from "@/features/offers/utils/offerDisplayActive"
 
@@ -101,10 +102,12 @@ export function OfferCardBadges({
   const { discountLabel, timeWindow, extraOffers } = campaign
   if (!hasCampaignBadges(campaign)) return null
 
+  const campaignIconActive = campaignTimeWindowDisplayActive(timeWindow, now)
+
   const primaryPill = (
     <CampaignPill
       density={density}
-      icon={<OfferCampaignPercentIcon iconActive />}
+      icon={<OfferCampaignPercentIcon iconActive={campaignIconActive} />}
       content={
         <OfferBadgeOfferCopy
           discountLabel={discountLabel}
@@ -119,7 +122,7 @@ export function OfferCardBadges({
       <CampaignPill
         density={density}
         className={comfortable ? "absolute left-0 top-7 z-[1] w-max" : undefined}
-        icon={<OfferCampaignPercentIcon iconActive />}
+        icon={<OfferCampaignPercentIcon iconActive={campaignIconActive} />}
         content={<OverflowOfferCopy count={extraOffers} />}
       />
     : null

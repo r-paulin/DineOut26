@@ -47,7 +47,7 @@ export function PayBillFlow({
   const paymentCode = usePayBillStore((s) => s.paymentCode)
   const paidAt = usePayBillStore((s) => s.paidAt)
   const paidAmount = usePayBillStore((s) => s.paidAmount)
-  const discountAmount = usePayBillStore((s) => s.discountAmount)
+  const cashbackEarnedEur = usePayBillStore((s) => s.cashbackEarnedEur)
   const paymentMethodUi = usePayBillStore((s) => s.paymentMethodUi)
 
   const entryIdentity = `${entry.restaurantSlug}|${entry.offer?.offerId ?? ""}`
@@ -149,7 +149,7 @@ export function PayBillFlow({
       paymentCode &&
       paidAt &&
       paidAmount != null &&
-      discountAmount != null &&
+      cashbackEarnedEur != null &&
       paymentMethodUi
     ) {
       return (
@@ -160,7 +160,7 @@ export function PayBillFlow({
           tip={tip}
           paymentCode={paymentCode}
           offer={entry.offer}
-          cashbackEarnedEur={discountAmount}
+          cashbackEarnedEur={cashbackEarnedEur}
           onDismiss={exitAfterPayment}
           onDone={completeAfterConfirmation}
         />
@@ -175,7 +175,7 @@ export function PayBillFlow({
   }, [
     billAmount,
     completeAfterConfirmation,
-    discountAmount,
+    cashbackEarnedEur,
     dismissAll,
     entry,
     exitAfterPayment,

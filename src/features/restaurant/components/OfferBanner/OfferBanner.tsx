@@ -51,6 +51,8 @@ export type { OfferBannerContext } from "@/features/restaurant/components/OfferB
 type OfferBannerInteractiveProps = {
   presentation?: "interactive"
   offer: RestaurantOfferCardModel
+  /** Venue slug for same-day-per-venue lock; omit on home carousel rows. */
+  venueSlug?: string
   userClaims: readonly UserClaim[]
   claimedOffersById: Readonly<Record<string, ClaimedOffer>>
   paidOffersById?: Readonly<Record<string, PaidOfferRecord>>
@@ -183,6 +185,7 @@ function OfferBannerPaid({
 
 function OfferBannerClaimable({
   offer,
+  venueSlug,
   userClaims,
   claimedOffersById,
   discountValue,
@@ -205,7 +208,14 @@ function OfferBannerClaimable({
   const windowPhase = getOfferBannerWindowPhase(offerForBanner, nowMs)
   const blocked =
     state === "available" &&
-    hasOtherClaimAtVenue(offer.id, offer.offerScheduleDate, userClaims, nowMs)
+    venueSlug != null &&
+    hasOtherClaimAtVenue(
+      offer.id,
+      venueSlug,
+      offer.offerScheduleDate,
+      claimedOffersById,
+      nowMs,
+    )
 
   const content = useMemo(
     () =>
@@ -234,6 +244,10 @@ function OfferBannerClaimable({
 
   const onActivate = useCallback(() => {
     if (blocked) return
+    if (context === "home" && claim) {
+      onClaimedPress?.()
+      return
+    }
     const kind = content.action?.kind
     if (kind === "claim-now" || kind === "pre-book-now") {
       onAvailablePress?.()
@@ -242,7 +256,14 @@ function OfferBannerClaimable({
     if (kind === "claimed") {
       onClaimedPress?.()
     }
-  }, [blocked, content.action?.kind, onAvailablePress, onClaimedPress])
+  }, [
+    blocked,
+    claim,
+    context,
+    content.action?.kind,
+    onAvailablePress,
+    onClaimedPress,
+  ])
 
   const isDisabled = state === "expired" || blocked
 

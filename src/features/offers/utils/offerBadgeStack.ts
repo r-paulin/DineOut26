@@ -3,6 +3,7 @@ import { isTimedOfferWindowLiveAt } from "@/features/discover/utils/filterDiscov
 import { RESTAURANT_WEEKLY_OPEN_HOURS } from "@/features/restaurant/data/restaurantFixedOpenHours"
 import { buildOpenHoursUiState } from "@/features/restaurant/utils/restaurantOpenHoursUi"
 import { formatTimeWindowLabel } from "@/features/offers/utils/offerCampaign"
+import { isTimedOfferDisplayActive } from "@/features/offers/utils/offerDisplayActive"
 
 export type BadgeStackMode = "default" | "liveNow"
 
@@ -134,7 +135,7 @@ export function buildTimedOfferBadgeModels(
     kind: "offer",
     discountLabel: `-${offer.discountPercent}%`,
     timeWindow: formatBadgeTimeLabel(offer, now),
-    iconActive: true,
+    iconActive: isTimedOfferDisplayActive(offer, now),
   })
 
   if (ordered.length === 1) {
@@ -150,7 +151,7 @@ export function buildTimedOfferBadgeModels(
     {
       kind: "overflow",
       count: ordered.length - 1,
-      iconActive: true,
+      iconActive: ordered.some((o) => isTimedOfferDisplayActive(o, now)),
     },
   ]
 }

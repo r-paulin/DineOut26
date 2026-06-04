@@ -204,6 +204,15 @@ img.iconChip {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  button:not([data-no-press]):not([role="tab"]):not([disabled]):active,
+  a[href]:not([data-no-press]):active,
+  [role="button"]:not([data-no-press]):not([aria-disabled="true"]):active {
+    transform: none;
+    transition: none;
+  }
+}
+
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);

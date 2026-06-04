@@ -100,9 +100,15 @@ export function DineOutCashbackBannerSlot({
   )
 }
 
-export function paymentMethodOptionClass(withDivider: boolean): string {
+export function paymentMethodOptionClass(
+  withDivider: boolean,
+  showSubtitle = false,
+): string {
+  const padding =
+    showSubtitle ? "pb-[9px] pt-[10px]" : "pb-[15px] pt-4"
   return [
-    "flex w-full cursor-pointer flex-row items-start gap-3 pb-[15px] pt-4",
+    "flex w-full cursor-pointer flex-row items-start gap-3",
+    padding,
     withDivider ? "border-b border-separator" : "",
   ]
     .filter(Boolean)
@@ -133,10 +139,15 @@ export const PAYMENT_METHOD_HEADING_XS_ACCENT_STYLE = {
   fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
 } as const
 
+export type PaymentMethodSheetHeaderVariant =
+  | "heading-xs-accent"
+  | "heading-s-bottom-sheet"
+  | "body-m-accent"
+
 export interface PaymentMethodSheetHeaderProps {
   title: ReactNode
   description: string
-  titleVariant?: "heading-xs-accent" | "body-m-accent"
+  titleVariant?: PaymentMethodSheetHeaderVariant
   /** Associates the visible title with a radio group (`aria-labelledby`). */
   headingId?: string
 }
@@ -147,6 +158,22 @@ export function PaymentMethodSheetHeader({
   titleVariant = "body-m-accent",
   headingId,
 }: PaymentMethodSheetHeaderProps) {
+  if (titleVariant === "heading-s-bottom-sheet") {
+    return (
+      <div
+        id={headingId}
+        className="flex min-h-8 flex-col gap-1 px-6 pt-3 pb-3 pr-12"
+      >
+        <Typography variant="heading-s-accent" color="primary" as="p">
+          {title}
+        </Typography>
+        <Typography variant="body-m-regular" color="secondary" as="p">
+          {description}
+        </Typography>
+      </div>
+    )
+  }
+
   if (titleVariant === "heading-xs-accent") {
     return (
       <>

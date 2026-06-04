@@ -1,8 +1,4 @@
-import {
-  cashbackAmountEur,
-  discountAmountCompound,
-  payAmountDue,
-} from "@/features/payBill/utils/discountCalc"
+import { cashbackAmountEur, payAmountDue } from "@/features/payBill/utils/discountCalc"
 import { createPaymentCode } from "@/features/payBill/utils/paymentCodeDisplay"
 
 export interface PayBillPaymentRequest {
@@ -19,7 +15,8 @@ export interface PayBillPaymentResult {
   paymentCode: string
   paidAt: string
   paidAmount: number
-  discountAmount: number
+  /** Post-payment Bolt Balance cashback only (never in-checkout venue discount). */
+  cashbackEarnedEur: number
 }
 
 /** Prototype payment — resolves after a short delay. */
@@ -33,23 +30,24 @@ export function payBillMock(
         req.tip,
         req.discountPercent,
       )
-      const discountAmount =
+      const cashbackEarnedEur =
         req.discountAddPercent > 0 ?
           cashbackAmountEur(
             req.receiptTotal,
             req.tip,
             req.discountAddPercent,
           )
-        : discountAmountCompound(
-            req.receiptTotal,
-            req.tip,
-            req.discountPercent,
-            0,
-          )
+        : 0
       const transactionId = `TXN-${Date.now().toString(36).toUpperCase()}`
       const paymentCode = createPaymentCode()
       const paidAt = new Date().toISOString()
-      resolve({ transactionId, paymentCode, paidAt, paidAmount, discountAmount })
+      resolve({
+        transactionId,
+        paymentCode,
+        paidAt,
+        paidAmount,
+        cashbackEarnedEur,
+      })
     }, 900)
   })
 }

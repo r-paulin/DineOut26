@@ -6,7 +6,6 @@ import Time from "@bolteu/kalep-react-icons/dist/Time"
 import { RESTAURANT_DETAIL_SECTION_TITLE_CLASS } from "@/features/restaurant/components/restaurantDetailSectionTitle"
 import type { RestaurantDetailModel } from "@/features/restaurant/restaurantDetail.types"
 import { ListItem } from "@/shared/components/ListItem"
-import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { toTelHref } from "@/shared/utils/telHref"
 
 export interface RestaurantDetailVenueSectionProps
@@ -21,7 +20,7 @@ export interface RestaurantDetailVenueSectionProps
     | "isOpen"
   > {
   onOpenHours?: () => void
-  onOpenMaps?: () => void
+  onOpenAddress?: () => void
   onCall?: () => void
   /** Figma `16762:69736` — opens in-stack About page. */
   onOpenAbout?: () => void
@@ -46,13 +45,12 @@ export function RestaurantDetailVenueSection({
   address,
   phone,
   onOpenHours,
-  onOpenMaps,
+  onOpenAddress,
   onCall,
   onOpenAbout,
   onOpenReportProblem,
 }: RestaurantDetailVenueSectionProps) {
   const telHref = toTelHref(phone)
-  const mapsHref = googleMapsSearchUrl(address)
   const hoursStatusLabel = isOpen ? "Open now" : "Closed"
 
   return (
@@ -128,10 +126,9 @@ export function RestaurantDetailVenueSection({
             lineOrder="valueFirst"
             label="Address"
             value={address}
-            href={mapsHref}
-            external
-            onPress={onOpenMaps}
-            aria-label={`Open address in Google Maps: ${address}`}
+            interactive={Boolean(onOpenAddress)}
+            onPress={onOpenAddress}
+            aria-label={`View address: ${address}`}
             horizontalPadding="none"
             showSeparator={false}
           />

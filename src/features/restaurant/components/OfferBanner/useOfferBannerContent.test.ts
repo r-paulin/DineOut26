@@ -10,7 +10,6 @@ import {
   formatOfferBannerCashbackEarnedLabel,
   formatOfferBannerClaimedDiscountLine,
   formatOfferBannerDineOutUpsellSticker,
-  formatOfferBannerHomeClaimedDetailLine,
   formatOfferBannerMinMaxLine,
   formatOfferBannerPaidAmountLine,
   formatOfferBannerTitle,
@@ -234,10 +233,11 @@ describe("buildOfferBannerContent", () => {
       hasOtherClaimAtVenue: false,
     })
     expect(c.headline).toBe("3 Pavāru Restorāns")
-    expect(c.dataLines).toHaveLength(1)
-    expect(c.dataLines[0]?.text).toBe(
-      formatOfferBannerHomeClaimedDetailLine(claim, 30),
-    )
+    expect(c.dataLines).toHaveLength(2)
+    expect(c.dataLines[0]?.text).toBe(formatOfferBannerArrivalLine(claim))
+    expect(c.dataLines[0]?.emphasis).toBe("accent")
+    expect(c.dataLines[1]?.text).toBe("30% discount")
+    expect(c.dataLines[1]?.tone).toBe("secondary")
   })
 })
 

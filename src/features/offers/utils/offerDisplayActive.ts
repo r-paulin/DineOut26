@@ -103,6 +103,9 @@ export function timedOfferWindowDisplayActiveAtMinutes(
   const start = hhmmToMinutes(window.start)
   const end = hhmmToMinutes(window.end)
   const graceStart = start - graceMinutes
+  if (end < start) {
+    return minutesFromMidnight >= graceStart || minutesFromMidnight < end
+  }
   return minutesFromMidnight >= graceStart && minutesFromMidnight < end
 }
 

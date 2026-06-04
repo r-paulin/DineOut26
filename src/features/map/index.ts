@@ -7,5 +7,9 @@ export {
   MAP_DEFAULT_ZOOM,
   MOCK_USER_LOCATION,
 } from "./mapMarkers.data"
+export {
+  distanceSqFromMapCenter,
+  latLngForRestaurantSlug,
+} from "./restaurantMapPosition"
 export { MapPinContent, MapPinTail, MapViewFab } from "./components"
 export type { MapLayerProps } from "./components/MapLayer"

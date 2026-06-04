@@ -18,6 +18,8 @@ export type { RestaurantDetailMenuSectionProps } from "./RestaurantDetailMenuSec
 export { RestaurantDetailOffersEmptyState } from "./RestaurantDetailOffersEmptyState"
 export { RestaurantDetailOffersSection } from "./RestaurantDetailOffersSection"
 export type { RestaurantDetailOffersSectionProps } from "./RestaurantDetailOffersSection"
+export { RestaurantAddressSheet } from "./RestaurantAddressSheet"
+export type { RestaurantAddressSheetProps } from "./RestaurantAddressSheet"
 export { RestaurantOpenHoursSheet } from "./RestaurantOpenHoursSheet"
 export type { RestaurantOpenHoursSheetProps } from "./RestaurantOpenHoursSheet"
 export { RestaurantDetailAtVenueBar } from "./RestaurantDetailAtVenueBar"

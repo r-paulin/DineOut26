@@ -36,6 +36,8 @@ export interface VenueInfoRowsProps {
   onOpenHours?: () => void
   /** When set, menu row opens the in-app menu gallery instead of `menuUrl`. */
   onOpenMenuGallery?: () => void
+  /** Opens the address bottom sheet instead of Google Maps. */
+  onOpenAddress?: () => void
   reserveUrl?: string
   instagramUrl?: string
   tiktokUrl?: string
@@ -121,6 +123,7 @@ export function VenueInfoRows({
   openExternalUrl,
   onOpenHours,
   onOpenMenuGallery,
+  onOpenAddress,
   reserveUrl,
   instagramUrl,
   tiktokUrl,
@@ -140,7 +143,7 @@ export function VenueInfoRows({
           lineOrder="valueFirst"
           value={hoursStatusLabel}
           label={hoursRowSubtitle}
-          showChevron
+          showChevron={Boolean(onOpenHours)}
           interactive={Boolean(onOpenHours)}
           onPress={onOpenHours}
           horizontalPadding="none"
@@ -185,21 +188,35 @@ export function VenueInfoRows({
         }
       </li>
       <li className="m-0 p-0">
-        <ListItem
-          icon={<Pin size="lg" className={ROW_ICON_CLASS} aria-hidden />}
-          iconTone="primary"
-          lineOrder="valueFirst"
-          label="Address"
-          value={address}
-          href={mapsUrl}
-          horizontalPadding="none"
-          showSeparator={false}
-          onAnchorClick={(e) => {
-            e.preventDefault()
-            openExternalUrl(mapsUrl)
-          }}
-          aria-label={`Open address in Google Maps: ${address}`}
-        />
+        {onOpenAddress ?
+          <ListItem
+            icon={<Pin size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+            iconTone="primary"
+            lineOrder="valueFirst"
+            label="Address"
+            value={address}
+            interactive
+            onPress={onOpenAddress}
+            horizontalPadding="none"
+            showSeparator={false}
+            aria-label={`View address: ${address}`}
+          />
+        : <ListItem
+            icon={<Pin size="lg" className={ROW_ICON_CLASS} aria-hidden />}
+            iconTone="primary"
+            lineOrder="valueFirst"
+            label="Address"
+            value={address}
+            href={mapsUrl}
+            horizontalPadding="none"
+            showSeparator={false}
+            onAnchorClick={(e) => {
+              e.preventDefault()
+              openExternalUrl(mapsUrl)
+            }}
+            aria-label={`Open address in Google Maps: ${address}`}
+          />
+        }
       </li>
       <li className="m-0 p-0">
         {telHref ?

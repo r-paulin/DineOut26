@@ -8,6 +8,7 @@ export function buildPaidOfferRecordFromClaim(
     offerId: claim.offerId,
     restaurantSlug: claim.restaurantSlug,
     discountPercent: claim.discountPercent,
+    discountAddPercent: claim.discountAddPercent,
     paymentMethod: claim.paymentMethod,
     paidAt: Date.now(),
   }
@@ -41,7 +42,7 @@ export function paidOfferRecordToClaimStub(
   if (paid.paymentMethod !== "dineout" || !paid.paymentCode) return null
   return {
     pin: "",
-    offerWindowCloses: new Date(paid.paidAt).toISOString(),
+    offerWindowCloses: new Date(paid.paidAt + 86_400_000).toISOString(),
     arrivalTime: "",
     arrivalDate: "",
     guestCount: 0,

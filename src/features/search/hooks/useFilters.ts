@@ -118,7 +118,7 @@ export function useFilters(): UseFiltersReturn {
 
   const applySheetValue = useCallback(
     (key: Exclude<FilterKey, "openNow">, value: string) => {
-      // Commit sheet dismissal + filter state in one synchronous flush so vaul’s
+      // Commit sheet dismissal + filter state in one synchronous flush so the
       // controlled `open` and chip labels update immediately (Reset / Apply).
       flushSync(() => {
         setSheetKey(null)

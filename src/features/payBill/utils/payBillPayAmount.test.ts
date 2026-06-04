@@ -7,8 +7,8 @@ describe("payAmountDue and cashbackAmountEur", () => {
     expect(cashbackAmountEur(12, 0.6, 15)).toBe(1.89)
   })
 
-  it("card/cash at venue: claimed % reduces pay; no cashback add-on", () => {
-    expect(payAmountDue(50, 5, 30)).toBe(38.5)
+  it("card/cash at venue: net receipt + tip is amount due; no cashback add-on", () => {
+    expect(payAmountDue(50, 5, 0)).toBe(55)
     expect(cashbackAmountEur(50, 5, 0)).toBe(0)
   })
 })

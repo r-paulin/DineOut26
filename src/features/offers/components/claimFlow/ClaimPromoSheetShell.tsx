@@ -48,6 +48,8 @@ export interface ClaimPromoSheetShellProps {
   footer?: ReactNode
   /** When false, footer has no top border (e.g. welcome / at-venue sheets). */
   footerBordered?: boolean
+  /** Extra classes on the pinned footer wrapper (e.g. Figma pt/pb on payment sheet). */
+  footerClassName?: string
   onContentAnimationEnd?: (e: AnimationEvent<HTMLDivElement>) => void
   children: ReactNode
 }
@@ -106,6 +108,7 @@ export function ClaimPromoSheetShell({
   sheetHeight = "fill",
   footer,
   footerBordered = true,
+  footerClassName,
   onContentAnimationEnd,
   children,
 }: ClaimPromoSheetShellProps) {
@@ -215,6 +218,7 @@ export function ClaimPromoSheetShell({
               className={[
                 VAUL_SHEET_FOOTER_CLASS,
                 footerBordered ? "" : "border-t-0 pt-4",
+                footerClassName,
               ]
                 .filter(Boolean)
                 .join(" ")}

@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { createPortal } from "react-dom"
 import {
   scheduleSnackbarAdd,
   useSnackbar,
@@ -33,14 +34,20 @@ import {
   getTimePickerConfig,
   mapOfferCardToClaimModalOffer,
 } from "@/features/offers"
-import { buildMapMarkersFromOffers, MapViewFab } from "@/features/map"
+import {
+  buildMapMarkersFromOffers,
+  distanceSqFromMapCenter,
+  MapViewFab,
+} from "@/features/map"
 import { filterOffersByTimePreset } from "@/features/offers/utils/offerCampaign"
 import {
   filterOfferCardsForDiscover,
   getEffectiveOfferForDiscover,
   isDiscoverEmptyTriggerFilter,
 } from "@/features/discover/utils/filterDiscoverOffers"
+import { ActiveOfferConflictSheet } from "@/features/offers/components/claimFlow/ActiveOfferConflictSheet"
 import { removeClaimedOfferById } from "@/features/offers/utils/claimedOfferState"
+import type { HomeClaimedOfferItem } from "@/features/discover/components/HomeClaimedOffersCarousel"
 import {
   buildPaidOfferRecordFromClaim,
   buildPaidOfferRecordFromPaySnapshot,
@@ -246,6 +253,11 @@ export function HomeScreen() {
   /** Resolved offer for {@link ClaimOfferModal}; avoids re-looking up by id (can fail across demo rebuilds). */
   const [pendingClaimOffer, setPendingClaimOffer] =
     useState<ClaimOfferModalOffer | null>(null)
+  const [activeOfferConflict, setActiveOfferConflict] = useState<{
+    blocking: ClaimedOffer
+    pendingOffer: ClaimOfferModalOffer
+    pendingClaimData: ClaimData
+  } | null>(null)
   const [postClaimSuccess, setPostClaimSuccess] = useState<ClaimedOffer | null>(
     null,
   )
@@ -298,59 +310,69 @@ export function HomeScreen() {
     })
   }, [claimedByOfferId, catalogSnapshot])
 
-  const latestClaimedOfferForHome = useMemo(() => {
-    const list = Object.values(claimedByOfferId)
-    if (list.length === 0) return null
-    return list.reduce((a, b) => (a.claimedAt >= b.claimedAt ? a : b))
-  }, [claimedByOfferId])
+  const homeClaimedOffers = useMemo((): HomeClaimedOfferItem[] => {
+    const sorted = Object.values(claimedByOfferId).sort((a, b) => {
+      const dist =
+        distanceSqFromMapCenter(a.restaurantSlug) -
+        distanceSqFromMapCenter(b.restaurantSlug)
+      if (dist !== 0) return dist
+      return b.claimedAt - a.claimedAt
+    })
+    return sorted.flatMap((claim): HomeClaimedOfferItem[] => {
+      const model = getRestaurantDetailDemo(claim.restaurantSlug)
+      const card = findOfferCardById(model, claim.offerId)
+      if (!card) return []
+      return [
+        {
+          offer: {
+            ...card,
+            restaurantName: card.restaurantName ?? model.name,
+          },
+          venueSlug: claim.restaurantSlug,
+          claim,
+        },
+      ]
+    })
+  }, [claimedByOfferId, catalogSnapshot])
 
-  const homeClaimedOfferCard = useMemo(() => {
-    if (!latestClaimedOfferForHome) return null
-    const model = getRestaurantDetailDemo(latestClaimedOfferForHome.restaurantSlug)
-    const card = findOfferCardById(model, latestClaimedOfferForHome.offerId)
-    if (!card) return null
-    return {
-      ...card,
-      restaurantName: card.restaurantName ?? model.name,
-    }
-  }, [latestClaimedOfferForHome, catalogSnapshot])
-
-  const openClaimedOfferDetails = useCallback(
+  const openClaimedOfferPage = useCallback(
     (claim: ClaimedOffer) => {
-      openRestaurantDetail(claim.restaurantSlug)
       closeSectionList()
       setSearchOpen(false)
       setPendingClaimOffer(null)
       setPostClaimSuccess(null)
       setClaimedView(claim)
     },
-    [closeSectionList, openRestaurantDetail, setSearchOpen],
+    [closeSectionList, setSearchOpen],
+  )
+
+  /** Claimed offer over an open or newly opened restaurant detail (chip, pay bill, etc.). */
+  const openClaimedOfferDetails = useCallback(
+    (claim: ClaimedOffer) => {
+      openRestaurantDetail(claim.restaurantSlug)
+      openClaimedOfferPage(claim)
+    },
+    [openClaimedOfferPage, openRestaurantDetail],
   )
 
   const handleHomeClaimedOfferPress = useCallback(
-    (offerId: string) => {
-      const claim = claimedByOfferId[offerId]
-      if (!claim) return
-      openClaimedOfferDetails(claim)
+    (claim: ClaimedOffer) => {
+      setClaimedView(null)
+      setPendingClaimOffer(null)
+      setPostClaimSuccess(null)
+      openRestaurantDetail(claim.restaurantSlug)
     },
-    [claimedByOfferId, openClaimedOfferDetails],
+    [openRestaurantDetail],
   )
 
   const handleDiscoverRestaurantPress = useCallback(
     (slug: string) => {
-      const model = getRestaurantDetailDemo(slug)
-      const activeClaim = findActiveClaimForRestaurant(
-        slug,
-        model,
-        claimedByOfferId,
-      )
-      if (activeClaim) {
-        openClaimedOfferDetails(activeClaim)
-        return
-      }
+      setClaimedView(null)
+      setPendingClaimOffer(null)
+      setPostClaimSuccess(null)
       openRestaurantDetail(slug)
     },
-    [claimedByOfferId, openClaimedOfferDetails, openRestaurantDetail],
+    [openRestaurantDetail],
   )
 
   const claimedOfferPageRestaurant = useMemo(() => {
@@ -490,6 +512,40 @@ export function HomeScreen() {
     },
     [baseRestaurantDetail, completeClaim, pendingClaimOffer, snackbar],
   )
+
+  const handleClaimConflict = useCallback(
+    (blocking: ClaimedOffer, claimData: ClaimData) => {
+      if (!pendingClaimOffer) return
+      setActiveOfferConflict({
+        blocking,
+        pendingOffer: pendingClaimOffer,
+        pendingClaimData: claimData,
+      })
+    },
+    [pendingClaimOffer],
+  )
+
+  const blockingConflictRestaurantName = useMemo(() => {
+    if (!activeOfferConflict) return ""
+    const model = getRestaurantDetailDemo(activeOfferConflict.blocking.restaurantSlug)
+    return model.name
+  }, [activeOfferConflict, catalogSnapshot])
+
+  const handleConflictCancelBlockingOffer = useCallback(() => {
+    if (!activeOfferConflict || !baseRestaurantDetail) return
+    const { blocking, pendingOffer, pendingClaimData } = activeOfferConflict
+    setClaimedByOfferId((prev) => removeClaimedOfferById(prev, blocking.offerId))
+    setActiveOfferConflict(null)
+    const card = findOfferCardById(baseRestaurantDetail, pendingOffer.id)
+    if (!card) {
+      snackbar.add({
+        description: "Could not complete claim. Try again.",
+        timeout: 4000,
+      })
+      return
+    }
+    completeClaim(pendingClaimData, card)
+  }, [activeOfferConflict, baseRestaurantDetail, completeClaim, snackbar])
 
   const handlePostClaimSuccessDone = useCallback(() => {
     setPostClaimSuccess(null)
@@ -752,7 +808,7 @@ export function HomeScreen() {
     scrollToTopSignal,
     onSeeAllSection: openSectionList,
     onRestaurantPress: handleDiscoverRestaurantPress,
-    homeClaimedOfferCard,
+    homeClaimedOffers,
     userClaims,
     claimedOffersById: claimedByOfferId,
     onHomeClaimedOfferPress: handleHomeClaimedOfferPress,
@@ -770,9 +826,26 @@ export function HomeScreen() {
     />
   )
 
+  const claimedOfferPageNode =
+    claimedView && claimedOfferPageRestaurant ?
+      <ClaimedOfferPage
+        ref={claimedOfferPageRef}
+        key={`${claimedView.offerId}-${claimedView.offerWindowCloses}`}
+        restaurant={claimedOfferPageRestaurant}
+        claim={claimedView}
+        onClose={handleClaimedOfferClose}
+        onCancelOffer={handleCancelClaimedOffer}
+        onPayWithBoltDineOut={handlePayFromClaimedOfferPrepare}
+        onPayWithBoltDineOutComplete={handlePayFromClaimedOfferComplete}
+        onConfirmBillComplete={handleConfirmBillClaimedComplete}
+        onPaymentMethodChange={handleClaimedOfferPaymentMethodChange}
+      />
+    : null
+
   /** Keep discover inert under full-screen overlays so focus cannot sit beneath them. */
   const discoverUnderClaimSheetsInert =
     pendingClaimOffer != null ||
+    activeOfferConflict != null ||
     postClaimSuccess != null ||
     claimedView != null ||
     payBillEntry != null
@@ -957,25 +1030,28 @@ export function HomeScreen() {
             if (!open) setPendingClaimOffer(null)
           }}
           offer={pendingClaimOffer}
+          restaurantSlug={restaurantDetailSlug}
+          claimedByOfferId={claimedByOfferId}
           onClose={() => setPendingClaimOffer(null)}
           onClaimed={handleClaimed}
+          onConflict={handleClaimConflict}
           container={portalRoot ?? undefined}
         />
       ) : null}
-      {claimedView && claimedOfferPageRestaurant ? (
-        <ClaimedOfferPage
-          ref={claimedOfferPageRef}
-          key={`${claimedView.offerId}-${claimedView.offerWindowCloses}`}
-          restaurant={claimedOfferPageRestaurant}
-          claim={claimedView}
-          onClose={handleClaimedOfferClose}
-          onCancelOffer={handleCancelClaimedOffer}
-          onPayWithBoltDineOut={handlePayFromClaimedOfferPrepare}
-          onPayWithBoltDineOutComplete={handlePayFromClaimedOfferComplete}
-          onConfirmBillComplete={handleConfirmBillClaimedComplete}
-          onPaymentMethodChange={handleClaimedOfferPaymentMethodChange}
+      {activeOfferConflict ?
+        <ActiveOfferConflictSheet
+          isOpen
+          onOpenChange={(open) => {
+            if (!open) setActiveOfferConflict(null)
+          }}
+          blockingRestaurantName={blockingConflictRestaurantName}
+          onCancelBlockingOffer={handleConflictCancelBlockingOffer}
+          container={portalRoot ?? undefined}
         />
-      ) : null}
+      : null}
+      {claimedOfferPageNode && portalRoot ?
+        createPortal(claimedOfferPageNode, portalRoot)
+      : claimedOfferPageNode}
       {postClaimSuccess ?
         <ClaimOfferSuccessSheet
           key={postClaimSuccess.offerId}

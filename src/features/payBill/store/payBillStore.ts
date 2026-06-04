@@ -16,7 +16,7 @@ export interface PayBillStoreState {
   paymentCode: string | null
   paidAt: string | null
   paidAmount: number | null
-  discountAmount: number | null
+  cashbackEarnedEur: number | null
   selectedCardId: string | null
   paymentMethodUi: "bolt_balance" | "card" | null
   /** Selected funding for the non–Bolt Balance portion of checkout (Figma Payment). */
@@ -32,7 +32,7 @@ export interface PayBillStoreState {
     paymentCode: string
     paidAt: string
     paidAmount: number
-    discountAmount: number
+    cashbackEarnedEur: number
     paymentMethodUi: "bolt_balance" | "card"
   }) => void
   /** Atomic transition to payment confirmation after mock/API pay succeeds. */
@@ -41,7 +41,7 @@ export interface PayBillStoreState {
     paymentCode: string
     paidAt: string
     paidAmount: number
-    discountAmount: number
+    cashbackEarnedEur: number
     paymentMethodUi: "bolt_balance" | "card"
   }) => void
   setSelectedCardId: (id: string | null) => void
@@ -70,7 +70,7 @@ const initial = (): Omit<
   paymentCode: null,
   paidAt: null,
   paidAmount: null,
-  discountAmount: null,
+  cashbackEarnedEur: null,
   selectedCardId: "card-default",
   paymentMethodUi: null,
   checkoutPaymentOptionId: CHECKOUT_PAYMENT_DEFAULT_OPTION_ID,
@@ -95,7 +95,7 @@ export const usePayBillStore = create<PayBillStoreState>((set) => ({
       paymentCode: payload.paymentCode,
       paidAt: payload.paidAt,
       paidAmount: payload.paidAmount,
-      discountAmount: payload.discountAmount,
+      cashbackEarnedEur: payload.cashbackEarnedEur,
       paymentMethodUi: payload.paymentMethodUi,
     }),
   completePayment: (payload) =>
@@ -104,7 +104,7 @@ export const usePayBillStore = create<PayBillStoreState>((set) => ({
       paymentCode: payload.paymentCode,
       paidAt: payload.paidAt,
       paidAmount: payload.paidAmount,
-      discountAmount: payload.discountAmount,
+      cashbackEarnedEur: payload.cashbackEarnedEur,
       paymentMethodUi: payload.paymentMethodUi,
       step: "confirmation",
     }),

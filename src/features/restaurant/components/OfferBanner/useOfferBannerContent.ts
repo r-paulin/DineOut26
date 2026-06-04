@@ -245,21 +245,27 @@ export function buildOfferBannerContent({
     if (context === "home") {
       const headline =
         offer.restaurantName?.trim() || "Restaurant"
+      const detailLine =
+        claim.offerDetailLabel?.trim() ||
+        formatOfferBannerClaimedDiscountLine(displayDiscount)
+      const arrivalLine = formatOfferBannerArrivalLine(claim)
       return {
         outerClaimed: true,
         outerShellTone: "neutral",
         innerClaimed: true,
         headline,
         dataLines: [
+          { text: arrivalLine, emphasis: "accent" },
           {
-            text: formatOfferBannerHomeClaimedDetailLine(claim, displayDiscount),
-            emphasis: "accent",
+            text: detailLine,
+            emphasis: "regular",
+            tone: "secondary",
           },
         ],
         action: { kind: "claimed", label: "Claimed", disabled: false },
         sticker: { kind: "countdown" },
         imageVariant: "claimed",
-        ariaLabel: headline,
+        ariaLabel: `${headline}, ${arrivalLine}, ${detailLine}`,
       }
     }
     const headline = formatOfferBannerClaimedDiscountLine(displayDiscount)

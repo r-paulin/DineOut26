@@ -27,7 +27,10 @@ function reviewCountDisplay(offer: OfferCardModel): string {
  * lists timed offers for the slug (same rule as discover “open now”); otherwise
  * it falls back to {@link OfferCardModel.isOpen}.
  */
-export function mapOfferToRestaurantCardView(offer: OfferCardModel): RestaurantCardView {
+export function mapOfferToRestaurantCardView(
+  offer: OfferCardModel,
+  now: Date = new Date(),
+): RestaurantCardView {
   const c = offer.campaign
   const primary = hasCampaignBadges(c)
     ? {
@@ -42,7 +45,7 @@ export function mapOfferToRestaurantCardView(offer: OfferCardModel): RestaurantC
   /** Match discover “open now”: timed-offer windows vs clock when catalog has offers; else card flags. */
   const isOpen =
     timed.length > 0 ?
-      restaurantTimedOfferActiveNow(slug, new Date())
+      restaurantTimedOfferActiveNow(slug, now)
     : offer.isOpen !== false
 
   return {

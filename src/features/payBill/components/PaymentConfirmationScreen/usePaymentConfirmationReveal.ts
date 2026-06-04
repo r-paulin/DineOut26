@@ -5,11 +5,12 @@ import {
   measureConfirmSheetInsetPx,
   measurePayConfirmNavReservePx,
 } from "@/features/payBill/components/PaymentConfirmationScreen/paymentConfirmationLayout"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
+import { MOTION_PUSH_S } from "@/shared/motion"
+import { motionReduced } from "@/shared/motion/motionHelpers"
 
 export type PaymentConfirmationPhase = "celebration" | "revealed"
 
-const ENTRANCE_S = 0.6
+const ENTRANCE_S = MOTION_PUSH_S
 const HOLD_AFTER_ENTRANCE_S = 2
 const SHEET_IN_S = 0.75
 const HERO_MORPH_S = 0.75
@@ -143,7 +144,7 @@ export function usePaymentConfirmationReveal({
         applyHeroBandAboveSheet(heroBand, navTopPx, measureSheetInset(sheet))
       }
 
-      if (startRevealed || prefersReducedMotion()) {
+      if (startRevealed || motionReduced()) {
         applyHeroBandAboveSheet(heroBand, navTopPx, measureSheetInset(sheet))
         gsap.set(sheet, { yPercent: 0 })
         applyCheckmarkSize(imgWrap, PAY_SUCCESS_CHECKMARK_FINAL_PX)
@@ -242,9 +243,13 @@ export function usePaymentConfirmationReveal({
     }
 
     if (!setup()) {
-      raf = window.requestAnimationFrame(() => {
-        setup()
-      })
+      let attempts = 0
+      const retry = () => {
+        if (cancelled || setup() || attempts >= 8) return
+        attempts += 1
+        raf = window.requestAnimationFrame(retry)
+      }
+      raf = window.requestAnimationFrame(retry)
     }
 
     return () => {

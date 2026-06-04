@@ -38,4 +38,6 @@ export interface RestaurantAboutProps {
   onOpenMenuGallery?: () => void
   /** Opens price info / menu gallery (same as detail stats price column). */
   onOpenPriceInfo?: () => void
+  /** Opens the address bottom sheet (venue address row). */
+  onOpenAddress?: () => void
 }

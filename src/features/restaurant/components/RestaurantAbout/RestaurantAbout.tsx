@@ -38,6 +38,7 @@ export function RestaurantAbout({
   onOpenPriceInfo,
   onOpenHours,
   onOpenMenuGallery,
+  onOpenAddress,
 }: RestaurantAboutProps) {
   const { openAccordion, toggleAccordion } = useRestaurantAbout()
   const [galleryOpen, setGalleryOpen] = useState(false)
@@ -150,6 +151,7 @@ export function RestaurantAbout({
           openExternalUrl={openExternalUrl}
           onOpenHours={onOpenHours}
           onOpenMenuGallery={onOpenMenuGallery}
+          onOpenAddress={onOpenAddress}
           reserveUrl={restaurant.reserveUrl}
           instagramUrl={restaurant.instagramUrl}
           tiktokUrl={restaurant.tiktokUrl}

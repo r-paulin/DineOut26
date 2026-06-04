@@ -11,7 +11,15 @@ import {
 import { createPortal } from "react-dom"
 import { Z_RESTAURANT_SHEET_CONTENT } from "@/features/restaurant/constants/screenLayers"
 import { useMenuImagePinchZoom } from "@/features/restaurant/hooks/useMenuImagePinchZoom"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
+import {
+  EASE_STANDARD_IN,
+  EASE_STANDARD_OUT,
+  MOTION_REDUCED_S,
+  MOTION_SHEET_DISMISS_S,
+  MOTION_SHEET_S,
+} from "@/shared/motion"
+import { useModalOverlayLock } from "@/shared/hooks/useModalOverlayLock"
+import { motionReduced } from "@/shared/motion/motionHelpers"
 
 export interface RestaurantMenuGalleryModalProps {
   isOpen: boolean
@@ -105,6 +113,12 @@ export function RestaurantMenuGalleryModal({
 
   const visible = isOpen || mounted
 
+  useModalOverlayLock({
+    active: visible,
+    containerRef: rootRef,
+    onEscape: close,
+  })
+
   useLayoutEffect(() => {
     if (!isOpen || !scrollRef.current) return
     const last = Math.max(0, imageUrls.length - 1)
@@ -130,24 +144,6 @@ export function RestaurantMenuGalleryModal({
     const id = window.requestAnimationFrame(apply)
     return () => window.cancelAnimationFrame(id)
   }, [isOpen, imageUrls, initialSlideIndex, isVertical])
-
-  useEffect(() => {
-    if (!visible) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close()
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [visible, close])
-
-  useEffect(() => {
-    if (!visible) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [visible])
 
   const setSlideRef = useCallback((index: number, el: HTMLDivElement | null) => {
     slideRefs.current[index] = el
@@ -188,7 +184,7 @@ export function RestaurantMenuGalleryModal({
     if (!el) return
 
     gsap.killTweensOf(el)
-    const reduced = prefersReducedMotion()
+    const reduced = motionReduced()
 
     if (isOpen) {
       if (reduced) {
@@ -205,13 +201,13 @@ export function RestaurantMenuGalleryModal({
       const tl = gsap.timeline()
       tlRef.current = tl
       if (reduced) {
-        tl.to(el, { autoAlpha: 1, duration: 0.14, ease: "none" })
+        tl.to(el, { autoAlpha: 1, duration: MOTION_REDUCED_S, ease: "none" })
       } else {
         tl.to(el, {
           autoAlpha: 1,
           scale: 1,
-          duration: 0.36,
-          ease: "power2.out",
+          duration: MOTION_SHEET_S,
+          ease: EASE_STANDARD_OUT,
         })
       }
       return () => {
@@ -224,13 +220,13 @@ export function RestaurantMenuGalleryModal({
     })
     tlRef.current = tl
     if (reduced) {
-      tl.to(el, { autoAlpha: 0, duration: 0.14, ease: "none" })
+      tl.to(el, { autoAlpha: 0, duration: MOTION_REDUCED_S, ease: "none" })
     } else {
       tl.to(el, {
         autoAlpha: 0,
         scale: 0.98,
-        duration: 0.28,
-        ease: "power2.in",
+        duration: MOTION_SHEET_DISMISS_S,
+        ease: EASE_STANDARD_IN,
       })
     }
     return () => {

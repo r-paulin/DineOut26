@@ -12,7 +12,7 @@ export function capturePayBillCompletionSnapshot(
   const s = usePayBillStore.getState()
   if (
     s.paidAmount == null ||
-    s.discountAmount == null ||
+    s.cashbackEarnedEur == null ||
     s.paymentCode == null ||
     s.billAmount == null
   ) {
@@ -26,7 +26,7 @@ export function capturePayBillCompletionSnapshot(
     discountPercent: entry.offer?.discountPercent ?? 0,
     discountAddPercent,
     paidAmount: s.paidAmount,
-    cashbackEarnedEur: s.discountAmount,
+    cashbackEarnedEur: s.cashbackEarnedEur,
     receiptTotalEur: s.billAmount,
     tipEur: s.tip,
     paymentCode: s.paymentCode,

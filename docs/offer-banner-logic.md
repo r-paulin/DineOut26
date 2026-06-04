@@ -98,9 +98,16 @@ These do **not** add a fourth `OfferState`. They layer on top of `available` in 
 | --- | --- | --- | --- |
 | **Active window** | Scheduled today and local time is inside `[offerStart, offerEnd)` (all-day on today counts as active until `offerEnd`) | Claim offer | None |
 | **Pre-book** | Future schedule date, or today before `offerStart` | Pre-book now | `Limited availability — 1 left` when `remainingCount === 1` |
-| **Locked** | User claimed a **different** offer at this venue on the **same calendar day** as this row (`hasOtherClaimAtVenue`) | Claim offer (disabled) | `One offer per restaurant per day` |
+| **Locked** | User claimed a **different** offer at **this restaurant** (`restaurantSlug`) on the **same calendar day** as this row (`hasOtherClaimAtVenue`) | Claim offer (disabled) | `One offer per restaurant per day` |
 
 Every interactive row also shows schedule + `Min. order X · Max. saving Y` (from `minOrderEur` / `maxSavingEur` on the card or claim).
+
+## Multiple claims (prototype)
+
+- **Same venue, same day:** Only one offer per restaurant per day (detail banner lock above). Scoped by `restaurantSlug`, not “any claim that day”.
+- **Different venues:** Allowed when active windows **do not overlap**. Overlap interval is **arrival time → `offerWindowCloses`** (see `claimConflict.ts`).
+- **Concurrent cross-venue claim:** Blocked in `ClaimOfferModal` on submit; `ActiveOfferConflictSheet` lets the user cancel the blocking offer or keep it and adjust arrival time.
+- **Home:** All active claims appear in `HomeClaimedOffersCarousel` (newest `claimedAt` first), with page dots when there is more than one card.
 
 ## Common Bugs to Avoid
 

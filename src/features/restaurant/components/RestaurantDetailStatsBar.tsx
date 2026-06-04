@@ -6,8 +6,6 @@ import {
   SUMMARY_SUBLINE,
   SUMMARY_VALUE_LINE,
 } from "@/features/restaurant/components/restaurantDetailSummaryTokens"
-import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
-
 export interface RestaurantDetailStatsBarProps {
   ratingValue: string
   reviewsLine: string
@@ -18,12 +16,9 @@ export interface RestaurantDetailStatsBarProps {
   address: string
   onOpenReviews?: () => void
   onOpenPriceInfo?: () => void
-  /** Optional hook when the user opens Maps from the location column. */
-  onOpenMaps?: () => void
+  /** Opens the address bottom sheet (location column). */
+  onOpenAddress?: () => void
 }
-
-const LINK_RESET =
-  "cursor-pointer border-0 text-inherit no-underline decoration-transparent visited:text-inherit"
 
 /**
  * Restaurant summary: three equal columns, 1px dividers, rounded top 16px,
@@ -37,10 +32,8 @@ export function RestaurantDetailStatsBar({
   address,
   onOpenReviews,
   onOpenPriceInfo,
-  onOpenMaps,
+  onOpenAddress,
 }: RestaurantDetailStatsBarProps) {
-  const mapsHref = googleMapsSearchUrl(address)
-
   return (
     <div
       className="relative z-[1] -mt-4 mx-0 flex w-full rounded-t-[16px] bg-layer-floor-1 px-2 pb-3 pt-5 shadow-[0_-0.25rem_0.75rem_rgba(0,0,0,0.08)]"
@@ -71,36 +64,53 @@ export function RestaurantDetailStatsBar({
           {reviewsLine}
         </span>
       </button>
+      {onOpenPriceInfo ?
+        <button
+          type="button"
+          className={`${SUMMARY_COL_STACK} ${SUMMARY_COL_DIVIDER} cursor-pointer border-0`}
+          onClick={onOpenPriceInfo}
+          aria-label={`Price range ${priceRange} per person`}
+        >
+          <Typography
+            variant="body-s-accent"
+            color="primary"
+            as="span"
+            inlineStyle={SUMMARY_VALUE_LINE}
+          >
+            {priceRange}
+          </Typography>
+          <span
+            className={SUMMARY_SUBLINE}
+            style={{ fontFamily: "var(--font-family)" }}
+          >
+            per person
+          </span>
+        </button>
+      : <div
+          className={`${SUMMARY_COL_STACK} ${SUMMARY_COL_DIVIDER}`}
+          aria-label={`Price range ${priceRange} per person`}
+        >
+          <Typography
+            variant="body-s-accent"
+            color="primary"
+            as="span"
+            inlineStyle={SUMMARY_VALUE_LINE}
+          >
+            {priceRange}
+          </Typography>
+          <span
+            className={SUMMARY_SUBLINE}
+            style={{ fontFamily: "var(--font-family)" }}
+          >
+            per person
+          </span>
+        </div>
+      }
       <button
         type="button"
-        className={`${SUMMARY_COL_STACK} ${SUMMARY_COL_DIVIDER} cursor-pointer border-0`}
-        onClick={onOpenPriceInfo}
-        aria-label={`Price range ${priceRange} per person`}
-      >
-        <Typography
-          variant="body-s-accent"
-          color="primary"
-          as="span"
-          inlineStyle={SUMMARY_VALUE_LINE}
-        >
-          {priceRange}
-        </Typography>
-        <span
-          className={SUMMARY_SUBLINE}
-          style={{ fontFamily: "var(--font-family)" }}
-        >
-          per person
-        </span>
-      </button>
-      <a
-        href={mapsHref}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`${SUMMARY_COL_STACK} ${SUMMARY_COL_DIVIDER} ${LINK_RESET}`}
-        onClick={() => {
-          onOpenMaps?.()
-        }}
-        aria-label={`Open in Google Maps: ${areaLabel}, ${address}`}
+        className={`${SUMMARY_COL_STACK} ${SUMMARY_COL_DIVIDER} cursor-pointer border-0 bg-transparent p-0 text-inherit`}
+        onClick={onOpenAddress}
+        aria-label={`View address: ${areaLabel}, ${address}`}
       >
         <div className="w-full min-w-0">
           <Typography
@@ -130,7 +140,7 @@ export function RestaurantDetailStatsBar({
             {address}
           </Typography>
         </div>
-      </a>
+      </button>
     </div>
   )
 }

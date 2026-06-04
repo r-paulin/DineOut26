@@ -1,5 +1,4 @@
 import gsap from "gsap"
-import { CustomEase } from "gsap/CustomEase"
 import {
   useCallback,
   useEffect,
@@ -11,11 +10,18 @@ import {
 import { findActiveClaimForRestaurant } from "@/features/offers/utils/claimFlowModel"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
+import {
+  EASE_EMPHASIZED_ENTER,
+  EASE_EMPHASIZED_EXIT,
+  MOTION_DETAIL_SCRIM,
+  MOTION_PUSH_S,
+} from "@/shared/motion"
+import { motionReduced } from "@/shared/motion/motionHelpers"
 import { buildVenueSharePayload } from "@/shared/utils/venueShare"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 import { slideOffScreenXPx } from "@/shared/utils/slideOffScreenXPx"
 import { useRestaurantDetailHeaderTitle } from "@/features/restaurant/hooks/useRestaurantDetailHeaderTitle"
 import { useRestaurantHeroStatusPill } from "@/features/restaurant/hooks/useRestaurantHeroStatusPill"
+import { useRestaurantOpenHoursUi } from "@/features/restaurant/hooks/useRestaurantOpenHoursUi"
 import type { RestaurantDetailScreenProps } from "@/features/restaurant/restaurantDetail.types"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { toTelHref } from "@/shared/utils/telHref"
@@ -29,34 +35,11 @@ import { RestaurantAbout } from "./RestaurantAbout"
 import { RestaurantDetailMenuSection } from "./RestaurantDetailMenuSection"
 import { RestaurantDetailVenueSection } from "./RestaurantDetailVenueSection"
 import { RestaurantMenuGalleryModal } from "./RestaurantMenuGalleryModal"
+import { RestaurantAddressSheet } from "./RestaurantAddressSheet"
 import { RestaurantOpenHoursSheet } from "./RestaurantOpenHoursSheet"
 import { RestaurantOverlayNavHeader } from "./RestaurantOverlayNavHeader"
 import { RestaurantRatingSheet } from "./RestaurantRatingSheet"
 import { RestaurantReportProblemSheet } from "./RestaurantReportProblemSheet"
-
-/**
- * Same cubic family as {@link BottomSheet} height (`0.32, 0.72, 0, 1`) so
- * discover → detail feels like one system (Apple-style “emphasized” ease).
- */
-const EASE_DETAIL_ENTER = CustomEase.create(
-  "detailPushEnter",
-  "M0,0,C0.32,0.72,0,1,1,1",
-)
-/** Paired ease-in for dismiss — quick commitment, soft tail into off-screen. */
-const EASE_DETAIL_EXIT = CustomEase.create(
-  "detailPushExit",
-  "M0,0,C0.58,0,0.92,0.36,1,1",
-)
-
-/** Enter + exit: panel and scrim each run this long (seconds). */
-const DETAIL_MOTION_S = 0.6
-
-/**
- * Optional offset between scrim and panel (seconds). `0` keeps both segments
- * exactly {@link DETAIL_MOTION_S} and ending together.
- */
-const STAGGER_PANEL_AFTER_SCRIM_S = 0
-const STAGGER_SCRIM_AFTER_PANEL_EXIT_S = 0
 
 /**
  * Full-screen restaurant detail: scrollable body, prototype data from
@@ -99,24 +82,28 @@ export function RestaurantDetailScreen({
   const aboutExitingRef = useRef(false)
   const venueBarExitRef = useRef<(() => void) | null>(null)
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
-    {
-      motionDurationS: DETAIL_MOTION_S,
-      easeEnter: EASE_DETAIL_ENTER,
-      easeExit: EASE_DETAIL_EXIT,
-      staggerPanelAfterScrimS: STAGGER_PANEL_AFTER_SCRIM_S,
-      staggerScrimAfterPanelExitS: STAGGER_SCRIM_AFTER_PANEL_EXIT_S,
-    },
+    { scrimOpacity: MOTION_DETAIL_SCRIM },
     onBackRef,
   )
   const { portalRoot } = useDeviceShell()
   const [ratingSheetOpen, setRatingSheetOpen] = useState(false)
   const [openHoursSheetOpen, setOpenHoursSheetOpen] = useState(false)
+  const [addressSheetOpen, setAddressSheetOpen] = useState(false)
   const [menuGalleryOpen, setMenuGalleryOpen] = useState(false)
   const [menuGalleryInitialIndex, setMenuGalleryInitialIndex] = useState(0)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [reportProblemOpen, setReportProblemOpen] = useState(false)
   const { titleOpacity, onScroll } = useRestaurantDetailHeaderTitle()
   const statusPill = useRestaurantHeroStatusPill(model.weeklyOpenHours)
+  const hoursUi = useRestaurantOpenHoursUi(model.weeklyOpenHours)
+  const aboutRestaurantLive = useMemo(
+    () => ({
+      ...model.about,
+      isOpenNow: hoursUi.isOpenNow,
+      hoursRowSubtitle: hoursUi.venueHoursRowSubtitle,
+    }),
+    [hoursUi.isOpenNow, hoursUi.venueHoursRowSubtitle, model.about],
+  )
   const {
     titleOpacity: aboutTitleOpacity,
     onScroll: onAboutTitleScroll,
@@ -162,7 +149,7 @@ export function RestaurantDetailScreen({
     const stack = aboutStackRef.current
     if (!area || !stack) return
 
-    if (prefersReducedMotion()) {
+    if (motionReduced()) {
       gsap.set(stack, { x: 0, clearProps: "transform" })
       return
     }
@@ -173,8 +160,8 @@ export function RestaurantDetailScreen({
     const ctx = gsap.context(() => {
       gsap.to(stack, {
         x: 0,
-        duration: DETAIL_MOTION_S,
-        ease: EASE_DETAIL_ENTER,
+        duration: MOTION_PUSH_S,
+        ease: EASE_EMPHASIZED_ENTER,
         force3D: true,
       })
     }, area)
@@ -199,11 +186,13 @@ export function RestaurantDetailScreen({
     setOpenHoursSheetOpen(true)
   }, [onOpenHours])
 
-  const handleOpenPriceInfo = useCallback(() => {
-    if (onOpenPriceInfo === null) return
-    onOpenPriceInfo?.()
-    setMenuGalleryOpen(true)
-  }, [onOpenPriceInfo])
+  const handleOpenAddress = useCallback(() => {
+    setAddressSheetOpen(true)
+  }, [])
+
+  const handleGetDirections = useCallback(() => {
+    onOpenMaps?.()
+  }, [onOpenMaps])
 
   const scrollToMenuSection = useCallback(() => {
     if (onOpenMenu === null) return
@@ -277,6 +266,7 @@ export function RestaurantDetailScreen({
   const openAbout = useCallback(() => {
     setOpenHoursSheetOpen(false)
     setRatingSheetOpen(false)
+    setAddressSheetOpen(false)
     setMenuGalleryOpen(false)
     onMoreAboutVenue?.()
     setAboutOpen(true)
@@ -293,7 +283,7 @@ export function RestaurantDetailScreen({
       setAboutOpen(false)
     }
 
-    if (prefersReducedMotion() || !stack || !area) {
+    if (motionReduced() || !stack || !area) {
       finishAboutExit()
       return
     }
@@ -303,8 +293,8 @@ export function RestaurantDetailScreen({
     gsap.killTweensOf(stack)
     gsap.to(stack, {
       x: offX,
-      duration: DETAIL_MOTION_S,
-      ease: EASE_DETAIL_EXIT,
+      duration: MOTION_PUSH_S,
+      ease: EASE_EMPHASIZED_EXIT,
       force3D: true,
       onComplete: finishAboutExit,
       onInterrupt: finishAboutExit,
@@ -323,7 +313,7 @@ export function RestaurantDetailScreen({
       <div
         ref={scrimRef}
         className="pointer-events-none absolute inset-0 z-0 bg-black/15"
-        style={prefersReducedMotion() ? { opacity: 1 } : undefined}
+        style={motionReduced() ? { opacity: MOTION_DETAIL_SCRIM } : undefined}
         aria-hidden
       />
       <div
@@ -345,6 +335,7 @@ export function RestaurantDetailScreen({
                 : "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
             }}
             aria-hidden={aboutOpen}
+            {...(aboutOpen ? { inert: true } : {})}
           >
             <RestaurantDetailHeader
               key={model.slug}
@@ -366,21 +357,14 @@ export function RestaurantDetailScreen({
                 areaLabel={model.areaLabel}
                 address={model.address}
                 onOpenReviews={handleOpenReviews}
-                onOpenPriceInfo={handleOpenPriceInfo}
-                onOpenMaps={onOpenMaps}
+                onOpenPriceInfo={onOpenPriceInfo ?? undefined}
+                onOpenAddress={handleOpenAddress}
               />
               <RestaurantDetailQuickActions
                 onOpenMenu={
                   onOpenMenu === null ? undefined : scrollToMenuSection
                 }
-                onOpenDirections={
-                  onOpenMaps ?
-                    () => {
-                      window.open(mapsHref, "_blank", "noopener,noreferrer")
-                      onOpenMaps()
-                    }
-                  : undefined
-                }
+                onOpenDirections={handleOpenAddress}
                 onCall={
                   telHref && onCall ?
                     () => {
@@ -397,6 +381,7 @@ export function RestaurantDetailScreen({
               />
               <RestaurantDetailSectionDivider />
               <RestaurantDetailOffersSection
+                venueSlug={model.slug}
                 tabs={model.offerDateTabs}
                 offersByTabId={model.offersByTabId}
                 userClaims={userClaims}
@@ -418,12 +403,12 @@ export function RestaurantDetailScreen({
               name={model.name}
               cuisineTags={model.cuisineTags}
               venueGalleryCycles={model.venueGalleryCycles}
-              venueHoursRowSubtitle={model.venueHoursRowSubtitle}
-              isOpen={model.isOpen}
+              venueHoursRowSubtitle={hoursUi.venueHoursRowSubtitle}
+              isOpen={hoursUi.isOpenNow}
               address={model.address}
               phone={model.phone}
               onOpenHours={handleOpenHours}
-              onOpenMaps={onOpenMaps}
+              onOpenAddress={handleOpenAddress}
               onCall={onCall}
               onOpenAbout={openAbout}
               onOpenReportProblem={() => {
@@ -457,12 +442,13 @@ export function RestaurantDetailScreen({
                 onScroll={handleAboutScroll}
               >
                 <RestaurantAbout
-                  restaurant={model.about}
+                  restaurant={aboutRestaurantLive}
                   galleryPortalContainer={portalRoot}
                   onOpenReviews={handleOpenReviews}
-                  onOpenPriceInfo={handleOpenPriceInfo}
+                  onOpenPriceInfo={onOpenPriceInfo ?? undefined}
                   onOpenHours={handleOpenHours}
                   onOpenMenuGallery={handleOpenMenuGallery}
+                  onOpenAddress={handleOpenAddress}
                 />
               </div>
             </div>
@@ -479,8 +465,6 @@ export function RestaurantDetailScreen({
       <RestaurantRatingSheet
         isOpen={ratingSheetOpen}
         onOpenChange={setRatingSheetOpen}
-        googleMaps={model.ratingSheet.googleMaps}
-        tripadvisor={model.ratingSheet.tripadvisor}
         container={portalRoot}
       />
       <RestaurantOpenHoursSheet
@@ -488,6 +472,15 @@ export function RestaurantDetailScreen({
         onOpenChange={setOpenHoursSheetOpen}
         container={portalRoot}
         weeklyRows={model.weeklyOpenHours}
+      />
+      <RestaurantAddressSheet
+        isOpen={addressSheetOpen}
+        onOpenChange={setAddressSheetOpen}
+        container={portalRoot}
+        address={model.address}
+        restaurantSlug={model.slug}
+        mapsHref={mapsHref}
+        onGetDirections={handleGetDirections}
       />
       <RestaurantMenuGalleryModal
         isOpen={menuGalleryOpen}

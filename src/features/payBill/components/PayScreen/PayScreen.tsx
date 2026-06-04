@@ -5,7 +5,6 @@ import PaymentCash from "@bolteu/kalep-react-icons/dist/PaymentCash"
 import PaymentGooglePay from "@bolteu/kalep-react-icons/dist/PaymentGooglePay"
 import PaymentMasterCard from "@bolteu/kalep-react-icons/dist/PaymentMasterCard"
 import PaymentWallet from "@bolteu/kalep-react-icons/dist/PaymentWallet"
-import { CustomEase } from "gsap/CustomEase"
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { payBillMock } from "@/features/payBill/api/payBill.api"
@@ -30,6 +29,7 @@ import {
 import { effectivePayDiscountPercents } from "@/features/payBill/utils/payBillDiscounts"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import { AppInfoBottomSheet } from "@/shared/components/AppInfoBottomSheet"
+import { MOTION_DETAIL_SCRIM } from "@/shared/motion"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
 import { CardDivider } from "@/shared/components/CardDivider"
 import {
@@ -49,19 +49,6 @@ const Z_PAY_SHEET_OVERLAY = 200
 const Z_PAY_SHEET_CONTENT = 201
 /** Full-screen payment picker above pay sheets. */
 const Z_PAYMENT_PICKER = 210
-
-/** Match {@link RestaurantDetailScreen} push + scrim timing. */
-const EASE_DETAIL_ENTER = CustomEase.create(
-  "payPickerPushEnter",
-  "M0,0,C0.32,0.72,0,1,1,1",
-)
-const EASE_DETAIL_EXIT = CustomEase.create(
-  "payPickerPushExit",
-  "M0,0,C0.58,0,0.92,0.36,1,1",
-)
-const DETAIL_MOTION_S = 0.6
-const STAGGER_PANEL_AFTER_SCRIM_S = 0
-const STAGGER_SCRIM_AFTER_PANEL_EXIT_S = 0
 
 interface PayPaymentMethodPickerShellProps {
   onPickerClosed: () => void
@@ -87,13 +74,7 @@ function PayPaymentMethodPickerShell({
   onPickerClosedRef.current = onPickerClosed
 
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
-    {
-      motionDurationS: DETAIL_MOTION_S,
-      easeEnter: EASE_DETAIL_ENTER,
-      easeExit: EASE_DETAIL_EXIT,
-      staggerPanelAfterScrimS: STAGGER_PANEL_AFTER_SCRIM_S,
-      staggerScrimAfterPanelExitS: STAGGER_SCRIM_AFTER_PANEL_EXIT_S,
-    },
+    { scrimOpacity: MOTION_DETAIL_SCRIM },
     onPickerClosedRef,
   )
 
@@ -261,7 +242,7 @@ export function PayScreen({
         paymentCode: res.paymentCode,
         paidAt: res.paidAt,
         paidAmount: res.paidAmount,
-        discountAmount: res.discountAmount,
+        cashbackEarnedEur: res.cashbackEarnedEur,
         paymentMethodUi: methodUi,
       })
     } catch {

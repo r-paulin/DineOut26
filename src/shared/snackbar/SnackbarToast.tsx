@@ -5,7 +5,13 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef } from "react"
 import { toast } from "sonner"
 import { resolveSnackbarDismiss } from "@/shared/snackbar/resolveSnackbarDismiss"
 import type { SnackbarContent } from "@/shared/snackbar/snackbar.types"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
+import {
+  EASE_SHEET_DISMISS,
+  EASE_STANDARD_OUT,
+  MOTION_IN_PAGE_S,
+  MOTION_SHEET_DISMISS_S,
+} from "@/shared/motion"
+import { motionReduced } from "@/shared/motion/motionHelpers"
 
 export interface SnackbarToastProps {
   id: string | number
@@ -51,7 +57,7 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
     if (exitingRef.current) return
     exitingRef.current = true
     const el = panelRef.current
-    if (!el || prefersReducedMotion()) {
+    if (!el || motionReduced()) {
       toast.dismiss(id)
       return
     }
@@ -60,8 +66,8 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
       autoAlpha: 0,
       y: 10,
       scale: 0.98,
-      duration: 0.32,
-      ease: "power2.inOut",
+      duration: MOTION_SHEET_DISMISS_S,
+      ease: EASE_SHEET_DISMISS,
       onComplete: () => {
         toast.dismiss(id)
       },
@@ -71,7 +77,7 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
   useLayoutEffect(() => {
     const el = panelRef.current
     if (!el) return
-    if (prefersReducedMotion()) {
+    if (motionReduced()) {
       gsap.set(el, { autoAlpha: 1, y: 0, scale: 1 })
       enteredRef.current = true
       return
@@ -85,7 +91,13 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
       gsap.fromTo(
         el,
         { autoAlpha: 0, y: 14, scale: 0.97 },
-        { autoAlpha: 1, y: 0, scale: 1, duration: 0.42, ease: "power3.out" },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          duration: MOTION_IN_PAGE_S,
+          ease: EASE_STANDARD_OUT,
+        },
       )
     }, el)
     // Do not `revert()` — Sonner may re-run this effect while the toast id is stable,

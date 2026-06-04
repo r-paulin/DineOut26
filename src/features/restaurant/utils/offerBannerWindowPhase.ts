@@ -1,6 +1,8 @@
+import type { ClaimedOffer } from "@/features/offers/offers.types"
 import type { DateValue } from "@/features/search/filters.types"
+import { hasOtherClaimAtVenueOnDay } from "@/features/offers/utils/claimConflict"
 import { resolveScheduleYmd } from "@/features/offers/utils/offerScheduleLocal"
-import type { OfferForBanner, UserClaim } from "@/features/restaurant/utils/offerState"
+import type { OfferForBanner } from "@/features/restaurant/utils/offerState"
 
 export type OfferBannerWindowPhase = "active" | "prebook"
 
@@ -70,24 +72,21 @@ export function getOfferBannerWindowPhase(
 }
 
 /**
- * True when the user claimed a different offer at this venue on the **same
- * calendar day** as `offerScheduleDate` (device-local). Claims on other days
- * do not block pre-booking future offers.
+ * True when the user claimed a different offer at **this** venue on the same
+ * calendar day. Claims at other restaurants on the same day do not lock the banner.
  */
 export function hasOtherClaimAtVenue(
   offerId: string,
+  restaurantSlug: string,
   offerScheduleDate: DateValue | undefined,
-  userClaims: readonly UserClaim[],
+  claimedByOfferId: Readonly<Record<string, ClaimedOffer>>,
   nowMs: number,
 ): boolean {
-  const offerDayYmd =
-    offerScheduleDate != null ?
-      resolveScheduleYmd(offerScheduleDate, new Date(nowMs))
-    : toLocalYmdFromMs(nowMs)
-
-  return userClaims.some((c) => {
-    if (c.offerId === offerId) return false
-    const claimDayYmd = c.scheduleYmd ?? toLocalYmdFromMs(c.claimedAt)
-    return claimDayYmd === offerDayYmd
+  return hasOtherClaimAtVenueOnDay({
+    offerId,
+    restaurantSlug,
+    offerScheduleDate,
+    claimedByOfferId,
+    nowMs,
   })
 }

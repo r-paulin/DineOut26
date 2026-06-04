@@ -9,7 +9,7 @@ import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPe
 export function formatDineOutStackablePaymentPromoText(
   percent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
 ): string {
-  return `Enjoy ${formatDiscountPercent(percent)}% off your first 2 payments with DineOut`
+  return `Get ${formatDiscountPercent(percent)}% back in Bolt Balance on your first 2 DineOut payments`
 }
 
 /** @deprecated Prefer {@link formatDineOutStackablePaymentPromoText}. */

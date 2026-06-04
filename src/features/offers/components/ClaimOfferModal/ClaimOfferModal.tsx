@@ -8,7 +8,13 @@ import { ClaimOfferPrimaryButton } from "@/features/offers/components/ClaimOffer
 import { formatPeopleCountLabel } from "@/features/offers/components/ClaimOfferModal/formatPeopleCountLabel"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
-import type { ClaimData, ClaimOfferModalOffer, PaymentMethod } from "@/features/offers/offers.types"
+import type {
+  ClaimData,
+  ClaimedOffer,
+  ClaimOfferModalOffer,
+  PaymentMethod,
+} from "@/features/offers/offers.types"
+import { findOverlappingActiveClaim } from "@/features/offers/utils/claimConflict"
 import type {
   GetTimePickerConfigOptions,
   OfferTimeConfig,
@@ -37,8 +43,11 @@ export interface ClaimOfferModalProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   offer: ClaimOfferModalOffer
+  restaurantSlug: string
+  claimedByOfferId: Readonly<Record<string, ClaimedOffer>>
   onClose: () => void
   onClaimed: (claimData: ClaimData) => void
+  onConflict: (blocking: ClaimedOffer, claimData: ClaimData) => void
   container?: HTMLElement | null
 }
 
@@ -59,8 +68,11 @@ export function ClaimOfferModal({
   isOpen,
   onOpenChange,
   offer,
+  restaurantSlug,
+  claimedByOfferId,
   onClose,
   onClaimed,
+  onConflict,
   container,
 }: ClaimOfferModalProps) {
   const snackbar = useSnackbar()
@@ -131,16 +143,32 @@ export function ClaimOfferModal({
       })
       return
     }
-    onClaimed({
+    const claimData: ClaimData = {
       arrivalTime,
       guestCount,
       paymentMethod,
+    }
+    const blocking = findOverlappingActiveClaim({
+      restaurantSlug,
+      offerId: offer.id,
+      offer,
+      claimData,
+      claimedByOfferId,
     })
+    if (blocking) {
+      onConflict(blocking, claimData)
+      return
+    }
+    onClaimed(claimData)
   }, [
     arrivalTime,
     guestCount,
     paymentMethod,
     onClaimed,
+    onConflict,
+    offer,
+    restaurantSlug,
+    claimedByOfferId,
     snackbar,
     timeCfgBase,
     schedulePickerOpts,

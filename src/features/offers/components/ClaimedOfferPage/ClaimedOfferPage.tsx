@@ -1,6 +1,5 @@
 import { Button, Dialog, Typography } from "@bolteu/kalep-react"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
-import { CustomEase } from "gsap/CustomEase"
 import {
   forwardRef,
   useCallback,
@@ -17,18 +16,18 @@ import { ClaimedOfferActionFooter } from "@/features/offers/components/ClaimedOf
 import { ClaimedOfferPaymentMethodSheet } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferPaymentMethodSheet"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import type { PaymentMethod } from "@/features/offers/offers.types"
+import gsap from "gsap"
 import { cancelOffer } from "@/features/offers/utils/claimOffer"
 import { Z_CLAIMED_OFFER_PAGE } from "@/features/restaurant/constants/screenLayers"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
 import { useSnackbar } from "@/shared/snackbar"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
+import {
+  EASE_STANDARD_IN,
+  MOTION_DETAIL_SCRIM,
+  MOTION_MICRO_S,
+} from "@/shared/motion"
+import { motionReduced } from "@/shared/motion/motionHelpers"
 import { useOfferExpired } from "./useOfferCountdown"
-
-const EASE_ENTER = CustomEase.create("claimedEnter", "M0,0,C0.32,0.72,0,1,1,1")
-const EASE_EXIT = CustomEase.create("claimedExit", "M0,0,C0.58,0,0.92,0.36,1,1")
-const MOTION_S = 0.6
-const STAGGER_PANEL_AFTER_SCRIM_S = 0
-const STAGGER_SCRIM_AFTER_PANEL_EXIT_S = 0
 
 export interface ClaimedOfferPageProps {
   restaurant: {
@@ -103,19 +102,37 @@ export const ClaimedOfferPage = forwardRef<
   const hasFooter = claim.paymentMethod === "dineout" || claim.paymentMethod === "card_or_cash"
 
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
-    {
-      axis: "y",
-      motionDurationS: MOTION_S,
-      easeEnter: EASE_ENTER,
-      easeExit: EASE_EXIT,
-      staggerPanelAfterScrimS: STAGGER_PANEL_AFTER_SCRIM_S,
-      staggerScrimAfterPanelExitS: STAGGER_SCRIM_AFTER_PANEL_EXIT_S,
-    },
+    { axis: "y", scrimOpacity: MOTION_DETAIL_SCRIM },
     onCloseRef,
   )
+  const closeRef = useRef<HTMLButtonElement>(null)
 
   const snackbar = useSnackbar()
   const snackbarAnchorRef = useRef<HTMLDivElement>(null)
+
+  /** Close chrome fades before the panel slides away (Figma exit read). */
+  const runDismiss = useCallback(
+    (after?: () => void) => {
+      const closeBtn = closeRef.current
+      const startPanelExit = () => runExit(after)
+
+      if (motionReduced() || !closeBtn) {
+        startPanelExit()
+        return
+      }
+
+      gsap.killTweensOf(closeBtn)
+      gsap.set(closeBtn, { opacity: 1 })
+      gsap.to(closeBtn, {
+        opacity: 0,
+        duration: MOTION_MICRO_S,
+        ease: EASE_STANDARD_IN,
+        onComplete: startPanelExit,
+        onInterrupt: startPanelExit,
+      })
+    },
+    [runExit],
+  )
 
   useLayoutEffect(() => {
     onCloseRef.current = onClose
@@ -139,10 +156,10 @@ export const ClaimedOfferPage = forwardRef<
     ref,
     () => ({
       dismissAnimated: (after) => {
-        runExit(after ?? (() => onCloseRef.current()))
+        runDismiss(after ?? (() => onCloseRef.current()))
       },
     }),
-    [runExit],
+    [runDismiss],
   )
 
   useLayoutEffect(() => {
@@ -151,8 +168,8 @@ export const ClaimedOfferPage = forwardRef<
   }, [rootRef])
 
   const handleAnimatedClose = useCallback(() => {
-    runExit()
-  }, [runExit])
+    runDismiss()
+  }, [runDismiss])
 
   const handleConfirmCancel = useCallback(async () => {
     if (cancelPending) return
@@ -165,7 +182,7 @@ export const ClaimedOfferPage = forwardRef<
         description: "Offer cancelled",
         timeout: 4000,
       })
-      runExit(() => {
+      runDismiss(() => {
         onCancelOfferRef.current(offerId)
       })
     } catch {
@@ -176,23 +193,23 @@ export const ClaimedOfferPage = forwardRef<
     } finally {
       setCancelPending(false)
     }
-  }, [cancelPending, claim.offerId, runExit, snackbar])
+  }, [cancelPending, claim.offerId, runDismiss, snackbar])
 
   const handlePay = useCallback(() => {
     if (!onPayWithBoltDineOutRef.current) return
     onPayWithBoltDineOutRef.current()
-    runExit(() => {
+    runDismiss(() => {
       onPayWithBoltDineOutCompleteRef.current?.()
     })
-  }, [runExit])
+  }, [runDismiss])
 
   const handleConfirmBill = useCallback(() => {
     if (!onConfirmBillRef.current && !onConfirmBillCompleteRef.current) return
     onConfirmBillRef.current?.()
-    runExit(() => {
+    runDismiss(() => {
       onConfirmBillCompleteRef.current?.()
     })
-  }, [runExit])
+  }, [runDismiss])
 
   const handlePaymentMethodChange = useCallback((next: PaymentMethod) => {
     onPaymentMethodChangeRef.current?.(next)
@@ -214,7 +231,7 @@ export const ClaimedOfferPage = forwardRef<
       <div
         ref={scrimRef}
         className="pointer-events-none absolute inset-0 z-0 bg-black/15"
-        style={prefersReducedMotion() ? { opacity: 1 } : undefined}
+        style={motionReduced() ? { opacity: MOTION_DETAIL_SCRIM } : undefined}
         aria-hidden
       />
       <div
@@ -222,6 +239,7 @@ export const ClaimedOfferPage = forwardRef<
         className="relative z-[1] flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-special-brand-alt"
       >
         <button
+          ref={closeRef}
           type="button"
           aria-label="Close"
           onClick={handleAnimatedClose}

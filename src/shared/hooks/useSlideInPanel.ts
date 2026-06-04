@@ -1,12 +1,17 @@
 import type { MutableRefObject } from "react"
 import { useCallback, useLayoutEffect, useRef } from "react"
 import gsap from "gsap"
-import { CustomEase } from "gsap/CustomEase"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
+import {
+  EASE_EMPHASIZED_ENTER,
+  EASE_EMPHASIZED_EXIT,
+  MOTION_PUSH_S,
+  registerMotion,
+} from "@/shared/motion"
+import { motionReduced } from "@/shared/motion/motionHelpers"
 import { slideOffScreenXPx } from "@/shared/utils/slideOffScreenXPx"
 import { slideOffScreenYPx } from "@/shared/utils/slideOffScreenYPx"
 
-gsap.registerPlugin(CustomEase)
+registerMotion()
 
 /** GSAP `ease` for timeline tweens (string name or CustomEase output). */
 export type SlidePanelEase = string | ((ratio: number) => number)
@@ -14,17 +19,22 @@ export type SlidePanelEase = string | ((ratio: number) => number)
 export interface UseSlideInPanelOptions {
   /** Slide axis: `x` from right (default), `y` from bottom. */
   axis?: "x" | "y"
-  motionDurationS: number
-  easeEnter: SlidePanelEase
-  easeExit: SlidePanelEase
+  /** Defaults to {@link MOTION_PUSH_S}. */
+  motionDurationS?: number
+  /** Defaults to {@link EASE_EMPHASIZED_ENTER}. */
+  easeEnter?: SlidePanelEase
+  /** Defaults to {@link EASE_EMPHASIZED_EXIT}. */
+  easeExit?: SlidePanelEase
+  /** Target scrim opacity when open (0 = no visible dim). */
+  scrimOpacity?: number
   staggerPanelAfterScrimS?: number
   staggerScrimAfterPanelExitS?: number
 }
 
 /**
  * GSAP slide-in panel + scrim fade for full-screen shell panels.
- * Horizontal: restaurant detail, pay picker. Vertical: claimed offer.
- * Keeps transforms off React `style` so re-renders do not fight tweens.
+ * Horizontal: restaurant detail, search, pay picker. Keeps transforms off React
+ * `style` so re-renders do not fight tweens. Respects `prefers-reduced-motion`.
  */
 export function useSlideInPanel(
   options: UseSlideInPanelOptions,
@@ -32,9 +42,10 @@ export function useSlideInPanel(
 ) {
   const {
     axis = "x",
-    motionDurationS,
-    easeEnter,
-    easeExit,
+    motionDurationS = MOTION_PUSH_S,
+    easeEnter = EASE_EMPHASIZED_ENTER,
+    easeExit = EASE_EMPHASIZED_EXIT,
+    scrimOpacity = 0,
     staggerPanelAfterScrimS = 0,
     staggerScrimAfterPanelExitS = 0,
   } = options
@@ -56,8 +67,8 @@ export function useSlideInPanel(
         slideOffScreenYPx(panel, root)
       : slideOffScreenXPx(panel, root)
 
-    if (prefersReducedMotion()) {
-      gsap.set(scrim, { opacity: 1 })
+    if (motionReduced()) {
+      gsap.set(scrim, { opacity: scrimOpacity })
       gsap.set(panel, { [offProp]: 0, clearProps: "transform" })
       return
     }
@@ -70,7 +81,11 @@ export function useSlideInPanel(
         .timeline()
         .to(
           scrim,
-          { opacity: 1, duration: motionDurationS, ease: "sine.out" },
+          {
+            opacity: scrimOpacity,
+            duration: motionDurationS,
+            ease: easeEnter,
+          },
           0,
         )
         .to(
@@ -88,7 +103,13 @@ export function useSlideInPanel(
     return () => {
       ctx.revert()
     }
-  }, [axis, motionDurationS, easeEnter, staggerPanelAfterScrimS])
+  }, [
+    axis,
+    motionDurationS,
+    easeEnter,
+    scrimOpacity,
+    staggerPanelAfterScrimS,
+  ])
 
   const runExit = useCallback(
     (after?: () => void) => {
@@ -103,7 +124,7 @@ export function useSlideInPanel(
         ;(after ?? defaultOnCompleteRef.current)()
       }
 
-      if (prefersReducedMotion() || !scrim || !panel) {
+      if (motionReduced() || !scrim || !panel) {
         finish()
         return
       }
@@ -138,7 +159,7 @@ export function useSlideInPanel(
           {
             opacity: 0,
             duration: motionDurationS,
-            ease: "sine.in",
+            ease: easeExit,
           },
           staggerScrimAfterPanelExitS,
         )
@@ -147,6 +168,7 @@ export function useSlideInPanel(
       axis,
       motionDurationS,
       easeExit,
+      scrimOpacity,
       staggerScrimAfterPanelExitS,
       defaultOnCompleteRef,
     ],

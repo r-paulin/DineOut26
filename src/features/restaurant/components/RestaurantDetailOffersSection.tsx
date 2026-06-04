@@ -19,6 +19,7 @@ const TAB_CELL =
   "box-border flex min-h-0 min-w-[88px] w-[88px] max-w-[88px] shrink-0 flex-col items-center justify-center overflow-hidden border-none bg-transparent px-1 pb-3 pt-1 cursor-pointer"
 
 export interface RestaurantDetailOffersSectionProps {
+  venueSlug: string
   tabs: RestaurantOfferDateTab[]
   offersByTabId: Record<string, RestaurantOfferCardModel[]>
   userClaims: readonly UserClaim[]
@@ -41,6 +42,7 @@ export interface RestaurantDetailOffersSectionProps {
  * panels (which would leave a large blank gap before the venue section).
  */
 export function RestaurantDetailOffersSection({
+  venueSlug,
   tabs,
   offersByTabId,
   userClaims,
@@ -183,6 +185,7 @@ export function RestaurantDetailOffersSection({
                     >
                       <OfferBanner
                         context="restaurant"
+                        venueSlug={venueSlug}
                         offer={card}
                         userClaims={userClaims}
                         claimedOffersById={claimedOffersById}

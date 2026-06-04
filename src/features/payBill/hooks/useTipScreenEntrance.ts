@@ -1,11 +1,10 @@
 import gsap from "gsap"
 import { useLayoutEffect, useRef } from "react"
 import type { RefObject } from "react"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
+import { EASE_STANDARD_OUT, MOTION_IN_PAGE_S } from "@/shared/motion"
+import { motionReduced } from "@/shared/motion/motionHelpers"
 
-const DUR = 0.32
 const STAGGER = 0.06
-const EASE = "power2.out"
 const Y = 10
 
 function collectEntranceElements(
@@ -60,7 +59,7 @@ export function useTipScreenEntrance(
       entranceDoneRef.current = true
     }
 
-    if (entranceDoneRef.current || prefersReducedMotion()) {
+    if (entranceDoneRef.current || motionReduced()) {
       settleVisible()
       return
     }
@@ -79,8 +78,8 @@ export function useTipScreenEntrance(
       gsap.to(els, {
         opacity: 1,
         y: 0,
-        duration: DUR,
-        ease: EASE,
+        duration: MOTION_IN_PAGE_S,
+        ease: EASE_STANDARD_OUT,
         stagger: STAGGER,
         onComplete: () => {
           ctxRef.current = null

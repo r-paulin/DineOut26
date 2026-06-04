@@ -132,36 +132,60 @@ export function RestaurantDetailHeader({
           >
             {name}
           </h1>
-          <button
-            type="button"
-            className="inline-flex max-w-full cursor-pointer flex-wrap items-center justify-center gap-0 rounded-full border-none bg-special-scrim py-1 pl-2 pr-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
-            onClick={() => {
-              onOpenHours?.()
-            }}
-            aria-label={statusPill.ariaLabel}
-          >
-            <Typography variant="body-s-regular" color="primary-inverted" as="span">
-              {statusPill.primary}
-            </Typography>
-            {statusPill.showSecondary && statusPill.secondary ?
-              <>
-                <span
-                  className="mx-0.5 text-primary-inverted opacity-64"
-                  aria-hidden
-                >
-                  ·
-                </span>
-                <Typography variant="body-s-regular" color="primary-inverted" as="span">
-                  {statusPill.secondary}
-                </Typography>
-              </>
-            : null}
-            <ChevronRight
-              size="sm"
-              className="ml-0.5 shrink-0 text-primary-inverted"
-              aria-hidden
-            />
-          </button>
+          {onOpenHours ?
+            <button
+              type="button"
+              className="inline-flex max-w-full cursor-pointer flex-wrap items-center justify-center gap-0 rounded-full border-none bg-special-scrim py-1 pl-2 pr-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
+              onClick={() => {
+                onOpenHours()
+              }}
+              aria-label={statusPill.ariaLabel}
+            >
+              <Typography variant="body-s-regular" color="primary-inverted" as="span">
+                {statusPill.primary}
+              </Typography>
+              {statusPill.showSecondary && statusPill.secondary ?
+                <>
+                  <span
+                    className="mx-0.5 text-primary-inverted opacity-64"
+                    aria-hidden
+                  >
+                    ·
+                  </span>
+                  <Typography variant="body-s-regular" color="primary-inverted" as="span">
+                    {statusPill.secondary}
+                  </Typography>
+                </>
+              : null}
+              <ChevronRight
+                size="sm"
+                className="ml-0.5 shrink-0 text-primary-inverted"
+                aria-hidden
+              />
+            </button>
+          : <div
+              className="inline-flex max-w-full flex-wrap items-center justify-center gap-0 rounded-full bg-special-scrim py-1 pl-2 pr-1"
+              role="status"
+              aria-label={statusPill.ariaLabel}
+            >
+              <Typography variant="body-s-regular" color="primary-inverted" as="span">
+                {statusPill.primary}
+              </Typography>
+              {statusPill.showSecondary && statusPill.secondary ?
+                <>
+                  <span
+                    className="mx-0.5 text-primary-inverted opacity-64"
+                    aria-hidden
+                  >
+                    ·
+                  </span>
+                  <Typography variant="body-s-regular" color="primary-inverted" as="span">
+                    {statusPill.secondary}
+                  </Typography>
+                </>
+              : null}
+            </div>
+          }
         </div>
       </div>
     </header>

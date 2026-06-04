@@ -5,14 +5,21 @@ import {
   paymentMethodOptionClass,
   PaymentMethodSheetHeader,
   type PaymentMethodOptionLabels,
+  type PaymentMethodSheetHeaderVariant,
 } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
+import {
+  getPaymentMethodOptionDetail,
+  PAYMENT_METHOD_SHEET_INTRO,
+  PAYMENT_METHOD_SHEET_TITLE,
+} from "@/features/offers/constants/paymentMethodSheetCopy"
 import type { PaymentMethod } from "@/features/offers/offers.types"
+
+export type PaymentSelectorDetailPresentation = "banner" | "inline-selected"
 
 export interface PaymentSelectorProps {
   value: PaymentMethod
   onChange: (next: PaymentMethod) => void
-  /** Figma claim modal uses Body M accent; claimed-offer sheet uses Heading XS accent. */
-  titleVariant?: "heading-xs-accent" | "body-m-accent"
+  titleVariant?: PaymentMethodSheetHeaderVariant
   optionLabels?: PaymentMethodOptionLabels
   /** Dividers between options (claimed-offer modal). */
   showOptionDividers?: boolean
@@ -20,10 +27,42 @@ export interface PaymentSelectorProps {
   showSectionSeparator?: boolean
   groupName?: string
   bannerSlotClassName?: string
+  /** Claim modal: animated banner; claimed-offer sheet: subtitle under selected row. */
+  detailPresentation?: PaymentSelectorDetailPresentation
+}
+
+function PaymentMethodOptionLabel({
+  label,
+  selected,
+  detailPresentation,
+  method,
+}: {
+  label: string
+  selected: boolean
+  detailPresentation: PaymentSelectorDetailPresentation
+  method: PaymentMethod
+}) {
+  const detail =
+    detailPresentation === "inline-selected" && selected ?
+      getPaymentMethodOptionDetail(method)
+    : undefined
+
+  return (
+    <span className="flex min-w-0 flex-1 flex-col items-start gap-1 text-start">
+      <Typography as="span" variant="body-m-regular" color="primary">
+        {label}
+      </Typography>
+      {detail ?
+        <Typography as="span" variant="body-s-regular" color="secondary">
+          {detail}
+        </Typography>
+      : null}
+    </span>
+  )
 }
 
 /**
- * Payment method radios + DineOut-only inline promo (Figma `16144:19972` / `16388:31182`).
+ * Payment method radios + DineOut-only inline promo (Figma `16144:19972` / `16393:40712`).
  */
 export function PaymentSelector({
   value,
@@ -35,8 +74,10 @@ export function PaymentSelector({
   showSectionSeparator = true,
   groupName = "claim-offer-payment",
   bannerSlotClassName = "px-6 pb-3 pt-3",
+  detailPresentation = "banner",
 }: PaymentSelectorProps) {
   const isDineout = value === "dineout"
+  const isInlineDetail = detailPresentation === "inline-selected"
   const headingId = `${groupName}-heading`
 
   return (
@@ -44,8 +85,8 @@ export function PaymentSelector({
       {showHeader ?
         <>
           <PaymentMethodSheetHeader
-            title="Payment method"
-            description="Pay at the venue after dining. Choose your preferred payment method."
+            title={PAYMENT_METHOD_SHEET_TITLE}
+            description={PAYMENT_METHOD_SHEET_INTRO}
             titleVariant={titleVariant}
             headingId={headingId}
           />
@@ -64,33 +105,41 @@ export function PaymentSelector({
         >
           {!showHeader ?
             <span id={headingId} className="sr-only">
-              Payment method
+              {PAYMENT_METHOD_SHEET_TITLE}
             </span>
           : null}
           <div className="flex w-full flex-col">
             <div className="w-full">
               <label
                 htmlFor={`${groupName}-dineout`}
-                className={paymentMethodOptionClass(showOptionDividers)}
+                className={paymentMethodOptionClass(
+                  showOptionDividers,
+                  isInlineDetail && isDineout,
+                )}
               >
-                <span className="min-w-0 flex-1 text-start">
-                  <Typography as="span" variant="body-m-regular" color="primary">
-                    {optionLabels.dineout}
-                  </Typography>
-                </span>
+                <PaymentMethodOptionLabel
+                  label={optionLabels.dineout}
+                  selected={isDineout}
+                  detailPresentation={detailPresentation}
+                  method="dineout"
+                />
                 <Radio id={`${groupName}-dineout`} value="dineout" />
               </label>
             </div>
             <div className="w-full">
               <label
                 htmlFor={`${groupName}-card`}
-                className={paymentMethodOptionClass(false)}
+                className={paymentMethodOptionClass(
+                  false,
+                  isInlineDetail && !isDineout,
+                )}
               >
-                <span className="min-w-0 flex-1 text-start">
-                  <Typography as="span" variant="body-m-regular" color="primary">
-                    {optionLabels.cardOrCash}
-                  </Typography>
-                </span>
+                <PaymentMethodOptionLabel
+                  label={optionLabels.cardOrCash}
+                  selected={!isDineout}
+                  detailPresentation={detailPresentation}
+                  method="card_or_cash"
+                />
                 <Radio id={`${groupName}-card`} value="card_or_cash" />
               </label>
             </div>
@@ -98,10 +147,12 @@ export function PaymentSelector({
         </RadioGroup>
       </div>
 
-      <DineOutCashbackBannerSlot
-        visible={isDineout}
-        className={bannerSlotClassName}
-      />
+      {!isInlineDetail ?
+        <DineOutCashbackBannerSlot
+          visible={isDineout}
+          className={bannerSlotClassName}
+        />
+      : null}
     </div>
   )
 }

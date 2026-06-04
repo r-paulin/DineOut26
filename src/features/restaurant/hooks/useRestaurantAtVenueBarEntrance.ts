@@ -1,19 +1,15 @@
 import gsap from "gsap"
 import { useCallback, useLayoutEffect, useRef, type RefObject } from "react"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
-
-/** Matches {@link RestaurantDetailScreen} `DETAIL_MOTION_S` push enter. */
-const DETAIL_PANEL_ENTER_S = 0.6
-const ENTRANCE_DELAY_AFTER_PANEL_S = 0.12
-const ENTRANCE_DURATION_S = 0.5
-/** Fade the footer shell out with the detail panel dismiss. */
-const EXIT_DURATION_S = 0.35
+import {
+  EASE_STANDARD_OUT,
+  MOTION_IN_PAGE_S,
+  MOTION_SHEET_DISMISS_S,
+  MOTION_VENUE_BAR_DELAY_S,
+} from "@/shared/motion"
+import { motionReduced } from "@/shared/motion/motionHelpers"
 
 /**
- * Fade/slide the full “I'm at the venue” footer shell (background + content)
- * after the detail panel enter animation. Previously only the inner column
- * animated while `bg-layer-floor-1` on the shell stayed opaque — that caused
- * an empty bar flash on enter and a solid slab glitch on exit.
+ * Fade/slide the full “I'm at the venue” footer shell after detail panel enter.
  */
 export function useRestaurantAtVenueBarEntrance(
   shellRef: RefObject<HTMLElement | null>,
@@ -28,7 +24,7 @@ export function useRestaurantAtVenueBarEntrance(
 
     gsap.killTweensOf(el)
 
-    if (prefersReducedMotion()) {
+    if (motionReduced()) {
       gsap.set(el, { autoAlpha: 0, visibility: "hidden" })
       return
     }
@@ -36,8 +32,8 @@ export function useRestaurantAtVenueBarEntrance(
     gsap.to(el, {
       autoAlpha: 0,
       y: 12,
-      duration: EXIT_DURATION_S,
-      ease: "power2.in",
+      duration: MOTION_SHEET_DISMISS_S,
+      ease: EASE_STANDARD_OUT,
       force3D: true,
     })
   }, [shellRef])
@@ -53,7 +49,7 @@ export function useRestaurantAtVenueBarEntrance(
       return
     }
 
-    if (prefersReducedMotion()) {
+    if (motionReduced()) {
       gsap.set(el, {
         autoAlpha: 1,
         y: 0,
@@ -63,8 +59,6 @@ export function useRestaurantAtVenueBarEntrance(
       return
     }
 
-    const delay = DETAIL_PANEL_ENTER_S + ENTRANCE_DELAY_AFTER_PANEL_S
-
     gsap.killTweensOf(el)
     gsap.set(el, { autoAlpha: 0, y: 24, visibility: "visible", force3D: true })
 
@@ -72,9 +66,9 @@ export function useRestaurantAtVenueBarEntrance(
       gsap.to(el, {
         autoAlpha: 1,
         y: 0,
-        duration: ENTRANCE_DURATION_S,
-        delay,
-        ease: "power2.out",
+        duration: MOTION_IN_PAGE_S,
+        delay: MOTION_VENUE_BAR_DELAY_S,
+        ease: EASE_STANDARD_OUT,
         force3D: true,
       })
     }, el)

@@ -6,7 +6,6 @@ import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
 import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
 import Walk from "@bolteu/kalep-react-icons/dist/Walk"
 import gsap from "gsap"
-import { CustomEase } from "gsap/CustomEase"
 import {
   useCallback,
   useEffect,
@@ -25,7 +24,17 @@ import {
   DINEOUT_PROMO_STEPS,
   DINEOUT_PROMO_TITLE,
 } from "@/features/offers/constants/dineOutPromoContent"
-import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
+import {
+  EASE_EMPHASIZED_ENTER,
+  EASE_SHEET_DISMISS,
+  MOTION_REDUCED_S,
+  MOTION_SCRIM_MAX,
+  MOTION_SHEET_DISMISS_DRAG_PX,
+  MOTION_SHEET_DISMISS_S,
+  MOTION_SHEET_DISMISS_VELOCITY,
+  MOTION_SHEET_S,
+} from "@/shared/motion"
+import { motionReduced, sheetHeightPx } from "@/shared/motion/motionHelpers"
 import {
   SHEET_CLOSE_ICON_OVER_MEDIA_CLASS,
   SHEET_CLOSE_OVER_MEDIA_CLASS,
@@ -34,14 +43,6 @@ import {
   VAUL_SHEET_FOOTER_CLASS,
   VAUL_SHEET_SCROLL_BODY_CLASS,
 } from "@/shared/utils/vaulAppSheetShell"
-gsap.registerPlugin(CustomEase)
-
-const EASE_IN = CustomEase.create("dineOutPromoIn", "M0,0,C0.32,0.72,0,1,1,1")
-const EASE_OUT = CustomEase.create("dineOutPromoOut", "M0,0,C0.4,0,1,1,1,1")
-
-const SCRIM_MAX = 0.28
-const DISMISS_DRAG_PX = 80
-const DISMISS_VELOCITY = 500
 
 const STEP_ICONS: ReactElement[] = [
   <PercentFlower key="pct" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
@@ -55,11 +56,6 @@ export interface DineOutPromoSheetProps {
   isVisible: boolean
   onDismiss: () => void
   heroImage: string
-}
-
-function sheetHeightPx(el: HTMLElement | null): number {
-  if (!el) return Math.round(window.innerHeight * 0.5)
-  return el.offsetHeight || Math.round(window.innerHeight * 0.5)
 }
 
 /**
@@ -165,7 +161,7 @@ export function DineOutPromoSheet({
 
     gsap.killTweensOf([scrim, sheet])
 
-    const reduced = prefersReducedMotion()
+    const reduced = motionReduced()
     enterDoneRef.current = false
 
     if (isVisible) {
@@ -184,17 +180,22 @@ export function DineOutPromoSheet({
       })
       tlRef.current = tl
       if (reduced) {
-        tl.to(scrim, { autoAlpha: 1, opacity: SCRIM_MAX, duration: 0.12 }).to(
+        tl.to(scrim, { autoAlpha: 1, opacity: MOTION_SCRIM_MAX, duration: MOTION_REDUCED_S }).to(
           sheet,
-          { autoAlpha: 1, duration: 0.12 },
+          { autoAlpha: 1, duration: MOTION_REDUCED_S },
           0,
         )
       } else {
         tl.to(
           scrim,
-          { autoAlpha: 1, opacity: SCRIM_MAX, duration: 0.28, ease: "power1.out" },
+          {
+            autoAlpha: 1,
+            opacity: MOTION_SCRIM_MAX,
+            duration: MOTION_SHEET_S,
+            ease: EASE_EMPHASIZED_ENTER,
+          },
           0,
-        ).to(sheet, { y: 0, duration: 0.32, ease: EASE_IN }, 0)
+        ).to(sheet, { y: 0, duration: MOTION_SHEET_S, ease: EASE_EMPHASIZED_ENTER }, 0)
       }
       return () => {
         tl.kill()
@@ -208,11 +209,11 @@ export function DineOutPromoSheet({
     })
     tlRef.current = tl
     if (reduced) {
-      tl.to([sheet, scrim], { autoAlpha: 0, duration: 0.12 })
+      tl.to([sheet, scrim], { autoAlpha: 0, duration: MOTION_REDUCED_S })
     } else {
-      tl.to(sheet, { y: h, duration: 0.24, ease: EASE_OUT }, 0).to(
+      tl.to(sheet, { y: h, duration: MOTION_SHEET_DISMISS_S, ease: EASE_SHEET_DISMISS }, 0).to(
         scrim,
-        { autoAlpha: 0, opacity: 0, duration: 0.24, ease: EASE_OUT },
+        { autoAlpha: 0, opacity: 0, duration: MOTION_SHEET_DISMISS_S, ease: EASE_SHEET_DISMISS },
         0,
       )
     }
@@ -226,7 +227,7 @@ export function DineOutPromoSheet({
     const sheet = sheetRef.current
     if (!scrim || !sheet) return
     const h = sheetHeightPx(sheet)
-    const o = SCRIM_MAX * Math.max(0, 1 - dragY / h)
+    const o = MOTION_SCRIM_MAX * Math.max(0, 1 - dragY / h)
     gsap.set(scrim, { opacity: o, autoAlpha: 1 })
   }, [])
 
@@ -236,7 +237,7 @@ export function DineOutPromoSheet({
     if (!scrim || !sheet) return
     gsap.killTweensOf([sheet, scrim])
     gsap.set(sheet, { y: 0 })
-    gsap.set(scrim, { opacity: SCRIM_MAX, autoAlpha: 1 })
+    gsap.set(scrim, { opacity: MOTION_SCRIM_MAX, autoAlpha: 1 })
   }, [])
 
   const heroPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -286,7 +287,7 @@ export function DineOutPromoSheet({
     const sheet = sheetRef.current
     const scrim = scrimRef.current
 
-    if (dy > DISMISS_DRAG_PX || v > DISMISS_VELOCITY) {
+    if (dy > MOTION_SHEET_DISMISS_DRAG_PX || v > MOTION_SHEET_DISMISS_VELOCITY) {
       resetAfterDrag()
       onDismissRef.current()
       return
@@ -294,18 +295,18 @@ export function DineOutPromoSheet({
     if (dy > 0 && sheet && scrim) {
       gsap.to(sheet, {
         y: 0,
-        duration: 0.32,
-        ease: EASE_IN,
+        duration: MOTION_SHEET_S,
+        ease: EASE_EMPHASIZED_ENTER,
         overwrite: true,
         onUpdate: () => {
           const cur = (gsap.getProperty(sheet, "y") as number) || 0
           const h = sheetHeightPx(sheet)
-          const o = SCRIM_MAX * Math.max(0, 1 - cur / h)
+          const o = MOTION_SCRIM_MAX * Math.max(0, 1 - cur / h)
           gsap.set(scrim, { opacity: o, autoAlpha: 1 })
         },
         onComplete: () => {
           gsap.set(sheet, { y: 0 })
-          gsap.set(scrim, { opacity: SCRIM_MAX, autoAlpha: 1 })
+          gsap.set(scrim, { opacity: MOTION_SCRIM_MAX, autoAlpha: 1 })
         },
       })
     } else {
