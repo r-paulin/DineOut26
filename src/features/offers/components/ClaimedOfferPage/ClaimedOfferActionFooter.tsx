@@ -22,7 +22,7 @@ export interface ClaimedOfferActionFooterProps {
   onConfirmBill: () => void
 }
 
-/** Figma `16384:28098` — unified pay / confirm footer with GSAP cashback row. */
+/** Figma `16384:28098` / `16389:29235` — unified pay / confirm footer with GSAP cashback row. */
 export function ClaimedOfferActionFooter({
   anchorRef,
   paymentMethod,
@@ -44,7 +44,7 @@ export function ClaimedOfferActionFooter({
       "Offer expired, payment unavailable"
     : isDineout ?
       `Pay bill via Bolt Food app, ${discountSubtitle}`
-    : `${CLAIMED_OFFER_CARD_CASH_DONE_LABEL}, ${discountSubtitle}`
+    : CLAIMED_OFFER_CARD_CASH_DONE_LABEL
 
   const primaryButtonLabel =
     expired ?
@@ -60,14 +60,9 @@ export function ClaimedOfferActionFooter({
           {discountSubtitle}
         </Typography>
       </span>
-    : <span className="flex flex-col items-center gap-0">
-        <Typography variant="body-l-accent" color="primary-inverted" as="span">
-          {CLAIMED_OFFER_CARD_CASH_DONE_LABEL}
-        </Typography>
-        <Typography variant="body-xs-regular" color="primary-inverted" as="span">
-          {discountSubtitle}
-        </Typography>
-      </span>
+    : <Typography variant="body-l-accent" color="primary-inverted" as="span">
+        {CLAIMED_OFFER_CARD_CASH_DONE_LABEL}
+      </Typography>
 
   const handlePrimary = isDineout ? onPay : onConfirmBill
 

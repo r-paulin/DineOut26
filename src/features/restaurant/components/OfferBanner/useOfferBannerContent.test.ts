@@ -5,6 +5,7 @@ import {
   buildOfferBannerContent,
   buildPaidOfferBannerContent,
   buildStaticOfferBannerContent,
+  formatClaimSlotsRemainingLabel,
   formatLimitedAvailabilityLabel,
   formatOfferBannerArrivalLine,
   formatOfferBannerCashbackEarnedLabel,
@@ -84,6 +85,15 @@ describe("formatLimitedAvailabilityLabel", () => {
   })
 })
 
+describe("formatClaimSlotsRemainingLabel", () => {
+  it("formats urgency copy for two and one spots left", () => {
+    expect(formatClaimSlotsRemainingLabel(2)).toBe("2 offers left")
+    expect(formatClaimSlotsRemainingLabel(1)).toBe(
+      "Almost full — 1 offer left",
+    )
+  })
+})
+
 describe("buildOfferBannerContent — claimed without claim record", () => {
   it("falls through to available copy when state is claimed but claim is missing", () => {
     const c = buildOfferBannerContent({
@@ -102,7 +112,7 @@ describe("buildOfferBannerContent — claimed without claim record", () => {
 })
 
 describe("buildOfferBannerContent", () => {
-  it("active window: Claim offer, no sticker, schedule line only", () => {
+  it("active window: Claim offer with scarcity sticker when slots remain", () => {
     const c = buildOfferBannerContent({
       state: "available",
       offer: baseOffer,
@@ -120,7 +130,25 @@ describe("buildOfferBannerContent", () => {
       label: "Claim offer",
       disabled: false,
     })
+    expect(c.sticker).toEqual({
+      kind: "scarcity",
+      text: "2 offers left",
+    })
+    expect(c.outerShellTone).toBe("limited")
+  })
+
+  it("active window: no sticker when more than two spots remain", () => {
+    const c = buildOfferBannerContent({
+      state: "available",
+      offer: { ...baseOffer, remainingCount: 3 },
+      claim: undefined,
+      context: "restaurant",
+      displayDiscount: 30,
+      windowPhase: "active",
+      hasOtherClaimAtVenue: false,
+    })
     expect(c.sticker).toBeNull()
+    expect(c.outerShellTone).toBe("neutral")
   })
 
   it("prebook: Claim offer with availability sticker when one spot left", () => {
@@ -140,15 +168,32 @@ describe("buildOfferBannerContent", () => {
     })
     expect(c.sticker).toEqual({
       kind: "scarcity",
-      text: "Limited availability — 1 left",
+      text: "Almost full — 1 offer left",
     })
-    expect(c.outerShellTone).toBe("danger")
+    expect(c.outerShellTone).toBe("limited")
   })
 
-  it("prebook: no availability sticker when more than one spot left", () => {
+  it("prebook: availability sticker when two or fewer spots remain", () => {
     const c = buildOfferBannerContent({
       state: "available",
       offer: baseOffer,
+      claim: undefined,
+      context: "restaurant",
+      displayDiscount: 30,
+      windowPhase: "prebook",
+      hasOtherClaimAtVenue: false,
+    })
+    expect(c.sticker).toEqual({
+      kind: "scarcity",
+      text: "2 offers left",
+    })
+    expect(c.outerShellTone).toBe("limited")
+  })
+
+  it("prebook: no sticker when more than two spots remain", () => {
+    const c = buildOfferBannerContent({
+      state: "available",
+      offer: { ...baseOffer, remainingCount: 5 },
       claim: undefined,
       context: "restaurant",
       displayDiscount: 30,

@@ -12,9 +12,7 @@ import type {
 } from "@/features/offers/data/restaurantOffers.types"
 import { DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT } from "@/features/offers/constants/dineOutStackablePromo"
 import { formatOfferClaimCardTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
-import {
-  computeOfferCardCampaign,
-} from "@/features/offers/utils/offerCampaign"
+import { resolveRestaurantOfferTabDiscountLabel } from "@/features/restaurant/utils/restaurantOfferTabDiscountLabel"
 import { getRestaurantLogoCandidates } from "@/features/restaurant/data/restaurantLogos"
 import { getMergedRestaurantCatalogEntry } from "@/features/restaurants/restaurantCatalogRuntime"
 import { RESTAURANTS_BY_SLUG } from "@/features/restaurants/restaurants.catalog"
@@ -134,24 +132,20 @@ function offerDetailDayPhrase(id: DateValue): string {
  * Offer date tabs: same calendar rows as {@link getDateOptions} (Home date filter) —
  * **Today** plus the **next 6** days (7 tabs). Prototype: real offers only on the
  * first **3** days; later days use `no-offer` (decline in UI) and empty offer lists.
- * Tab discount label on offer days follows {@link computeOfferCardCampaign}.
+ * Tab discount labels are resolved per date from that day's offer cards.
  */
-function buildOfferDateTabs(now: Date, slug: RestaurantSlug): RestaurantOfferDateTab[] {
+function buildOfferDateTabSkeleton(now: Date): RestaurantOfferDateTab[] {
   const rows = getDateOptions(now)
-  const campaign = computeOfferCardCampaign(getRestaurantOffers(slug))
-  const pctMatch = campaign.discountLabel?.match(/(\d+)/)
-  const tabDiscountLabel =
-    pctMatch ? `${pctMatch[1]}% off` : null
 
   return rows.map((row, index) => {
     const id = row.id as DateValue
     const dayLabel = restaurantOfferTabDayLabel(id)
-    if (index < 3 && tabDiscountLabel) {
+    if (index < 3) {
       return {
         id,
         state: index === 0 ? "active" : "inactive",
         dayLabel,
-        discountLabel: tabDiscountLabel,
+        discountLabel: null,
       }
     }
     return {
@@ -160,6 +154,22 @@ function buildOfferDateTabs(now: Date, slug: RestaurantSlug): RestaurantOfferDat
       dayLabel,
       discountLabel: null,
     }
+  })
+}
+
+function enrichOfferDateTabsWithDiscountLabels(
+  tabs: RestaurantOfferDateTab[],
+  offersByTabId: Record<string, RestaurantOfferCardModel[]>,
+): RestaurantOfferDateTab[] {
+  let offerDayIndex = 0
+  return tabs.map((tab) => {
+    if (tab.state === "no-offer") return tab
+    const discountLabel = resolveRestaurantOfferTabDiscountLabel(
+      offersByTabId[tab.id] ?? [],
+      offerDayIndex,
+    )
+    offerDayIndex += 1
+    return { ...tab, discountLabel }
   })
 }
 
@@ -323,20 +333,21 @@ function offersForDateTab(
 export function getRestaurantDetailDemo(slug: string): RestaurantDetailModel {
   const key = isRestaurantSlug(slug) ? slug : "neiburgs"
   const row = findRow(key) ?? findRow("neiburgs")!
-  const tabs = buildOfferDateTabs(new Date(), key)
+  const tabSkeleton = buildOfferDateTabSkeleton(new Date())
   const base = {
     primary: row.primaryImage,
     sideTop: row.sideTop,
     sideBottom: row.sideBottom,
   }
   const offersByTabId: Record<string, RestaurantOfferCardModel[]> = {}
-  for (let i = 0; i < tabs.length; i++) {
-    const t = tabs[i]!
+  for (let i = 0; i < tabSkeleton.length; i++) {
+    const t = tabSkeleton[i]!
     offersByTabId[t.id] =
       t.state === "no-offer"
         ? []
         : offersForDateTab(key, i, t.id as DateValue, base, row.name)
   }
+  const tabs = enrichOfferDateTabsWithDiscountLabels(tabSkeleton, offersByTabId)
 
   const catalog = getMergedRestaurantCatalogEntry(key)!
   const demoAddress = catalog.address

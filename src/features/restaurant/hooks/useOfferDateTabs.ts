@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -10,11 +9,6 @@ import {
 } from "react"
 import type { RestaurantOfferDateTab } from "@/features/restaurant/restaurantDetail.types"
 
-export interface OfferDateTabIndicatorStyle {
-  transform: string
-  width: number
-}
-
 export interface UseOfferDateTabsResult {
   /** Currently visible tab id (guaranteed to exist in `tabs`). */
   activeTabId: string
@@ -23,17 +17,14 @@ export interface UseOfferDateTabsResult {
   tablistRef: RefCallback<HTMLDivElement>
   /** Returns a stable ref callback per tab id. */
   registerTabRef: (id: string) => RefCallback<HTMLButtonElement>
-  /** `transform` + `width` for the absolutely-positioned underline indicator. */
-  indicatorStyle: OfferDateTabIndicatorStyle
   /** WAI-ARIA tabs keyboard handler (Arrow / Home / End). */
   onTabKeyDown: (e: KeyboardEvent<HTMLButtonElement>) => void
 }
 
 /**
- * Owns offer-date tab selection plus the bits the section component shouldn't
- * carry: animated underline measurement, scroll-into-view on activate, and
- * roving-tabindex keyboard navigation. Designed for a horizontally scrollable
- * tablist where the active tab can be off-screen.
+ * Owns offer-date tab selection, scroll-into-view on activate, and roving-tabindex
+ * keyboard navigation. Per-tab underline indicators are rendered in the section
+ * (Figma `_Tab` — each column owns its own 2px bar).
  */
 export function useOfferDateTabs(
   tabs: RestaurantOfferDateTab[],
@@ -58,23 +49,7 @@ export function useOfferDateTabs(
   >(new Map())
   const firstPaintRef = useRef(true)
 
-  const [indicatorStyle, setIndicatorStyle] =
-    useState<OfferDateTabIndicatorStyle>({
-      transform: "translateX(0px)",
-      width: 0,
-    })
-
-  const measure = useCallback(() => {
-    const tab = tabRefsMap.current.get(resolvedActiveTabId)
-    if (!tab) return
-    setIndicatorStyle({
-      transform: `translateX(${tab.offsetLeft}px)`,
-      width: tab.offsetWidth,
-    })
-  }, [resolvedActiveTabId])
-
   useLayoutEffect(() => {
-    measure()
     const tab = tabRefsMap.current.get(resolvedActiveTabId)
     if (tab) {
       tab.scrollIntoView({
@@ -84,15 +59,7 @@ export function useOfferDateTabs(
       })
     }
     firstPaintRef.current = false
-  }, [resolvedActiveTabId, tabs, measure])
-
-  useEffect(() => {
-    const el = tablistElRef.current
-    if (!el || typeof ResizeObserver === "undefined") return
-    const ro = new ResizeObserver(() => measure())
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [measure])
+  }, [resolvedActiveTabId, tabs])
 
   const tablistRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
     tablistElRef.current = el
@@ -142,7 +109,6 @@ export function useOfferDateTabs(
     setActiveTabId,
     tablistRef,
     registerTabRef,
-    indicatorStyle,
     onTabKeyDown,
   }
 }

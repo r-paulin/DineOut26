@@ -47,7 +47,17 @@ export function clampRemainingSpotsForDisplay(
   return Math.min(spots, SCARCITY_MAX)
 }
 
-/** Limited-availability banner sticker — only when a single claim slot remains. */
+/** Product max claim slots shown in scarcity sticker copy (e.g. "2 of 5 people…"). */
+export const CLAIM_SLOTS_TOTAL = SCARCITY_MAX
+
+/** Sticker shows only when this many slots or fewer remain (unclaimed offers). */
+export const SCARCITY_STICKER_MAX = 2
+
+/** Limited-availability banner sticker — when 1–2 claim slots remain. */
 export function shouldShowScarcitySticker(remainingCount: number | undefined): boolean {
-  return remainingCount === 1
+  return (
+    remainingCount != null &&
+    remainingCount >= SCARCITY_MIN &&
+    remainingCount <= SCARCITY_STICKER_MAX
+  )
 }

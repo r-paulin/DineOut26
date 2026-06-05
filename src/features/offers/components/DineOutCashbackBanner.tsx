@@ -1,4 +1,5 @@
 import { Typography } from "@bolteu/kalep-react"
+import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import dineoutCashbackCoinUrl from "@/features/offers/assets/dineout-cashback-coin.png"
 import {
   DINEOUT_CASHBACK_BANNER_MIN_HEIGHT_PX,
@@ -19,6 +20,10 @@ const SEMIBOLD = {
 export interface DineOutCashbackBannerProps {
   /** Cashback percent for the headline (defaults to product default). */
   cashbackPercent?: number
+  /** Override secondary line (defaults to payment-flow copy). */
+  secondaryText?: string
+  /** When set, renders Figma close control (`16672:56696`). */
+  onDismiss?: () => void
   className?: string
 }
 
@@ -30,6 +35,8 @@ const COIN_IMAGE_CLASS =
 
 export function DineOutCashbackBanner({
   cashbackPercent,
+  secondaryText = DINEOUT_CASHBACK_BANNER_SECONDARY,
+  onDismiss,
   className,
 }: DineOutCashbackBannerProps) {
   const headline = formatDineOutClaimCashbackBannerHeadline(cashbackPercent)
@@ -61,9 +68,19 @@ export function DineOutCashbackBanner({
             color="secondary"
             inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
           >
-            {DINEOUT_CASHBACK_BANNER_SECONDARY}
+            {secondaryText}
           </Typography>
         </div>
+        {onDismiss ?
+          <button
+            type="button"
+            className="absolute right-1 top-1 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-[32px] border-none bg-neutral-secondary p-1 outline-none transition-opacity hover:opacity-90 active:opacity-80 focus-visible:ring-2 focus-visible:ring-action-primary"
+            aria-label="Dismiss cashback banner"
+            onClick={onDismiss}
+          >
+            <Cross size="xs" className="text-primary" aria-hidden />
+          </button>
+        : null}
         <div
           className="pointer-events-none absolute bottom-0 right-0 h-[84px] overflow-hidden"
           style={{ width: DINEOUT_CASHBACK_COIN_SLOT_PX }}

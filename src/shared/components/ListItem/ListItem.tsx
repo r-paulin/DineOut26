@@ -11,6 +11,8 @@ export interface ListItemProps {
   value: string
   /** When false, hours-style static row (no chevron). */
   showChevron?: boolean
+  /** Figma trailing action label (e.g. claimed-offer payment “Switch”); overrides chevron. */
+  trailingActionLabel?: string
   /** When false, renders as non-interactive div. */
   interactive?: boolean
   onPress?: () => void
@@ -33,14 +35,15 @@ const ROW_HIT_BASE =
   "flex w-full flex-col items-stretch border-none bg-transparent py-0 text-left text-inherit no-underline decoration-transparent visited:text-inherit"
 
 /**
- * Two-line list row: icon, label (body-s secondary) + value (body-m primary), optional chevron.
- * Padding matches Consumer Dine-out venue rows (Figma).
+ * Two-line list row: icon, label (body-s secondary) + value (body-m primary),
+ * optional chevron or trailing action label (Figma).
  */
 export function ListItem({
   icon,
   label,
   value,
   showChevron = true,
+  trailingActionLabel,
   interactive = true,
   onPress,
   showSeparator = true,
@@ -92,11 +95,22 @@ export function ListItem({
           {textLines}
         </div>
       </div>
-      {showChevron ? (
+      {trailingActionLabel ?
+        <div className="flex shrink-0 items-center self-stretch">
+          <Typography
+            variant="body-m-accent"
+            color="action-primary"
+            as="span"
+            noWrap
+          >
+            {trailingActionLabel}
+          </Typography>
+        </div>
+      : showChevron ?
         <div className="flex min-w-6 shrink-0 self-stretch items-center justify-end">
           <ChevronRight size="sm" className="text-tertiary" aria-hidden />
         </div>
-      ) : null}
+      : null}
       </div>
       {showSeparator ?
         <div className="h-px w-full shrink-0 bg-separator" aria-hidden />

@@ -1,5 +1,6 @@
-import { Button, Typography } from "@bolteu/kalep-react"
+import { Typography } from "@bolteu/kalep-react"
 import { useSnackbar } from "@/shared/snackbar"
+import { ClaimOfferFooterActions } from "@/features/offers/components/ClaimOfferModal/ClaimOfferFooterActions"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
 import type { ClaimOfferModalOffer } from "@/features/offers/offers.types"
 import {
@@ -59,20 +60,13 @@ export function OfferDetailsSheet({
       description={`Offer details for ${offer.title} at ${offer.restaurantName}.`}
       hero="offer-image"
       heroImageSrc={CLAIM_PROMO_HERO_SRC}
+      footerClassName="bg-layer-floor-2 pt-4 pb-[max(2rem,var(--safe-area-bottom))]"
       footer={
-        <Button
-          type="button"
-          variant="primary"
-          size="lg"
-          fullWidth
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onContinue()
-          }}
-        >
-          {primaryActionLabel}
-        </Button>
+        <ClaimOfferFooterActions
+          onClick={onContinue}
+          buttonLabel={primaryActionLabel}
+          remainingCount={offer.remainingCount}
+        />
       }
     >
       <div className="flex flex-col gap-3 px-6 pb-3 pt-6">

@@ -1,6 +1,8 @@
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
 import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
-import { shouldShowScarcitySticker } from "@/features/offers/data/selectPrimaryTimedOffer"
+import {
+  shouldShowScarcitySticker,
+} from "@/features/offers/data/selectPrimaryTimedOffer"
 import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
@@ -46,8 +48,8 @@ export type OfferBannerSticker =
 
 export type OfferBannerImageVariant = "claimed" | "unclaimed"
 
-/** Figma `16103:17598` — limited-availability banners use danger-tinted shell. */
-export type OfferBannerOuterShellTone = "neutral" | "danger"
+/** Figma `16123:18031` — limited-availability banners use brand-alt shell. */
+export type OfferBannerOuterShellTone = "neutral" | "limited"
 
 export type OfferBannerContent = {
   outerClaimed: boolean
@@ -89,8 +91,15 @@ export function formatOfferBannerMinMaxLine(
   return `Min. order ${min.toFixed(2)}€ · Max. saving ${max}€`
 }
 
+/** @deprecated Prefer {@link formatClaimSlotsRemainingLabel} for banner stickers. */
 export function formatLimitedAvailabilityLabel(remainingCount: number): string {
   return `Limited availability — ${remainingCount} left`
+}
+
+/** Scarcity sticker — e.g. "2 offers left" or "Almost full — 1 offer left". */
+export function formatClaimSlotsRemainingLabel(remainingCount: number): string {
+  if (remainingCount === 1) return "Almost full — 1 offer left"
+  return `${remainingCount} offers left`
 }
 
 export function formatOfferBannerScheduleLine(
@@ -232,6 +241,38 @@ function buildAvailableDataLines(
   ]
 }
 
+function buildAvailabilitySticker(
+  offer: RestaurantOfferCardModel,
+): OfferBannerSticker | null {
+  if (!shouldShowScarcitySticker(offer.remainingCount)) return null
+  return {
+    kind: "scarcity",
+    text: formatClaimSlotsRemainingLabel(offer.remainingCount!),
+  }
+}
+
+function buildAvailableOfferBannerFields(
+  offer: RestaurantOfferCardModel,
+  displayDiscount: number,
+): Pick<
+  OfferBannerContent,
+  "headline" | "dataLines" | "sticker" | "outerShellTone" | "ariaLabel"
+> {
+  const headline = formatOfferBannerTitle(
+    displayDiscount,
+    Boolean(offer.isAllDay),
+  )
+  const dataLines = buildAvailableDataLines(offer)
+  const sticker = buildAvailabilitySticker(offer)
+  return {
+    headline,
+    dataLines,
+    sticker,
+    outerShellTone: sticker ? "limited" : "neutral",
+    ariaLabel: headline,
+  }
+}
+
 export function buildOfferBannerContent({
   state,
   offer,
@@ -293,13 +334,12 @@ export function buildOfferBannerContent({
     }
   }
 
-  const headline = formatOfferBannerTitle(
-    displayDiscount,
-    Boolean(offer.isAllDay),
-  )
-  const dataLines = buildAvailableDataLines(offer)
-
   if (state === "expired") {
+    const headline = formatOfferBannerTitle(
+      displayDiscount,
+      Boolean(offer.isAllDay),
+    )
+    const dataLines = buildAvailableDataLines(offer)
     return {
       outerClaimed: false,
       outerShellTone: "neutral",
@@ -314,6 +354,11 @@ export function buildOfferBannerContent({
   }
 
   if (hasOtherClaimAtVenue) {
+    const headline = formatOfferBannerTitle(
+      displayDiscount,
+      Boolean(offer.isAllDay),
+    )
+    const dataLines = buildAvailableDataLines(offer)
     return {
       outerClaimed: false,
       outerShellTone: "neutral",
@@ -327,38 +372,18 @@ export function buildOfferBannerContent({
     }
   }
 
-  if (windowPhase === "active") {
-    return {
-      outerClaimed: false,
-      outerShellTone: "neutral",
-      innerClaimed: false,
-      headline,
-      dataLines,
-      action: { kind: "claim-now", label: "Claim offer", disabled: false },
-      sticker: null,
-      imageVariant: "unclaimed",
-      ariaLabel: headline,
-    }
-  }
-
-  const availabilitySticker =
-    shouldShowScarcitySticker(offer.remainingCount) ?
-      {
-        kind: "scarcity" as const,
-        text: formatLimitedAvailabilityLabel(offer.remainingCount!),
-      }
-    : null
+  const availableFields = buildAvailableOfferBannerFields(offer, displayDiscount)
 
   return {
     outerClaimed: false,
-    outerShellTone: availabilitySticker ? "danger" : "neutral",
+    outerShellTone: availableFields.outerShellTone,
     innerClaimed: false,
-    headline,
-    dataLines,
+    headline: availableFields.headline,
+    dataLines: availableFields.dataLines,
     action: { kind: "claim-now", label: "Claim offer", disabled: false },
-    sticker: availabilitySticker,
+    sticker: availableFields.sticker,
     imageVariant: "unclaimed",
-    ariaLabel: headline,
+    ariaLabel: availableFields.ariaLabel,
   }
 }
 

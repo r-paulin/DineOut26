@@ -17,16 +17,19 @@ export interface OfferBannerStickerRowProps {
   sticker: OfferBannerSticker
   claimed?: boolean
   claim?: ClaimedOffer
+  /** Scarcity on brand-alt shell uses inverted styling (Figma `16123:18031`). */
+  onDarkShell?: boolean
 }
 
 function stickerTone(
   sticker: OfferBannerSticker,
   claimed: boolean,
+  onDarkShell: boolean,
 ): {
   iconClass: string
   textColor: "primary-inverted" | "primary" | "tertiary" | "danger-primary"
 } {
-  if (claimed) {
+  if (claimed || (sticker.kind === "scarcity" && onDarkShell)) {
     return { iconClass: "text-primary-inverted", textColor: "primary-inverted" }
   }
   if (sticker.kind === "scarcity") {
@@ -42,8 +45,9 @@ export function OfferBannerStickerRow({
   sticker,
   claimed = false,
   claim,
+  onDarkShell = false,
 }: OfferBannerStickerRowProps) {
-  const { iconClass, textColor } = stickerTone(sticker, claimed)
+  const { iconClass, textColor } = stickerTone(sticker, claimed, onDarkShell)
 
   if (sticker.kind === "countdown" && claim) {
     return (

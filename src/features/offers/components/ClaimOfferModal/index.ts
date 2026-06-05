@@ -1,3 +1,5 @@
+export { ClaimOfferFooterActions } from "./ClaimOfferFooterActions"
+export type { ClaimOfferFooterActionsProps } from "./ClaimOfferFooterActions"
 export { ClaimOfferModal } from "./ClaimOfferModal"
 export type { ClaimOfferModalProps } from "./ClaimOfferModal"
 export { ClaimOfferPrimaryButton } from "./ClaimOfferPrimaryButton"

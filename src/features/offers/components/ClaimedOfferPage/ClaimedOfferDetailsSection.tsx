@@ -12,6 +12,7 @@ import {
   formatGuestCountLabel,
 } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
 import { ListItem } from "@/shared/components/ListItem"
+import { CLAIMED_OFFER_PAYMENT_METHOD_SWITCH_LABEL } from "@/features/offers/constants/claimedOfferCopy"
 
 export interface ClaimedOfferDetailsSectionProps {
   arrivalDate: string
@@ -61,7 +62,11 @@ export function ClaimedOfferDetailsSection({
           icon={<Payment size="md" className={ROW_ICON_CLASS} aria-hidden />}
           label="Payment method"
           value={paymentValue}
-          showChevron={Boolean(onPaymentMethodPress)}
+          trailingActionLabel={
+            onPaymentMethodPress ?
+              CLAIMED_OFFER_PAYMENT_METHOD_SWITCH_LABEL
+            : undefined
+          }
           interactive={Boolean(onPaymentMethodPress)}
           onPress={onPaymentMethodPress}
           ariaLabel={
@@ -79,7 +84,7 @@ interface ClaimedOfferDetailRowProps {
   icon: ReactElement
   label: string
   value: string
-  showChevron?: boolean
+  trailingActionLabel?: string
   interactive?: boolean
   onPress?: () => void
   ariaLabel?: string
@@ -89,7 +94,7 @@ function ClaimedOfferDetailRow({
   icon,
   label,
   value,
-  showChevron = false,
+  trailingActionLabel,
   interactive = false,
   onPress,
   ariaLabel,
@@ -101,7 +106,8 @@ function ClaimedOfferDetailRow({
         iconTone="primary"
         label={label}
         value={value}
-        showChevron={showChevron}
+        showChevron={false}
+        trailingActionLabel={trailingActionLabel}
         interactive={interactive}
         onPress={onPress}
         aria-label={ariaLabel}

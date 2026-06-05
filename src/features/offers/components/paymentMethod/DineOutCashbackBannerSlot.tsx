@@ -5,13 +5,27 @@ import {
   PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
   PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE,
 } from "@/features/offers/constants/paymentMethodSheetCopy"
+import {
+  MOTION_IN_PAGE_S,
+  MOTION_REDUCED_S,
+  MOTION_SHEET_DISMISS_S,
+} from "@/shared/motion/motionDurations"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
 
-const PROMO_TRANSITION_MS = 300
+/** Apple HIG emphasized deceleration (enter). */
+const EASE_EMPHASIZED_ENTER_CSS = "cubic-bezier(0.32, 0.72, 0, 1)"
+/** Apple HIG emphasized acceleration (exit). */
+const EASE_EMPHASIZED_EXIT_CSS = "cubic-bezier(0.58, 0, 0.92, 0.36)"
+
+const ENTER_MS = Math.round(MOTION_IN_PAGE_S * 1000)
+const EXIT_MS = Math.round(MOTION_SHEET_DISMISS_S * 1000)
+const REDUCED_MS = Math.round(MOTION_REDUCED_S * 1000)
 
 export interface DineOutCashbackBannerSlotProps {
   visible: boolean
   cashbackPercent?: number
+  secondaryText?: string
+  onDismiss?: () => void
   /** Outer padding wrapper (Figma `_Cashback` uses px-6 pb-6). */
   className?: string
 }
@@ -22,6 +36,8 @@ export interface DineOutCashbackBannerSlotProps {
 export function DineOutCashbackBannerSlot({
   visible,
   cashbackPercent,
+  secondaryText,
+  onDismiss,
   className = "px-6 pb-6",
 }: DineOutCashbackBannerSlotProps) {
   const reducedMotion = prefersReducedMotion()
@@ -66,27 +82,39 @@ export function DineOutCashbackBannerSlot({
     setMounted(false)
   }
 
+  const durationMs = reducedMotion ? REDUCED_MS : open ? ENTER_MS : EXIT_MS
+  const easing = reducedMotion
+    ? "ease-out"
+    : open
+      ? EASE_EMPHASIZED_ENTER_CSS
+      : EASE_EMPHASIZED_EXIT_CSS
+
+  const transitionStyle = {
+    transitionDuration: `${durationMs}ms`,
+    transitionTimingFunction: easing,
+  }
+
   const gridClass = [
     "grid overflow-hidden",
-    reducedMotion ? "" : "transition-[grid-template-rows] ease-out",
+    reducedMotion ? "" : "transition-[grid-template-rows]",
     open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
   ]
     .filter(Boolean)
     .join(" ")
 
   const innerClass = [
-    reducedMotion ? "" : "transition-[opacity,transform] ease-out",
-    open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
+    reducedMotion ? "" : "transition-[opacity,transform]",
+    open ?
+      "translate-y-0 scale-100 opacity-100"
+    : "-translate-y-1 scale-[0.98] opacity-0",
   ]
     .filter(Boolean)
     .join(" ")
 
-  const transitionStyle = reducedMotion
-    ? undefined
-    : { transitionDuration: `${PROMO_TRANSITION_MS}ms` }
+  if (!mounted && !visible) return null
 
   return (
-    <div className={className}>
+    <div className={className} aria-hidden={!open && !visible}>
       <div
         className={gridClass}
         style={transitionStyle}
@@ -95,7 +123,11 @@ export function DineOutCashbackBannerSlot({
         <div className="min-h-0 overflow-hidden">
           {mounted ?
             <div className={innerClass} style={transitionStyle}>
-              <DineOutCashbackBanner cashbackPercent={cashbackPercent} />
+              <DineOutCashbackBanner
+                cashbackPercent={cashbackPercent}
+                secondaryText={secondaryText}
+                onDismiss={onDismiss}
+              />
             </div>
           : null}
         </div>
@@ -166,7 +198,7 @@ export function PaymentMethodSheetHeader({
     return (
       <div
         id={headingId}
-        className="flex min-h-8 flex-col gap-1 px-6 pt-3 pb-3 pr-12"
+        className="flex min-h-8 flex-col gap-1 px-6 pt-5 pb-3 pr-12"
       >
         <Typography variant="heading-s-accent" color="primary" as="p">
           {title}

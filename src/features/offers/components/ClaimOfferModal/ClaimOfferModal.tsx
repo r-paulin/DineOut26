@@ -4,7 +4,7 @@ import ChevronDown from "@bolteu/kalep-react-icons/dist/ChevronDown"
 import { useCallback, useMemo, useRef, useState } from "react"
 import { ClaimModalDisclaimer } from "@/features/offers/components/ClaimOfferModal/ClaimModalDisclaimer"
 import { ClaimModalOfferDetails } from "@/features/offers/components/ClaimOfferModal/ClaimModalOfferDetails"
-import { ClaimOfferPrimaryButton } from "@/features/offers/components/ClaimOfferModal/ClaimOfferPrimaryButton"
+import { ClaimOfferFooterActions } from "@/features/offers/components/ClaimOfferModal/ClaimOfferFooterActions"
 import { formatPeopleCountLabel } from "@/features/offers/components/ClaimOfferModal/formatPeopleCountLabel"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
@@ -193,7 +193,13 @@ export function ClaimOfferModal({
         hero="none"
         sheetHeight="fill"
         surfaceClass="bg-layer-floor-2"
-        footer={<ClaimOfferPrimaryButton onClick={handleClaim} />}
+        footerClassName="bg-layer-floor-2 pt-4 pb-[max(2rem,var(--safe-area-bottom))]"
+        footer={
+          <ClaimOfferFooterActions
+            onClick={handleClaim}
+            remainingCount={offer.remainingCount}
+          />
+        }
       >
         <div className="px-6 pb-3 pt-10">
           <h2 className={CLAIM_MODAL_TITLE_CLASS}>{modalTitle}</h2>

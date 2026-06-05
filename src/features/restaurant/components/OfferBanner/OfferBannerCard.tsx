@@ -11,7 +11,7 @@ const SEMIBOLD = {
 } as const
 
 const CLAIMED_INNER_GRADIENT =
-  "linear-gradient(90deg, rgba(0, 160, 64, 0.09) 0%, rgba(0, 160, 64, 0.09) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)"
+  "linear-gradient(90deg, rgba(0, 160, 64, 0.09) 0%, rgba(0, 160, 64, 0.09) 100%), linear-gradient(90deg, rgb(238, 241, 240) 0%, rgb(238, 241, 240) 100%)"
 
 export interface OfferBannerCardProps {
   content: OfferBannerContent
@@ -20,8 +20,8 @@ export interface OfferBannerCardProps {
 export function OfferBannerCard({ content }: OfferBannerCardProps) {
   const innerClass =
     content.innerClaimed ?
-      "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-action-secondary bg-layer-floor-1 p-3"
-    : "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-neutral-secondary bg-layer-floor-1 p-3"
+      "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-action-secondary bg-layer-floor-0-grouped p-3"
+    : "relative min-h-[96px] w-full overflow-hidden rounded-[12px] bg-layer-floor-0-grouped p-3"
 
   return (
     <div

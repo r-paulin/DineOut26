@@ -15,9 +15,12 @@ export const CLAIMED_OFFER_WELCOME_INSTRUCTION =
 export const CLAIMED_OFFER_PIN_LABEL =
   "Show this PIN to the waiter when you arrive" as const
 
-/** Figma `16384:28098` — card/cash claimed offer fixed footer CTA. */
-export const CLAIMED_OFFER_CARD_CASH_DONE_LABEL = "Confirm bill" as const
+/** Figma `16389:29235` — card/cash claimed offer fixed footer CTA. */
+export const CLAIMED_OFFER_CARD_CASH_DONE_LABEL = "Mark as paid" as const
 
-/** Figma `16389:29235` — meta copy under Confirm bill CTA. */
+/** Figma `16389:29235` — meta copy under Mark as paid CTA. */
 export const CLAIMED_OFFER_CONFIRM_BILL_META =
   "Paid the bill? Confirm your discount and rate your experience" as const
+
+/** Figma `16996:19863` — payment method row trailing action. */
+export const CLAIMED_OFFER_PAYMENT_METHOD_SWITCH_LABEL = "Switch" as const

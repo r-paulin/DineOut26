@@ -20,6 +20,14 @@ export const DINEOUT_STACKABLE_PAYMENT_PROMO_TEXT =
 export const DINEOUT_CASHBACK_BANNER_SECONDARY =
   "Your reward is added after payment" as const
 
+/** Figma `16123:18027` — restaurant Offers section cashback banner secondary. */
+export const RESTAURANT_OFFERS_CASHBACK_BANNER_SECONDARY =
+  "Pay via DineOut and earn Bolt Balance to use elsewhere on Bolt Food" as const
+
+/** Figma `16123:20904` — subtext under the Offers section title. */
+export const OFFERS_SECTION_SUBTEXT =
+  "Offers have limited claims and may become unavailable" as const
+
 /** Figma `_Cashback Banner (DineOut)` `16381:27984` — headline with cashback %. */
 export function formatDineOutClaimCashbackBannerHeadline(
   percent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,

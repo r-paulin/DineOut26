@@ -115,7 +115,7 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       {
         discountPercent: 20,
         window: { kind: "range", start: "19:00", end: "23:00" },
-        remainingSpots: 1,
+        remainingSpots: 2,
       },
       {
         discountPercent: 15,

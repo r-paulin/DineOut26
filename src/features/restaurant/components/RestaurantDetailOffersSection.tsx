@@ -1,6 +1,13 @@
 import { useMemo } from "react"
 import { Typography } from "@bolteu/kalep-react"
+import CheckCircle from "@bolteu/kalep-react-icons/dist/CheckCircle"
 import Decline from "@bolteu/kalep-react-icons/dist/Decline"
+import { DineOutCashbackBannerSlot } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
+import {
+  OFFERS_SECTION_SUBTEXT,
+  RESTAURANT_OFFERS_CASHBACK_BANNER_SECONDARY,
+} from "@/features/offers/constants/dineOutStackablePromo"
+import { useRestaurantOffersCashbackBanner } from "@/features/restaurant/hooks/useRestaurantOffersCashbackBanner"
 import { useOfferDateTabs } from "@/features/restaurant/hooks/useOfferDateTabs"
 import { useOfferPanelTransition } from "@/features/restaurant/hooks/useOfferPanelTransition"
 import { useOfferTabPanelViewportHeight } from "@/features/restaurant/hooks/useOfferTabPanelViewportHeight"
@@ -14,9 +21,29 @@ import type {
 import { RestaurantDetailOffersEmptyState } from "./RestaurantDetailOffersEmptyState"
 import { OfferBanner } from "./OfferBanner"
 
-/** Figma `_Tab`: fixed 88px column, 4px horizontal inset (`space/1`), 12px below labels to indicator. */
+/** Figma `_Tab` (`15739:52087`): 88×58px — pt 4 + day 20 + slot 24 + pb 10, indicator overlays bottom 2px. */
 const TAB_CELL =
-  "box-border flex min-h-0 min-w-[88px] w-[88px] max-w-[88px] shrink-0 flex-col items-center justify-center overflow-hidden border-none bg-transparent px-1 pb-3 pt-1 cursor-pointer"
+  "relative box-border flex h-[58px] min-h-[58px] min-w-[88px] w-[88px] max-w-[88px] shrink-0 flex-col items-stretch overflow-hidden border-none bg-transparent p-0 cursor-pointer [font-variation-settings:'wght'_var(--font-weight-regular)]"
+
+const TAB_CONTENT =
+  "box-border flex h-full w-full flex-col items-center gap-0 px-1 pt-1 pb-2.5"
+
+/** Figma `Content / Offer` — fixed 24px row above content bottom padding. */
+const TAB_BOTTOM_SLOT = "flex h-6 w-full shrink-0 items-center justify-center"
+
+const SEMIBOLD = {
+  fontVariationSettings: "'wght' var(--font-weight-semibold)",
+} as const
+
+function tabHasUserClaim(
+  tabId: string,
+  offersByTabId: Record<string, RestaurantOfferCardModel[]>,
+  claimedOffersById: Readonly<Record<string, ClaimedOffer>>,
+): boolean {
+  return (offersByTabId[tabId] ?? []).some(
+    (card) => claimedOffersById[card.id] != null,
+  )
+}
 
 export interface RestaurantDetailOffersSectionProps {
   venueSlug: string
@@ -31,9 +58,9 @@ export interface RestaurantDetailOffersSectionProps {
 }
 
 /**
- * Offers section with horizontally scrollable date tabs, an animated underline
- * indicator, ARIA tabs keyboard navigation, and an empty state for no-offer
- * dates. State, indicator measurement, and keyboard handling live in
+ * Offers section with horizontally scrollable date tabs, per-tab underline
+ * indicators (Figma `_Tab`), ARIA tabs keyboard navigation, and an empty
+ * state for no-offer dates. Selection and keyboard handling live in
  * {@link useOfferDateTabs}.
  *
  * Tab content uses stacked absolutely-positioned panels translated on tab
@@ -57,7 +84,6 @@ export function RestaurantDetailOffersSection({
     setActiveTabId,
     tablistRef,
     registerTabRef,
-    indicatorStyle,
     onTabKeyDown,
   } = useOfferDateTabs(tabs)
 
@@ -72,25 +98,43 @@ export function RestaurantDetailOffersSection({
     tabs.findIndex((t) => t.id === activeTabId),
   )
 
+  const { visible: cashbackBannerVisible, dismiss: dismissCashbackBanner } =
+    useRestaurantOffersCashbackBanner(venueSlug)
+
   return (
     <section className="flex w-full flex-col gap-4 pb-3 pt-6" aria-label="Offers">
-      <div className="px-6">
-        <Typography variant="heading-s-accent" color="primary" as="h2">
+      <div className="flex flex-col gap-1 px-6">
+        <Typography variant="heading-m-accent" color="primary" as="h2">
           Offers
         </Typography>
+        <Typography variant="body-s-regular" color="secondary" as="p">
+          {OFFERS_SECTION_SUBTEXT}
+        </Typography>
       </div>
+      <DineOutCashbackBannerSlot
+        visible={cashbackBannerVisible}
+        className="px-6"
+        secondaryText={RESTAURANT_OFFERS_CASHBACK_BANNER_SECONDARY}
+        onDismiss={dismissCashbackBanner}
+      />
       <div
         ref={tablistRef}
         className="w-full overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="tablist"
         aria-label="Offer dates"
       >
-        <div className="relative flex w-max max-w-none flex-nowrap gap-0">
+        <div className="flex h-[58px] min-h-[58px] w-max max-w-none flex-nowrap gap-0">
           {tabs.map((tab) => {
             const selected = tab.id === activeTabId
-            const discountVariant = selected ? "body-m-accent" : "body-m-regular"
-            const rowGap =
-              tab.state === "no-offer" ? "gap-0" : "gap-0.5"
+            const claimed = tabHasUserClaim(
+              tab.id,
+              offersByTabId,
+              claimedOffersById,
+            )
+            const tabAriaLabel =
+              tab.state === "no-offer" ? `${tab.dayLabel}, no offer`
+              : claimed ? `${tab.dayLabel}, offer claimed`
+              : `${tab.dayLabel}, ${tab.discountLabel ?? ""}`
             return (
               <button
                 key={tab.id}
@@ -100,48 +144,53 @@ export function RestaurantDetailOffersSection({
                 id={`restaurant-offer-tab-${tab.id}`}
                 aria-selected={selected}
                 aria-controls={`restaurant-offer-tabpanel-${tab.id}`}
+                aria-label={tabAriaLabel}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActiveTabId(tab.id)}
                 onKeyDown={onTabKeyDown}
-                className={`${TAB_CELL} ${rowGap}`}
+                className={TAB_CELL}
               >
-                <Typography
-                  variant="body-s-regular"
-                  color="secondary"
-                  as="span"
-                  align="center"
-                >
-                  {tab.dayLabel}
-                </Typography>
-                {tab.state === "no-offer" ? (
-                  <div className="flex h-6 w-full shrink-0 items-center justify-center">
-                    <Decline size="sm" className="text-tertiary shrink-0" />
-                  </div>
-                ) : (
+                <div className={TAB_CONTENT}>
                   <Typography
-                    variant={discountVariant}
-                    color="primary"
+                    variant="body-s-regular"
+                    color="secondary"
                     as="span"
                     align="center"
                   >
-                    {tab.discountLabel}
+                    {tab.dayLabel}
                   </Typography>
-                )}
+                  {tab.state === "no-offer" ?
+                    <div className={TAB_BOTTOM_SLOT}>
+                      <Decline size="sm" className="text-tertiary shrink-0" />
+                    </div>
+                  : claimed ?
+                    <div className={TAB_BOTTOM_SLOT}>
+                      <CheckCircle
+                        size="sm"
+                        className="shrink-0 text-action-primary"
+                        aria-hidden
+                      />
+                    </div>
+                  : <div className={TAB_BOTTOM_SLOT}>
+                      <Typography
+                        variant={selected ? "body-m-accent" : "body-m-regular"}
+                        color="primary"
+                        as="span"
+                        align="center"
+                        inlineStyle={selected ? SEMIBOLD : undefined}
+                      >
+                        {tab.discountLabel}
+                      </Typography>
+                    </div>
+                  }
+                </div>
+                <div
+                  className={`pointer-events-none absolute inset-x-0 bottom-0 h-0.5 ${selected ? "bg-action-primary" : "bg-neutral-secondary"}`}
+                  aria-hidden
+                />
               </button>
             )
           })}
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-neutral-secondary"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute bottom-0 h-[2px] bg-action-primary transition-[transform,width] duration-200 ease-out motion-reduce:transition-none"
-            style={{
-              transform: indicatorStyle.transform,
-              width: `${indicatorStyle.width}px`,
-            }}
-            aria-hidden
-          />
         </div>
       </div>
       <div
