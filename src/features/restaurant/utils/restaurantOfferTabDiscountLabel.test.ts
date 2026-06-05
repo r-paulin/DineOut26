@@ -1,8 +1,22 @@
 import { describe, expect, it } from "vitest"
+import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import {
   formatRestaurantOfferTabDiscountLabel,
   resolveRestaurantOfferTabDiscountLabel,
 } from "./restaurantOfferTabDiscountLabel"
+
+function offerCard(discountPercent: number): RestaurantOfferCardModel {
+  return {
+    id: `offer-${discountPercent}`,
+    expiresAt: Number.MAX_SAFE_INTEGER,
+    tags: ["enabled"],
+    discountPercent,
+    title: `Claim ${discountPercent}% discount`,
+    date: "Today",
+    timeWindow: "All day",
+    restaurantImage: "/images/placeholder.png",
+  }
+}
 
 describe("formatRestaurantOfferTabDiscountLabel", () => {
   it("formats percent off copy", () => {
@@ -11,10 +25,7 @@ describe("formatRestaurantOfferTabDiscountLabel", () => {
 })
 
 describe("resolveRestaurantOfferTabDiscountLabel", () => {
-  const cards = [
-    { discountPercent: 20 },
-    { discountPercent: 15 },
-  ] as const
+  const cards = [offerCard(20), offerCard(15)]
 
   it("uses highest tier for first offer day", () => {
     expect(resolveRestaurantOfferTabDiscountLabel(cards, 0)).toBe("20% off")

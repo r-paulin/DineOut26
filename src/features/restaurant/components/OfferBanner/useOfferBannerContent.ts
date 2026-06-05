@@ -279,7 +279,7 @@ export function buildOfferBannerContent({
   claim,
   context,
   displayDiscount,
-  windowPhase,
+  windowPhase: _windowPhase,
   hasOtherClaimAtVenue,
 }: BuildOfferBannerContentArgs): OfferBannerContent {
   if (state === "claimed" && claim) {
