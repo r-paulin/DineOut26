@@ -20,7 +20,7 @@ export const PIN_COUNTDOWN_TEXT_STYLE = {
   fontFeatureSettings: "'cv03' 1, 'cv04' 1",
 } as const
 
-/** Figma claimed-offer details row — e.g. "30% discount on menu" (`16123:18340`). */
+/** Figma claimed-offer details row — e.g. "30% off your bill" (`16123:18340`). */
 export function formatClaimedOfferFoodLabel(discountPercent: number): string {
   return formatOfferDiscountTitle(discountPercent, false)
 }

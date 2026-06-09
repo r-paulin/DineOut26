@@ -158,8 +158,16 @@ export function PayScreen({
   const [cardSheet, setCardSheet] = useState(false)
   const [paymentPickerOpen, setPaymentPickerOpen] = useState(false)
   const [payLoading, setPayLoading] = useState(false)
+  const paymentAttemptRef = useRef(0)
   /** Strict Mode runs effects twice with the same `intent` snapshot; only show once. */
   const intentConsumedRef = useRef(false)
+
+  useEffect(() => {
+    return () => {
+      paymentAttemptRef.current += 1
+    }
+  }, [])
+
   useEffect(() => {
     if (intent == null) {
       intentConsumedRef.current = false
@@ -225,6 +233,7 @@ export function PayScreen({
   const hideCardRow = fromCard <= 0
 
   const onSlideComplete = useCallback(async () => {
+    const attemptId = ++paymentAttemptRef.current
     setPayLoading(true)
     const methodUi: "bolt_balance" | "card" =
       fromCard <= 0 ? "bolt_balance" : "card"
@@ -237,6 +246,8 @@ export function PayScreen({
         discountPercent: d1,
         discountAddPercent: d2,
       })
+      if (attemptId !== paymentAttemptRef.current) return
+      if (usePayBillStore.getState().step !== "pay") return
       completePayment({
         transactionId: res.transactionId,
         paymentCode: res.paymentCode,
@@ -273,6 +284,7 @@ export function PayScreen({
         title={restaurantName}
         onBack={onBack}
         showDivider={false}
+        backDisabled={payLoading}
       />
 
       <div className="flex min-h-0 flex-1 flex-col">

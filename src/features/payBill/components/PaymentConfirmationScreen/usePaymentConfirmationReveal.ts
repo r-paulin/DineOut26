@@ -2,7 +2,9 @@ import gsap from "gsap"
 import type { RefObject } from "react"
 import { useLayoutEffect, useState } from "react"
 import {
+  heroBandHeightForSheetInset,
   measureConfirmSheetInsetPx,
+  measureHeroHostHeightPx,
   measurePayConfirmNavReservePx,
 } from "@/features/payBill/components/PaymentConfirmationScreen/paymentConfirmationLayout"
 import { MOTION_PUSH_S } from "@/shared/motion"
@@ -14,6 +16,7 @@ const ENTRANCE_S = MOTION_PUSH_S
 const HOLD_AFTER_ENTRANCE_S = 2
 const SHEET_IN_S = 0.75
 const HERO_MORPH_S = 0.75
+const SETUP_MAX_ATTEMPTS = 8
 
 /** Celebration checkmark layout size (asset is 180px). */
 export const PAY_SUCCESS_CHECKMARK_START_PX = 180
@@ -35,19 +38,33 @@ function applyCheckmarkSize(imgWrap: HTMLElement, px: number): void {
   })
 }
 
-/** Pin hero below absolute nav and above host bottom; flex centers checkmark + title. */
+function heroExpandedHeightPx(heroBand: HTMLElement, navTopPx: number): number {
+  const hostH = measureHeroHostHeightPx(heroBand)
+  return Math.max(0, Math.round(hostH - navTopPx))
+}
+
+function heroAboveSheetHeightPx(
+  heroBand: HTMLElement,
+  navTopPx: number,
+  sheetInsetPx: number,
+): number {
+  const hostH = measureHeroHostHeightPx(heroBand)
+  return Math.max(0, heroBandHeightForSheetInset(hostH, sheetInsetPx) - navTopPx)
+}
+
+/** Pin hero below nav with explicit height so flex centering works before layout settles. */
 function applyHeroBandExpanded(heroBand: HTMLElement, navTopPx: number): void {
   gsap.set(heroBand, {
     left: 0,
     right: 0,
     top: navTopPx,
-    bottom: 0,
-    height: "auto",
+    bottom: "auto",
+    height: heroExpandedHeightPx(heroBand, navTopPx),
     width: "100%",
   })
 }
 
-/** Pin hero bottom to sheet top so content stays centered in the green strip above the sheet. */
+/** Pin hero bottom to sheet top with explicit height. */
 function applyHeroBandAboveSheet(
   heroBand: HTMLElement,
   navTopPx: number,
@@ -57,8 +74,8 @@ function applyHeroBandAboveSheet(
     left: 0,
     right: 0,
     top: navTopPx,
-    bottom: sheetInsetPx,
-    height: "auto",
+    bottom: "auto",
+    height: heroAboveSheetHeightPx(heroBand, navTopPx, sheetInsetPx),
     width: "100%",
   })
 }
@@ -71,6 +88,20 @@ function measureSheetInset(sheet: HTMLElement): number {
 function isSheetRevealed(sheet: HTMLElement): boolean {
   const y = gsap.getProperty(sheet, "yPercent")
   return y === 0 || y === "0"
+}
+
+function applyRevealedState(
+  heroBand: HTMLElement,
+  navTopPx: number,
+  imgWrap: HTMLElement,
+  title: HTMLElement,
+  sheet: HTMLElement,
+): void {
+  applyHeroBandAboveSheet(heroBand, navTopPx, measureSheetInset(sheet))
+  gsap.set(sheet, { yPercent: 0 })
+  applyCheckmarkSize(imgWrap, PAY_SUCCESS_CHECKMARK_FINAL_PX)
+  gsap.set(imgWrap, { opacity: 1, y: 0 })
+  gsap.set(title, { autoAlpha: 1 })
 }
 
 export interface UsePaymentConfirmationRevealArgs {
@@ -107,6 +138,7 @@ export function usePaymentConfirmationReveal({
     let cancelled = false
     let ctx: gsap.Context | null = null
     let resizeObserver: ResizeObserver | null = null
+    let headerObserver: ResizeObserver | null = null
     let raf = 0
 
     const clearNodes = () => {
@@ -120,6 +152,24 @@ export function usePaymentConfirmationReveal({
       if (sheet) gsap.set(sheet, { clearProps: "all" })
       if (imgWrap) gsap.set(imgWrap, { clearProps: "all" })
       if (title) gsap.set(title, { clearProps: "all" })
+    }
+
+    const applyFallbackRevealed = (): boolean => {
+      const root = rootRef.current
+      const heroBand = heroBandRef.current
+      const imgWrap = imgWrapRef.current
+      const title = titleRef.current
+      const sheet = sheetRef.current
+      if (!root || !heroBand || !imgWrap || !title || !sheet) return false
+
+      const navTopPx = measurePayConfirmNavReservePx(root)
+      if (navTopPx <= 0) return false
+
+      applyRevealedState(heroBand, navTopPx, imgWrap, title, sheet)
+      queueMicrotask(() => {
+        if (!cancelled) setPhase("revealed")
+      })
+      return true
     }
 
     const setup = (): boolean => {
@@ -145,11 +195,7 @@ export function usePaymentConfirmationReveal({
       }
 
       if (startRevealed || motionReduced()) {
-        applyHeroBandAboveSheet(heroBand, navTopPx, measureSheetInset(sheet))
-        gsap.set(sheet, { yPercent: 0 })
-        applyCheckmarkSize(imgWrap, PAY_SUCCESS_CHECKMARK_FINAL_PX)
-        gsap.set(imgWrap, { opacity: 1, y: 0 })
-        gsap.set(title, { autoAlpha: 1 })
+        applyRevealedState(heroBand, navTopPx, imgWrap, title, sheet)
         queueMicrotask(() => {
           if (!cancelled) setPhase("revealed")
         })
@@ -199,8 +245,13 @@ export function usePaymentConfirmationReveal({
           tl.call(
             () => {
               const sheetInsetPx = measureSheetInset(sheet)
+              const targetH = heroAboveSheetHeightPx(
+                heroBand,
+                navTopPx,
+                sheetInsetPx,
+              )
               gsap.to(heroBand, {
-                bottom: sheetInsetPx,
+                height: targetH,
                 duration: SHEET_IN_S,
                 ease: "power2.out",
                 overwrite: "auto",
@@ -242,20 +293,42 @@ export function usePaymentConfirmationReveal({
       return true
     }
 
-    if (!setup()) {
+    const trySetupWithRetry = () => {
+      if (setup()) return
+
       let attempts = 0
       const retry = () => {
-        if (cancelled || setup() || attempts >= 8) return
+        if (cancelled) return
+        if (setup()) return
         attempts += 1
+        if (attempts >= SETUP_MAX_ATTEMPTS) {
+          applyFallbackRevealed()
+          return
+        }
         raf = window.requestAnimationFrame(retry)
       }
       raf = window.requestAnimationFrame(retry)
+    }
+
+    trySetupWithRetry()
+
+    const root = rootRef.current
+    const header = root?.querySelector("header")
+    if (header && typeof ResizeObserver !== "undefined") {
+      headerObserver = new ResizeObserver(() => {
+        if (cancelled || ctx != null) return
+        if (setup()) {
+          headerObserver?.disconnect()
+        }
+      })
+      headerObserver.observe(header)
     }
 
     return () => {
       cancelled = true
       window.cancelAnimationFrame(raf)
       resizeObserver?.disconnect()
+      headerObserver?.disconnect()
       ctx?.revert()
       clearNodes()
     }

@@ -44,6 +44,7 @@ export interface PayBillStoreState {
     cashbackEarnedEur: number
     paymentMethodUi: "bolt_balance" | "card"
   }) => void
+  clearPaymentOutcome: () => void
   setSelectedCardId: (id: string | null) => void
   setCheckoutPaymentOptionId: (id: string) => void
 }
@@ -58,6 +59,7 @@ const initial = (): Omit<
   | "setIntentSnackbar"
   | "setPostPayment"
   | "completePayment"
+  | "clearPaymentOutcome"
   | "setSelectedCardId"
   | "setCheckoutPaymentOptionId"
 > => ({
@@ -76,7 +78,7 @@ const initial = (): Omit<
   checkoutPaymentOptionId: CHECKOUT_PAYMENT_DEFAULT_OPTION_ID,
 })
 
-export const usePayBillStore = create<PayBillStoreState>((set) => ({
+export const usePayBillStore = create<PayBillStoreState>((set, get) => ({
   ...initial(),
   open: (entry) =>
     set({
@@ -98,7 +100,8 @@ export const usePayBillStore = create<PayBillStoreState>((set) => ({
       cashbackEarnedEur: payload.cashbackEarnedEur,
       paymentMethodUi: payload.paymentMethodUi,
     }),
-  completePayment: (payload) =>
+  completePayment: (payload) => {
+    if (get().step !== "pay") return
     set({
       transactionId: payload.transactionId,
       paymentCode: payload.paymentCode,
@@ -107,6 +110,16 @@ export const usePayBillStore = create<PayBillStoreState>((set) => ({
       cashbackEarnedEur: payload.cashbackEarnedEur,
       paymentMethodUi: payload.paymentMethodUi,
       step: "confirmation",
+    })
+  },
+  clearPaymentOutcome: () =>
+    set({
+      transactionId: null,
+      paymentCode: null,
+      paidAt: null,
+      paidAmount: null,
+      cashbackEarnedEur: null,
+      paymentMethodUi: null,
     }),
   setSelectedCardId: (selectedCardId) => set({ selectedCardId }),
   setCheckoutPaymentOptionId: (checkoutPaymentOptionId) =>

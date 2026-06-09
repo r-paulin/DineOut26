@@ -15,7 +15,7 @@ const ICON_BTN =
   "flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-neutral-secondary p-0 outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
 
 /**
- * Figma `16039:29267` — Menu, Directions, Call, Details.
+ * Figma `16039:29267` — Menu, Details, Directions, Call.
  */
 export function RestaurantDetailQuickActions({
   onOpenMenu,
@@ -32,6 +32,13 @@ export function RestaurantDetailQuickActions({
       ariaLabel: "Menu",
     },
     {
+      id: "details",
+      label: "Details",
+      icon: <Food size="sm" className="text-primary" aria-hidden />,
+      onClick: onOpenDetails,
+      ariaLabel: "Details",
+    },
+    {
       id: "directions",
       label: "Directions",
       icon: <Directions size="sm" className="text-primary" aria-hidden />,
@@ -44,13 +51,6 @@ export function RestaurantDetailQuickActions({
       icon: <Call size="sm" className="text-primary" aria-hidden />,
       onClick: onCall,
       ariaLabel: "Call",
-    },
-    {
-      id: "details",
-      label: "Details",
-      icon: <Food size="sm" className="text-primary" aria-hidden />,
-      onClick: onOpenDetails,
-      ariaLabel: "Details",
     },
   ] as const
 

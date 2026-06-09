@@ -1,15 +1,16 @@
 import { Typography } from "@bolteu/kalep-react"
 import CashbackColoured from "@bolteu/kalep-react-icons/dist/CashbackColoured"
 import Lock from "@bolteu/kalep-react-icons/dist/Lock"
-import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
+import Percent from "@bolteu/kalep-react-icons/dist/Percent"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { useOfferCountdown } from "@/features/offers/components/ClaimedOfferPage/useOfferCountdown"
 import type { OfferBannerSticker } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
 
-/** Figma `16103:17598` Offer / Sticker — 8px gap, 12px horizontal padding. */
+/** Figma `17097:18617` Offer / Sticker — 8px gap, 12px horizontal padding. */
 const STICKER_ROW_CLASS =
   "flex w-full items-center justify-start gap-2 px-3 pb-1.5 pt-1"
+const SCARCITY_STICKER_ROW_CLASS = `${STICKER_ROW_CLASS} bg-neutral-primary`
 
 const STICKER_ICON_CLASS = "size-4 shrink-0"
 
@@ -17,7 +18,7 @@ export interface OfferBannerStickerRowProps {
   sticker: OfferBannerSticker
   claimed?: boolean
   claim?: ClaimedOffer
-  /** Scarcity on brand-alt shell uses inverted styling (Figma `16123:18031`). */
+  /** Claimed / brand-alt shell sticker rows use inverted styling. */
   onDarkShell?: boolean
 }
 
@@ -29,11 +30,11 @@ function stickerTone(
   iconClass: string
   textColor: "primary-inverted" | "primary" | "tertiary" | "danger-primary"
 } {
-  if (claimed || (sticker.kind === "scarcity" && onDarkShell)) {
+  if (sticker.kind === "scarcity") {
     return { iconClass: "text-primary-inverted", textColor: "primary-inverted" }
   }
-  if (sticker.kind === "scarcity") {
-    return { iconClass: "text-danger-primary", textColor: "danger-primary" }
+  if (claimed || onDarkShell) {
+    return { iconClass: "text-primary-inverted", textColor: "primary-inverted" }
   }
   if (sticker.kind === "locked" || sticker.kind === "expired") {
     return { iconClass: "text-tertiary", textColor: "primary" }
@@ -69,10 +70,13 @@ export function OfferBannerStickerRow({
     )
   }
 
+  const rowClass =
+    sticker.kind === "scarcity" ? SCARCITY_STICKER_ROW_CLASS : STICKER_ROW_CLASS
+
   return (
-    <div className={STICKER_ROW_CLASS}>
+    <div className={rowClass}>
       {sticker.kind === "scarcity" ?
-        <PercentFlower
+        <Percent
           className={`${STICKER_ICON_CLASS} ${iconClass}`}
           aria-hidden
         />

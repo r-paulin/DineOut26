@@ -1,11 +1,10 @@
 import { Typography } from "@bolteu/kalep-react"
-import { useCallback, useState } from "react"
+import { useCallback } from "react"
 import { OfferCardListRatingStar } from "@/features/offers/components/OfferCardListRatingStar"
-import { RestaurantMenuGalleryModal } from "@/features/restaurant/components/RestaurantMenuGalleryModal"
+import { RestaurantVenueGallery } from "@/features/restaurant/components/RestaurantVenueGallery"
 import { AccordionRow } from "./AccordionRow"
 import type { RestaurantAboutProps } from "./restaurantAbout.types"
 import { CardDivider } from "@/shared/components/CardDivider"
-import { RestaurantGallery } from "./RestaurantGallery"
 import { useRestaurantAbout } from "./useRestaurantAbout"
 import { VenueInfoRows } from "./VenueInfoRow"
 
@@ -31,9 +30,9 @@ const DISCLAIMER_P2 =
  */
 export function RestaurantAbout({
   restaurant,
+  venueGalleryCycles,
   showDisclaimer = true,
   onOpenExternalUrl,
-  galleryPortalContainer,
   onOpenReviews,
   onOpenPriceInfo,
   onOpenHours,
@@ -41,8 +40,6 @@ export function RestaurantAbout({
   onOpenAddress,
 }: RestaurantAboutProps) {
   const { openAccordion, toggleAccordion } = useRestaurantAbout()
-  const [galleryOpen, setGalleryOpen] = useState(false)
-  const [galleryIndex, setGalleryIndex] = useState(0)
 
   const openExternalUrl = useCallback(
     (url: string) => {
@@ -55,11 +52,6 @@ export function RestaurantAbout({
     },
     [onOpenExternalUrl],
   )
-
-  const openGalleryAt = useCallback((index: number) => {
-    setGalleryIndex(index)
-    setGalleryOpen(true)
-  }, [])
 
   const ratingLabel = restaurant.rating.toFixed(1)
   const reviewsParen = `(${restaurant.reviewCount.toLocaleString()} reviews)`
@@ -130,15 +122,7 @@ export function RestaurantAbout({
         </div>
       </div>
 
-      <div className="pb-3">
-        <RestaurantGallery
-          images={restaurant.images}
-          onSelectIndex={openGalleryAt}
-          onMorePress={() => {
-            openGalleryAt(0)
-          }}
-        />
-      </div>
+      <RestaurantVenueGallery venueGalleryCycles={venueGalleryCycles} className="pt-0" />
 
       <div className="pt-2">
         <VenueInfoRows
@@ -240,16 +224,6 @@ export function RestaurantAbout({
           </Typography>
         </footer>
       ) : null}
-
-      <RestaurantMenuGalleryModal
-        isOpen={galleryOpen}
-        onOpenChange={setGalleryOpen}
-        imageUrls={restaurant.images}
-        ariaLabel={`Photos of ${restaurant.name}`}
-        initialSlideIndex={galleryIndex}
-        imageObjectFit="cover"
-        container={galleryPortalContainer}
-      />
     </section>
   )
 }

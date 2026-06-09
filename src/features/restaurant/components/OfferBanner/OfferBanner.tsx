@@ -304,7 +304,8 @@ function offerBannerShellClass(
   outerClaimed: boolean,
   outerShellTone: OfferBannerOuterShellTone,
 ): string {
-  if (outerClaimed || outerShellTone === "limited") return "bg-special-brand-alt"
+  if (outerClaimed) return "bg-special-brand-alt"
+  if (outerShellTone === "limited") return "bg-neutral-primary"
   return "bg-neutral-secondary"
 }
 
@@ -312,7 +313,7 @@ function stickerOnDarkShell(
   outerClaimed: boolean,
   outerShellTone: OfferBannerOuterShellTone,
 ): boolean {
-  return outerClaimed || outerShellTone === "limited"
+  return outerClaimed
 }
 
 function OfferBannerShell({

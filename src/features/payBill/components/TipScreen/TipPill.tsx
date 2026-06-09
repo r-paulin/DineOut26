@@ -8,6 +8,17 @@ export interface TipPillProps {
   onDeselect: () => void
 }
 
+function tipPillAriaLabel(option: TipOption): string {
+  if (option.isCustom) return "Other tip amount"
+  if (option.amount === 0 || option.label.toLowerCase().includes("no tip")) {
+    return "No tip"
+  }
+  if (option.secondaryLabel) {
+    return `${option.secondaryLabel} tip, ${option.label}`
+  }
+  return `${option.label} tip`
+}
+
 /**
  * Tip chip: two-line EUR + % (presets) or single "Other"; Figma selected = action primary fill.
  */
@@ -21,6 +32,8 @@ export function TipPill({
   return (
     <button
       type="button"
+      aria-pressed={isSelected}
+      aria-label={tipPillAriaLabel(option)}
       onClick={() => {
         if (isSelected) onDeselect()
         else onSelect()

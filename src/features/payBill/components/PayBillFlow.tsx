@@ -13,6 +13,7 @@ import {
 import { DEFAULT_TIP_PERCENT_PRESETS } from "@/features/payBill/utils/tipPresets"
 import { capturePayBillCompletionSnapshot } from "@/features/payBill/utils/capturePayBillCompletionSnapshot"
 import { usePayBillStore } from "@/features/payBill/store/payBillStore"
+import { Z_PAY_BILL_FLOW } from "@/features/restaurant/constants/screenLayers"
 
 export interface PayBillFlowProps {
   entry: PayBillFlowEntry
@@ -37,6 +38,7 @@ export function PayBillFlow({
   const step = usePayBillStore((s) => s.step)
   const open = usePayBillStore((s) => s.open)
   const reset = usePayBillStore((s) => s.reset)
+  const clearPaymentOutcome = usePayBillStore((s) => s.clearPaymentOutcome)
   const setStep = usePayBillStore((s) => s.setStep)
   const setBillAmount = usePayBillStore((s) => s.setBillAmount)
   const setTip = usePayBillStore((s) => s.setTip)
@@ -90,9 +92,10 @@ export function PayBillFlow({
   }, [entry, onExitAfterPayment, onPaidDone, reset])
 
   const retryBillAmount = useCallback(() => {
+    clearPaymentOutcome()
     setStep("billAmount")
     setTip(null)
-  }, [setStep, setTip])
+  }, [clearPaymentOutcome, setStep, setTip])
 
   const stepContent = useMemo(() => {
     if (step === "billAmount") {
@@ -196,7 +199,10 @@ export function PayBillFlow({
   ])
 
   const node = (
-    <div className="fixed inset-0 z-[120] flex w-full justify-center bg-layer-floor-1">
+    <div
+      className="fixed inset-0 flex w-full justify-center bg-layer-floor-1"
+      style={{ zIndex: Z_PAY_BILL_FLOW }}
+    >
       <div
         ref={setShellEl}
         className="relative h-[var(--app-h)] w-full max-w-[var(--shell-width)] overflow-hidden bg-layer-floor-1 shadow-[0_0.25rem_0.75rem_rgba(0,0,0,0.2)]"

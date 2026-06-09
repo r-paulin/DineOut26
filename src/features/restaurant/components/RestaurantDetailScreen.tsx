@@ -74,6 +74,7 @@ export function RestaurantDetailScreen({
 }: RestaurantDetailScreenProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const menuSectionRef = useRef<HTMLElement>(null)
+  const venueSectionRef = useRef<HTMLElement>(null)
   const aboutScrollRef = useRef<HTMLDivElement>(null)
   /** In-panel About stack (covers main scroll only). */
   const stackAreaRef = useRef<HTMLDivElement>(null)
@@ -199,6 +200,10 @@ export function RestaurantDetailScreen({
     onOpenMenu?.()
     menuSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }, [onOpenMenu])
+
+  const scrollToVenueSection = useCallback(() => {
+    venueSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }, [])
 
   const openMenuGalleryAt = useCallback((index = 0) => {
     setMenuGalleryInitialIndex(index)
@@ -377,7 +382,7 @@ export function RestaurantDetailScreen({
                     }
                   : undefined
                 }
-                onOpenDetails={openAbout}
+                onOpenDetails={scrollToVenueSection}
               />
               <RestaurantDetailSectionDivider />
               <RestaurantDetailOffersSection
@@ -400,6 +405,7 @@ export function RestaurantDetailScreen({
             />
             <RestaurantDetailSectionDivider />
             <RestaurantDetailVenueSection
+              ref={venueSectionRef}
               name={model.name}
               cuisineTags={model.cuisineTags}
               venueGalleryCycles={model.venueGalleryCycles}
@@ -443,7 +449,7 @@ export function RestaurantDetailScreen({
               >
                 <RestaurantAbout
                   restaurant={aboutRestaurantLive}
-                  galleryPortalContainer={portalRoot}
+                  venueGalleryCycles={model.venueGalleryCycles}
                   onOpenReviews={handleOpenReviews}
                   onOpenPriceInfo={onOpenPriceInfo ?? undefined}
                   onOpenHours={handleOpenHours}

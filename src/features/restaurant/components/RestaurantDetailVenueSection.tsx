@@ -1,9 +1,11 @@
+import { forwardRef } from "react"
 import { Button, Typography } from "@bolteu/kalep-react"
 import Call from "@bolteu/kalep-react-icons/dist/Call"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import Pin from "@bolteu/kalep-react-icons/dist/Pin"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
 import { RESTAURANT_DETAIL_SECTION_TITLE_CLASS } from "@/features/restaurant/components/restaurantDetailSectionTitle"
+import { RestaurantVenueGallery } from "@/features/restaurant/components/RestaurantVenueGallery"
 import type { RestaurantDetailModel } from "@/features/restaurant/restaurantDetail.types"
 import { ListItem } from "@/shared/components/ListItem"
 import { toTelHref } from "@/shared/utils/telHref"
@@ -36,7 +38,11 @@ const VENUE_HEADING_CLASS =
 const VENUE_ABOUT_ROW_VALUE = "About venue" as const
 const VENUE_ABOUT_ROW_LABEL = "Social media, amenities and more" as const
 
-export function RestaurantDetailVenueSection({
+export const RestaurantDetailVenueSection = forwardRef<
+  HTMLElement,
+  RestaurantDetailVenueSectionProps
+>(function RestaurantDetailVenueSection(
+  {
   name,
   cuisineTags,
   venueGalleryCycles,
@@ -49,52 +55,26 @@ export function RestaurantDetailVenueSection({
   onCall,
   onOpenAbout,
   onOpenReportProblem,
-}: RestaurantDetailVenueSectionProps) {
+},
+  ref,
+) {
   const telHref = toTelHref(phone)
   const hoursStatusLabel = isOpen ? "Open now" : "Closed"
 
   return (
     <section
+      ref={ref}
+      id="restaurant-detail-venue"
       className="flex w-full flex-col bg-layer-floor-1"
       aria-labelledby="restaurant-detail-venue-heading"
     >
       <div className="relative z-[1] -mt-px w-full min-w-0 overflow-hidden rounded-t-lg bg-layer-floor-1">
         <header className="px-6 pt-6">
           <h2 className={RESTAURANT_DETAIL_SECTION_TITLE_CLASS} id="restaurant-detail-venue-heading">
-            Venue
+            Venue details
           </h2>
         </header>
-        <div className="w-full min-w-0 overflow-x-auto px-6 pb-4 pt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex w-max flex-row gap-3">
-            {venueGalleryCycles.map((cycle, i) => (
-              <div key={`${cycle.tall}-${i}`} className="flex shrink-0 gap-3">
-                <div className="h-[250px] w-[272px] shrink-0 overflow-hidden rounded-[12px] bg-neutral-secondary">
-                  <img
-                    src={cycle.tall}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="flex h-[250px] w-[130px] shrink-0 flex-col gap-3">
-                  <div className="h-[120px] w-full shrink-0 overflow-hidden rounded-[12px] bg-neutral-secondary">
-                    <img
-                      src={cycle.top}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="h-[120px] w-full shrink-0 overflow-hidden rounded-[12px] bg-neutral-secondary">
-                    <img
-                      src={cycle.bottom}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <RestaurantVenueGallery venueGalleryCycles={venueGalleryCycles} />
       </div>
       <div className="flex flex-col gap-1 px-6 pb-3 pt-6">
         <h2 className={VENUE_HEADING_CLASS} style={{ fontFeatureSettings: '"cv03" 1, "cv04" 1' }}>
@@ -139,7 +119,7 @@ export function RestaurantDetailVenueSection({
               icon={<Call size="lg" className={ROW_ICON_CLASS} aria-hidden />}
               iconTone="primary"
               lineOrder="valueFirst"
-              label="Phone number"
+              label="Call venue"
               value={phone}
               href={telHref}
               onPress={onCall}
@@ -152,7 +132,7 @@ export function RestaurantDetailVenueSection({
               icon={<Call size="lg" className={ROW_ICON_CLASS} aria-hidden />}
               iconTone="primary"
               lineOrder="valueFirst"
-              label="Phone number"
+              label="Call venue"
               value={phone}
               interactive={Boolean(onCall)}
               onPress={onCall}
@@ -191,4 +171,4 @@ export function RestaurantDetailVenueSection({
       : null}
     </section>
   )
-}
+})

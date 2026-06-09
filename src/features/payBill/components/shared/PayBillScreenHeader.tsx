@@ -9,6 +9,7 @@ export interface PayBillScreenHeaderProps {
   onBack: () => void
   /** Figma bill/tip screens include a separator under the title row. */
   showDivider?: boolean
+  backDisabled?: boolean
 }
 
 /**
@@ -19,6 +20,7 @@ export function PayBillScreenHeader({
   title,
   onBack,
   showDivider = true,
+  backDisabled = false,
 }: PayBillScreenHeaderProps) {
   return (
     <header className="flex shrink-0 flex-col gap-[15px] bg-layer-floor-1 pt-[max(2.5rem,var(--safe-area-top))]">
@@ -26,8 +28,9 @@ export function PayBillScreenHeader({
         <button
           type="button"
           aria-label="Back"
+          disabled={backDisabled}
           onClick={onBack}
-          className="flex size-6 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
+          className="flex size-6 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-primary outline-none focus-visible:ring-2 focus-visible:ring-action-primary disabled:pointer-events-none disabled:opacity-40"
         >
           <ArrowLeft size="md" className="text-primary" aria-hidden />
         </button>

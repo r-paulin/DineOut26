@@ -1,8 +1,6 @@
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
 import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
-import {
-  shouldShowScarcitySticker,
-} from "@/features/offers/data/selectPrimaryTimedOffer"
+import { clampRemainingSpotsForDisplay } from "@/features/offers/data/selectPrimaryTimedOffer"
 import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
@@ -48,7 +46,7 @@ export type OfferBannerSticker =
 
 export type OfferBannerImageVariant = "claimed" | "unclaimed"
 
-/** Figma `16123:18031` — limited-availability banners use brand-alt shell. */
+/** Figma `17097:18617` — scarcity banners use neutral-primary shell + sticker row. */
 export type OfferBannerOuterShellTone = "neutral" | "limited"
 
 export type OfferBannerContent = {
@@ -96,17 +94,39 @@ export function formatLimitedAvailabilityLabel(remainingCount: number): string {
   return `Limited availability — ${remainingCount} left`
 }
 
-/** Scarcity sticker — e.g. "2 offers left" or "Almost full — 1 offer left". */
+/** Scarcity sticker — e.g. "5 offers left" or "Only 2 offers left" when fewer than 3 remain. */
 export function formatClaimSlotsRemainingLabel(remainingCount: number): string {
-  if (remainingCount === 1) return "Almost full — 1 offer left"
+  const offerWord = remainingCount === 1 ? "offer" : "offers"
+  if (remainingCount < 3) {
+    return `Only ${remainingCount} ${offerWord} left`
+  }
   return `${remainingCount} offers left`
+}
+
+export type FormatOfferBannerScheduleLineOptions = {
+  windowPhase?: OfferBannerWindowPhase
+  isAllDay?: boolean
+  offerEnd?: string
+}
+
+/** Matches home badge copy: live ranged offers show end time only. */
+export function formatOfferBannerAvailabilityTime(
+  timeWindow: string,
+  options: FormatOfferBannerScheduleLineOptions = {},
+): string {
+  const { windowPhase, isAllDay, offerEnd } = options
+  if (windowPhase === "active" && !isAllDay && offerEnd?.trim()) {
+    return `Until ${offerEnd.trim()}`
+  }
+  return formatOfferBannerValidityTime(timeWindow)
 }
 
 export function formatOfferBannerScheduleLine(
   dateLabel: string,
   timeWindow: string,
+  options: FormatOfferBannerScheduleLineOptions = {},
 ): string {
-  const time = formatOfferBannerValidityTime(timeWindow)
+  const time = formatOfferBannerAvailabilityTime(timeWindow, options)
   return `${dateLabel} · ${time}`
 }
 
@@ -231,10 +251,15 @@ export interface BuildOfferBannerContentArgs {
 
 function buildAvailableDataLines(
   offer: RestaurantOfferCardModel,
+  windowPhase: OfferBannerWindowPhase,
 ): OfferBannerDataLine[] {
   return [
     {
-      text: formatOfferBannerScheduleLine(offer.date, offer.timeWindow),
+      text: formatOfferBannerScheduleLine(offer.date, offer.timeWindow, {
+        windowPhase,
+        isAllDay: offer.isAllDay,
+        offerEnd: offer.offerEnd,
+      }),
       emphasis: "regular",
       tone: "primary",
     },
@@ -244,16 +269,18 @@ function buildAvailableDataLines(
 function buildAvailabilitySticker(
   offer: RestaurantOfferCardModel,
 ): OfferBannerSticker | null {
-  if (!shouldShowScarcitySticker(offer.remainingCount)) return null
+  const remainingCount = clampRemainingSpotsForDisplay(offer.remainingCount)
+  if (remainingCount == null) return null
   return {
     kind: "scarcity",
-    text: formatClaimSlotsRemainingLabel(offer.remainingCount!),
+    text: formatClaimSlotsRemainingLabel(remainingCount),
   }
 }
 
 function buildAvailableOfferBannerFields(
   offer: RestaurantOfferCardModel,
   displayDiscount: number,
+  windowPhase: OfferBannerWindowPhase,
 ): Pick<
   OfferBannerContent,
   "headline" | "dataLines" | "sticker" | "outerShellTone" | "ariaLabel"
@@ -262,7 +289,7 @@ function buildAvailableOfferBannerFields(
     displayDiscount,
     Boolean(offer.isAllDay),
   )
-  const dataLines = buildAvailableDataLines(offer)
+  const dataLines = buildAvailableDataLines(offer, windowPhase)
   const sticker = buildAvailabilitySticker(offer)
   return {
     headline,
@@ -279,7 +306,7 @@ export function buildOfferBannerContent({
   claim,
   context,
   displayDiscount,
-  windowPhase: _windowPhase,
+  windowPhase,
   hasOtherClaimAtVenue,
 }: BuildOfferBannerContentArgs): OfferBannerContent {
   if (state === "claimed" && claim) {
@@ -339,7 +366,7 @@ export function buildOfferBannerContent({
       displayDiscount,
       Boolean(offer.isAllDay),
     )
-    const dataLines = buildAvailableDataLines(offer)
+    const dataLines = buildAvailableDataLines(offer, windowPhase)
     return {
       outerClaimed: false,
       outerShellTone: "neutral",
@@ -358,7 +385,7 @@ export function buildOfferBannerContent({
       displayDiscount,
       Boolean(offer.isAllDay),
     )
-    const dataLines = buildAvailableDataLines(offer)
+    const dataLines = buildAvailableDataLines(offer, windowPhase)
     return {
       outerClaimed: false,
       outerShellTone: "neutral",
@@ -372,7 +399,11 @@ export function buildOfferBannerContent({
     }
   }
 
-  const availableFields = buildAvailableOfferBannerFields(offer, displayDiscount)
+  const availableFields = buildAvailableOfferBannerFields(
+    offer,
+    displayDiscount,
+    windowPhase,
+  )
 
   return {
     outerClaimed: false,

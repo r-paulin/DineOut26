@@ -65,7 +65,9 @@ export function CustomTipModal({
   const amountRef = useRef<HTMLSpanElement>(null)
   const scaleWrapRef = useRef<HTMLSpanElement>(null)
   const shellRef = useRef<HTMLDivElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
+  const returnFocusRef = useRef<HTMLElement | null>(null)
 
   const cents = billStateToCents(state)
   useAnimatedBillCents(state, amountRef, scaleWrapRef)
@@ -110,12 +112,53 @@ export function CustomTipModal({
 
   useEffect(() => {
     if (!open) return
+    returnFocusRef.current = document.activeElement as HTMLElement | null
+  }, [open])
+
+  useEffect(() => {
+    if (open) return
+    const el = returnFocusRef.current
+    returnFocusRef.current = null
+    el?.focus({ preventScroll: true })
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onOpenChange(false)
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [open, onOpenChange])
+
+  useEffect(() => {
+    if (!open) return
+    const dialog = dialogRef.current
+    if (!dialog) return
+
+    const focusableSelector =
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return
+      const nodes = [
+        ...dialog.querySelectorAll<HTMLElement>(focusableSelector),
+      ].filter((el) => el.offsetParent != null)
+      if (nodes.length === 0) return
+      const first = nodes[0]
+      const last = nodes[nodes.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    dialog.addEventListener("keydown", onKeyDown)
+    return () => dialog.removeEventListener("keydown", onKeyDown)
+  }, [open])
 
   const onShellKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -162,12 +205,13 @@ export function CustomTipModal({
         }}
       />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="custom-tip-heading"
         style={sheetStyle}
         className={[
-          "absolute inset-x-0 bottom-0 z-[201] flex max-h-[min(90dvh,100%)] min-h-[70%]",
+          "absolute inset-x-0 bottom-0 z-[201] flex max-h-[min(90dvh,calc(var(--app-h,100dvh)*0.9))] min-h-[70%]",
           "flex-col rounded-t-[16px] bg-layer-floor-1 px-0 pb-0 outline-none",
           "overflow-hidden shadow-[0_0.375rem_0.75rem_rgba(0,0,0,0.24)]",
           sheetMotionClass,

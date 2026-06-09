@@ -20,7 +20,7 @@ export interface RestaurantOfferDateTab {
   state: RestaurantOfferTabState
   /** e.g. "Today" or "12 May" */
   dayLabel: string
-  /** e.g. "30% off"; null when no-offer */
+  /** e.g. "-20%"; null when no-offer */
   discountLabel: string | null
 }
 

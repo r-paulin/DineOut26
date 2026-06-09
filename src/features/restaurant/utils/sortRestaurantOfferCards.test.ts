@@ -13,7 +13,7 @@ function offerCard(
     expiresAt: FAR_FUTURE_MS,
     tags: ["enabled"],
     discountPercent: 10,
-    title: "Claim 10% discount",
+    title: "Claim 10% off your bill",
     date: "Today",
     timeWindow: "All day",
     restaurantImage: "/images/placeholder.png",

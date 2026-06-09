@@ -8,7 +8,7 @@ import {
 
 describe("formatClaimedOfferFoodLabel", () => {
   it("formats percent and food copy per Figma", () => {
-    expect(formatClaimedOfferFoodLabel(30)).toBe("30% discount on menu")
+    expect(formatClaimedOfferFoodLabel(30)).toBe("30% off your bill")
   })
 })
 

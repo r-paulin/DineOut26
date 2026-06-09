@@ -212,6 +212,26 @@ export function SlidingButton({
   }, [handleMove, handleUp])
 
   useLayoutEffect(() => {
+    return () => {
+      const d = drag.current
+      if (!d.active) return
+      d.active = false
+      window.removeEventListener("pointermove", moveRef.current)
+      window.removeEventListener("pointerup", upRef.current)
+      window.removeEventListener("pointercancel", upRef.current)
+      const thumb = thumbRef.current
+      if (thumb && d.pointerId != null) {
+        try {
+          thumb.releasePointerCapture(d.pointerId)
+        } catch {
+          /* not capturing */
+        }
+      }
+      d.pointerId = null
+    }
+  }, [])
+
+  useLayoutEffect(() => {
     if (!isLoading) {
       drag.current.completed = false
     }

@@ -7,6 +7,8 @@ describe("getRestaurantDetailDemo offer date tabs", () => {
     const model = getRestaurantDetailDemo("neiburgs")
     expect(model.offerDateTabs).toHaveLength(7)
     expect(model.offerDateTabs[0]?.id).toBe("today")
+    expect(model.offerDateTabs[0]?.dayLabel).toBe("Today")
+    expect(model.offerDateTabs[1]?.dayLabel).toBe("Tomorrow")
   })
 
   it("has offers only on the first three days; later tabs are no-offer with no cards", () => {
@@ -26,12 +28,12 @@ describe("getRestaurantDetailDemo offer date tabs", () => {
     expect(offerDays).toHaveLength(3)
   })
 
-  it("assigns per-date discount labels from that day's offer tiers", () => {
+  it("assigns per-date discount labels from that day's highest offer", () => {
     const model = getRestaurantDetailDemo("neiburgs")
     const offerTabs = model.offerDateTabs.filter((t) => t.state !== "no-offer")
-    expect(offerTabs[0]?.discountLabel).toBe("20% off")
-    expect(offerTabs[1]?.discountLabel).toBe("15% off")
-    expect(offerTabs[0]?.discountLabel).not.toBe(offerTabs[1]?.discountLabel)
+    expect(offerTabs[0]?.discountLabel).toBe("-20%")
+    expect(offerTabs[1]?.discountLabel).toBe("-20%")
+    expect(offerTabs[2]?.discountLabel).toBe("-20%")
   })
 
   it("each offer tab lists only cards derived from getRestaurantOffers (no synthetic extras)", () => {

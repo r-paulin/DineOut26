@@ -4,7 +4,7 @@ import { formatClaimModalOfferDetailRows } from "@/features/offers/utils/formatC
 
 const baseOffer: ClaimOfferModalOffer = {
   id: "o1",
-  title: "Claim 20% discount",
+  title: "Claim 20% off your bill",
   restaurantName: "Neiburgs",
   discountPercent: 20,
   date: "Today",

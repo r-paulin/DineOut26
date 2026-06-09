@@ -12,6 +12,7 @@ export type DiscoverSectionListState = {
 
 export function useDiscoverScreen() {
   const filters = useFilters()
+  const { closeSheet } = filters
 
   const [activeTab, setActiveTab] = useState("dineout")
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null)
@@ -90,11 +91,12 @@ export function useDiscoverScreen() {
   const closeSectionList = useCallback(() => setSectionList(null), [])
 
   const openRestaurantDetail = useCallback((slug: string) => {
+    closeSheet()
     setSearchOpen(false)
     setSectionList(null)
     setAdminPlacesOpen(false)
     setRestaurantDetailSlug(slug)
-  }, [])
+  }, [closeSheet])
 
   const closeRestaurantDetail = useCallback(() => {
     setRestaurantDetailSlug(null)

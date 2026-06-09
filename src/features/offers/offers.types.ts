@@ -78,7 +78,7 @@ export interface ClaimedOffer {
   guestCount: number
   paymentMethod: PaymentMethod
   discountPercent: number
-  /** Claimed-offer details row (Figma `15753:13182`), e.g. "30% discount on menu". */
+  /** Claimed-offer details row (Figma `15753:13182`), e.g. "30% off your bill". */
   offerDetailLabel?: string
   /** Minimum order for banner copy, e.g. `10` → "Min. order 10.00€". */
   minOrderEur?: number
@@ -131,7 +131,7 @@ export type {
 /** Payload for {@link ClaimOfferModal} (subset of {@link RestaurantOfferCardModel}). */
 export interface ClaimOfferModalOffer {
   id: string
-  /** Offer headline (e.g. “Claim 20% discount”) for the claim sheet title. */
+  /** Offer headline (e.g. “20% off your bill”) for the claim sheet title. */
   title: string
   restaurantName: string
   discountPercent: number

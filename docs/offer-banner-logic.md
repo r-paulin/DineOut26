@@ -96,11 +96,11 @@ These do **not** add a fourth `OfferState`. They layer on top of `available` in 
 
 | Mode | When | Action | Sticker |
 | --- | --- | --- | --- |
-| **Active window** | Scheduled today and local time is inside `[offerStart, offerEnd)` (all-day on today counts as active until `offerEnd`) | Claim offer | `{n} offers left` or `Almost full — 1 offer left` when `remainingCount` is 1–2 (brand-alt shell) |
-| **Pre-book** | Future schedule date, or today before `offerStart` | Claim offer | Same scarcity sticker when `remainingCount` is 1–2 |
+| **Active window** | Scheduled today and local time is inside `[offerStart, offerEnd)` (all-day on today counts as active until `offerEnd`) | Claim offer | `{n} offers left` or `Only {n} offers left` when `remainingCount` is 1–2 (neutral-primary shell) |
+| **Pre-book** | Future schedule date, or today before `offerStart` | Claim offer | Same scarcity sticker whenever `remainingCount` is 1–5 |
 | **Locked** | User claimed a **different** offer at **this restaurant** (`restaurantSlug`) on the **same calendar day** as this row (`hasOtherClaimAtVenue`) | Claim offer (disabled) | `One offer per restaurant per day` |
 
-Every interactive row also shows schedule + `Min. order X · Max. saving Y` (from `minOrderEur` / `maxSavingEur` on the card or claim).
+Every interactive row also shows schedule (`Today · Until 23:00` when the window is active now; full range when pre-booking) + `Min. order X · Max. saving Y` (from `minOrderEur` / `maxSavingEur` on the card or claim).
 
 ## Multiple claims (prototype)
 

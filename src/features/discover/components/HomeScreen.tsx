@@ -81,6 +81,7 @@ import {
   VenueClosedSheet,
 } from "@/features/restaurant"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
+import { Z_PAY_BILL_FLOW } from "@/features/restaurant/constants/screenLayers"
 import { MapSurfaceErrorBoundary } from "./MapSurfaceErrorBoundary"
 import type {
   ClaimData,
@@ -277,6 +278,7 @@ export function HomeScreen() {
   const [pendingAtVenuePayBillEntry, setPendingAtVenuePayBillEntry] =
     useState<PayBillFlowEntry | null>(null)
   const continueAtVenuePayAfterCloseRef = useRef(false)
+  const pendingPayBillEntryFromClaimRef = useRef<PayBillFlowEntry | null>(null)
   const claimedOfferPageRef = useRef<ClaimedOfferPageHandle>(null)
   const { portalRoot } = useDeviceShell()
   const snackbar = useSnackbar()
@@ -590,15 +592,18 @@ export function HomeScreen() {
     if (!claimedView) return
     const claim = claimedView
     const detail = getRestaurantDetailDemo(claim.restaurantSlug)
-    setPayBillEntry({
+    pendingPayBillEntryFromClaimRef.current = {
       restaurantName: detail.name,
       restaurantSlug: claim.restaurantSlug,
       offer: claim,
-    })
+    }
   }, [claimedView, catalogSnapshot])
 
   const handlePayFromClaimedOfferComplete = useCallback(() => {
+    const entry = pendingPayBillEntryFromClaimRef.current
+    pendingPayBillEntryFromClaimRef.current = null
     setClaimedView(null)
+    if (entry) setPayBillEntry(entry)
   }, [])
 
   const handleOpenPayBill = useCallback(() => {
@@ -669,9 +674,9 @@ export function HomeScreen() {
           ...prev,
           [paidRecord.offerId]: paidRecord,
         }))
-      }
-      if (offerId) {
-        setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
+        if (offerId) {
+          setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
+        }
       }
       setClaimedView(null)
       setPayBillEntry(null)
@@ -695,10 +700,14 @@ export function HomeScreen() {
       }
       const paidRecord =
         snapshot ? buildPaidOfferRecordFromPaySnapshot(snapshot) : null
+      if (!paidRecord) {
+        setPayBillEntry(null)
+        return
+      }
       finishSuccessfulPayment({
         restaurantSlug: slug,
-        offerId: paidRecord?.offerId ?? payBillEntry?.offer?.offerId,
-        paidRecord: paidRecord ?? undefined,
+        offerId: paidRecord.offerId,
+        paidRecord,
       })
     },
     [finishSuccessfulPayment, payBillEntry],
@@ -848,7 +857,8 @@ export function HomeScreen() {
     activeOfferConflict != null ||
     postClaimSuccess != null ||
     claimedView != null ||
-    payBillEntry != null
+    payBillEntry != null ||
+    paidConfirmationOfferId != null
 
   return (
     <div
@@ -987,7 +997,10 @@ export function HomeScreen() {
         />
       ) : null}
       {paidConfirmationRecord && portalRoot ?
-        <div className="fixed inset-0 z-[120] flex w-full justify-center bg-layer-floor-1">
+        <div
+          className="fixed inset-0 flex w-full justify-center bg-layer-floor-1"
+          style={{ zIndex: Z_PAY_BILL_FLOW }}
+        >
           <div
             ref={paidConfirmationShellRef}
             className="relative h-[var(--app-h)] w-full max-w-[var(--shell-width)] overflow-hidden bg-layer-floor-1 shadow-[0_0.25rem_0.75rem_rgba(0,0,0,0.2)]"

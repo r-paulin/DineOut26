@@ -139,7 +139,10 @@ function buildOfferDateTabSkeleton(now: Date): RestaurantOfferDateTab[] {
 
   return rows.map((row, index) => {
     const id = row.id as DateValue
-    const dayLabel = restaurantOfferTabDayLabel(id)
+    const dayLabel =
+      index === 0 ? "Today"
+      : index === 1 ? "Tomorrow"
+      : restaurantOfferTabDayLabel(id)
     if (index < 3) {
       return {
         id,
@@ -161,14 +164,11 @@ function enrichOfferDateTabsWithDiscountLabels(
   tabs: RestaurantOfferDateTab[],
   offersByTabId: Record<string, RestaurantOfferCardModel[]>,
 ): RestaurantOfferDateTab[] {
-  let offerDayIndex = 0
   return tabs.map((tab) => {
     if (tab.state === "no-offer") return tab
     const discountLabel = resolveRestaurantOfferTabDiscountLabel(
       offersByTabId[tab.id] ?? [],
-      offerDayIndex,
     )
-    offerDayIndex += 1
     return { ...tab, discountLabel }
   })
 }

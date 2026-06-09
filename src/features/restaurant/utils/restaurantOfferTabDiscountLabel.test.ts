@@ -20,22 +20,18 @@ function offerCard(discountPercent: number): RestaurantOfferCardModel {
 
 describe("formatRestaurantOfferTabDiscountLabel", () => {
   it("formats percent off copy", () => {
-    expect(formatRestaurantOfferTabDiscountLabel(20)).toBe("20% off")
+    expect(formatRestaurantOfferTabDiscountLabel(20)).toBe("-20%")
   })
 })
 
 describe("resolveRestaurantOfferTabDiscountLabel", () => {
   const cards = [offerCard(20), offerCard(15)]
 
-  it("uses highest tier for first offer day", () => {
-    expect(resolveRestaurantOfferTabDiscountLabel(cards, 0)).toBe("20% off")
-  })
-
-  it("uses next tier for second offer day when multiple discounts exist", () => {
-    expect(resolveRestaurantOfferTabDiscountLabel(cards, 1)).toBe("15% off")
+  it("uses highest discount from that date's offers", () => {
+    expect(resolveRestaurantOfferTabDiscountLabel(cards)).toBe("-20%")
   })
 
   it("returns null when no cards", () => {
-    expect(resolveRestaurantOfferTabDiscountLabel([], 0)).toBeNull()
+    expect(resolveRestaurantOfferTabDiscountLabel([])).toBeNull()
   })
 })

@@ -4,7 +4,6 @@ import CheckCircle from "@bolteu/kalep-react-icons/dist/CheckCircle"
 import Decline from "@bolteu/kalep-react-icons/dist/Decline"
 import { DineOutCashbackBannerSlot } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
 import {
-  OFFERS_SECTION_SUBTEXT,
   RESTAURANT_OFFERS_CASHBACK_BANNER_SECONDARY,
 } from "@/features/offers/constants/dineOutStackablePromo"
 import { useRestaurantOffersCashbackBanner } from "@/features/restaurant/hooks/useRestaurantOffersCashbackBanner"
@@ -42,6 +41,16 @@ function tabHasUserClaim(
 ): boolean {
   return (offersByTabId[tabId] ?? []).some(
     (card) => claimedOffersById[card.id] != null,
+  )
+}
+
+function tabHasPaidOffer(
+  tabId: string,
+  offersByTabId: Record<string, RestaurantOfferCardModel[]>,
+  paidOffersById: Readonly<Record<string, PaidOfferRecord>>,
+): boolean {
+  return (offersByTabId[tabId] ?? []).some(
+    (card) => paidOffersById[card.id] != null,
   )
 }
 
@@ -103,12 +112,9 @@ export function RestaurantDetailOffersSection({
 
   return (
     <section className="flex w-full flex-col gap-4 pb-3 pt-6" aria-label="Offers">
-      <div className="flex flex-col gap-1 px-6">
+      <div className="px-6">
         <Typography variant="heading-m-accent" color="primary" as="h2">
           Offers
-        </Typography>
-        <Typography variant="body-s-regular" color="secondary" as="p">
-          {OFFERS_SECTION_SUBTEXT}
         </Typography>
       </div>
       <DineOutCashbackBannerSlot
@@ -131,8 +137,10 @@ export function RestaurantDetailOffersSection({
               offersByTabId,
               claimedOffersById,
             )
+            const paid = tabHasPaidOffer(tab.id, offersByTabId, paidOffersById)
             const tabAriaLabel =
               tab.state === "no-offer" ? `${tab.dayLabel}, no offer`
+              : paid ? `${tab.dayLabel}, offer paid`
               : claimed ? `${tab.dayLabel}, offer claimed`
               : `${tab.dayLabel}, ${tab.discountLabel ?? ""}`
             return (
@@ -163,7 +171,7 @@ export function RestaurantDetailOffersSection({
                     <div className={TAB_BOTTOM_SLOT}>
                       <Decline size="sm" className="text-tertiary shrink-0" />
                     </div>
-                  : claimed ?
+                  : claimed || paid ?
                     <div className={TAB_BOTTOM_SLOT}>
                       <CheckCircle
                         size="sm"

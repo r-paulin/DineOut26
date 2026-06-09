@@ -18,9 +18,14 @@ export interface OfferBannerCardProps {
 }
 
 export function OfferBannerCard({ content }: OfferBannerCardProps) {
+  const claimable =
+    content.innerClaimed ||
+    (content.action != null && !content.action.disabled)
   const innerClass =
     content.innerClaimed ?
       "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-action-secondary bg-layer-floor-0-grouped p-3"
+    : claimable ?
+      "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-separator bg-layer-floor-0-grouped p-3"
     : "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-separator bg-layer-floor-2 p-3"
 
   return (

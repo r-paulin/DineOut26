@@ -1,3 +1,5 @@
+import type { RestaurantDetailModel } from "@/features/restaurant/restaurantDetail.types"
+
 export interface RestaurantAboutRestaurant {
   name: string
   rating: number
@@ -25,11 +27,10 @@ export interface RestaurantAboutRestaurant {
 
 export interface RestaurantAboutProps {
   restaurant: RestaurantAboutRestaurant
+  venueGalleryCycles: RestaurantDetailModel["venueGalleryCycles"]
   showDisclaimer?: boolean
   /** Opens http(s) URLs (menu, website). Defaults to a new tab in the web shell. */
   onOpenExternalUrl?: (url: string) => void
-  /** Portal target for the fullscreen photo gallery (e.g. device shell root). */
-  galleryPortalContainer?: HTMLElement | null
   /** Opens the ratings sources bottom sheet (star + score + reviews row). */
   onOpenReviews?: () => void
   /** Opens the opening-hours bottom sheet (venue hours row). */
