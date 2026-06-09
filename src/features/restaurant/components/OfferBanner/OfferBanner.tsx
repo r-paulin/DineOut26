@@ -162,10 +162,7 @@ function OfferBannerPaid({
         <OfferBannerStickerRow
           sticker={content.sticker}
           claimed={content.outerClaimed}
-          onDarkShell={stickerOnDarkShell(
-            content.outerClaimed,
-            content.outerShellTone,
-          )}
+          onDarkShell={stickerOnDarkShell(content.outerClaimed)}
         />
       : null}
     </OfferBannerShell>
@@ -289,10 +286,7 @@ function OfferBannerClaimable({
             sticker={content.sticker}
             claimed={content.outerClaimed}
             claim={claim}
-            onDarkShell={stickerOnDarkShell(
-              content.outerClaimed,
-              content.outerShellTone,
-            )}
+            onDarkShell={stickerOnDarkShell(content.outerClaimed)}
           />
         : null}
       </OfferBannerShell>
@@ -309,10 +303,7 @@ function offerBannerShellClass(
   return "bg-neutral-secondary"
 }
 
-function stickerOnDarkShell(
-  outerClaimed: boolean,
-  outerShellTone: OfferBannerOuterShellTone,
-): boolean {
+function stickerOnDarkShell(outerClaimed: boolean): boolean {
   return outerClaimed
 }
 
