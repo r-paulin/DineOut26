@@ -84,23 +84,21 @@ export function ClaimOfferSuccessSheet({
       }
     >
       <div className="flex flex-col gap-3 px-6 pb-3 pt-6">
-        <Typography
-          id={SUCCESS_TITLE_ID}
-          variant="heading-m-accent"
-          color="primary"
-          as="h2"
-          inlineStyle={SEMIBOLD}
-        >
-          {CLAIM_OFFER_SUCCESS_TITLE}
-        </Typography>
-        <Typography
-          id={SUCCESS_SUBTITLE_ID}
-          variant="body-m-regular"
-          color="primary"
-          as="p"
-        >
-          {CLAIM_OFFER_SUCCESS_SUBTITLE}
-        </Typography>
+        <h2 id={SUCCESS_TITLE_ID} className="m-0 p-0">
+          <Typography
+            variant="heading-m-accent"
+            color="primary"
+            as="span"
+            inlineStyle={SEMIBOLD}
+          >
+            {CLAIM_OFFER_SUCCESS_TITLE}
+          </Typography>
+        </h2>
+        <p id={SUCCESS_SUBTITLE_ID} className="m-0 p-0">
+          <Typography variant="body-m-regular" color="primary" as="span">
+            {CLAIM_OFFER_SUCCESS_SUBTITLE}
+          </Typography>
+        </p>
       </div>
 
       <ClaimSuccessStepList steps={steps} stepIcons={stepIcons} />
