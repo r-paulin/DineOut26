@@ -7,7 +7,6 @@ import { VenueAddressMapSnapshot } from "@/features/restaurant/components/VenueA
 import {
   RESTAURANT_ADDRESS_SHEET_CLOSE,
   RESTAURANT_ADDRESS_SHEET_GET_DIRECTIONS,
-  RESTAURANT_ADDRESS_SHEET_TITLE,
 } from "@/features/restaurant/constants/restaurantAddressSheetCopy"
 import {
   Z_RESTAURANT_SHEET_CONTENT,
@@ -25,6 +24,7 @@ export interface RestaurantAddressSheetProps {
   onOpenChange: (open: boolean) => void
   /** Portal target (device shell); falls back to default when absent. */
   container?: HTMLElement | null
+  restaurantName: string
   address: string
   restaurantSlug: RestaurantSlug
   /** Google Maps search URL for “Get directions”. */
@@ -44,6 +44,7 @@ export function RestaurantAddressSheet({
   isOpen,
   onOpenChange,
   container,
+  restaurantName,
   address,
   restaurantSlug,
   mapsHref,
@@ -75,7 +76,7 @@ export function RestaurantAddressSheet({
           style={{ zIndex: Z_RESTAURANT_SHEET_CONTENT }}
         >
           <Drawer.Title className="sr-only">
-            {RESTAURANT_ADDRESS_SHEET_TITLE}: {address}
+            {restaurantName}: {address}
           </Drawer.Title>
           <Drawer.Description className="sr-only">
             Map snapshot and directions for this restaurant.
@@ -85,7 +86,7 @@ export function RestaurantAddressSheet({
               <div className="flex min-w-0 flex-1 flex-col gap-1 pt-2">
                 <h2 id={titleId} className="m-0 p-0">
                   <Typography variant="heading-s-accent" color="primary" as="span">
-                    {RESTAURANT_ADDRESS_SHEET_TITLE}
+                    {restaurantName}
                   </Typography>
                 </h2>
                 <Typography variant="body-m-regular" color="secondary" as="p">

@@ -20,7 +20,7 @@ const ASK_FOR_BILL_STEP: ClaimOfferSuccessStep = {
 }
 
 const PAY_VIA_DINEOUT_STEP: ClaimOfferSuccessStep = {
-  title: "Pay via DineOut",
+  title: "Pay via Bolt Food",
   subtitle: "Enter the total shown on the bill and complete the steps to pay",
 }
 

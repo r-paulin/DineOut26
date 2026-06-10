@@ -251,3 +251,27 @@ img.iconChip {
     opacity: 1;
   }
 }
+
+/**
+ * Vaul sheet motion aligned with app tokens (iOS-style emphasized enter / exit).
+ * Default Vaul CSS is 0.5s flat; ClaimPromoSheetShell sets --motion-sheet-* on content.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  [data-app-sheet][data-vaul-drawer][data-state="open"] {
+    animation-duration: var(--motion-sheet-enter-s, 0.32s);
+    transition-duration: var(--motion-sheet-enter-s, 0.32s);
+  }
+
+  [data-app-sheet][data-vaul-drawer][data-state="closed"] {
+    animation-duration: var(--motion-sheet-dismiss-s, 0.38s);
+    transition-duration: var(--motion-sheet-dismiss-s, 0.38s);
+  }
+
+  [data-app-sheet-overlay][data-vaul-overlay][data-state="open"] {
+    animation-duration: var(--motion-sheet-enter-s, 0.32s);
+  }
+
+  [data-app-sheet-overlay][data-vaul-overlay][data-state="closed"] {
+    animation-duration: var(--motion-sheet-dismiss-s, 0.38s);
+  }
+}

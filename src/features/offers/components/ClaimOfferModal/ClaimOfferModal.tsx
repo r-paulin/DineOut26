@@ -1,7 +1,7 @@
 import { Typography } from "@bolteu/kalep-react"
 import { useSnackbar } from "@/shared/snackbar"
 import ChevronDown from "@bolteu/kalep-react-icons/dist/ChevronDown"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState, type AnimationEvent } from "react"
 import { ClaimModalDisclaimer } from "@/features/offers/components/ClaimOfferModal/ClaimModalDisclaimer"
 import { ClaimModalOfferDetails } from "@/features/offers/components/ClaimOfferModal/ClaimModalOfferDetails"
 import { ClaimOfferFooterActions } from "@/features/offers/components/ClaimOfferModal/ClaimOfferFooterActions"
@@ -29,7 +29,6 @@ import {
   CLAIM_PAYMENT_SECTION_INTRO,
   CLAIM_PAYMENT_SECTION_TITLE,
   CLAIM_PAYMENT_VENUE_OPTION_LABEL,
-  getClaimPaymentOptionDetail,
   PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
 } from "@/features/offers/constants/paymentMethodSheetCopy"
 import { PaymentSelector } from "./PaymentSelector"
@@ -53,6 +52,8 @@ export interface ClaimOfferModalProps {
   restaurantSlug: string
   claimedByOfferId: Readonly<Record<string, ClaimedOffer>>
   onClose: () => void
+  /** Fires once after the sheet finish animating closed. */
+  onExitComplete?: () => void
   onClaimed: (claimData: ClaimData) => void
   onConflict: (blocking: ClaimedOffer, claimData: ClaimData) => void
   container?: HTMLElement | null
@@ -78,6 +79,7 @@ export function ClaimOfferModal({
   restaurantSlug,
   claimedByOfferId,
   onClose,
+  onExitComplete,
   onClaimed,
   onConflict,
   container,
@@ -114,6 +116,14 @@ export function ClaimOfferModal({
       }
     },
     [onClose, onOpenChange],
+  )
+
+  const handleContentAnimationEnd = useCallback(
+    (e: AnimationEvent<HTMLDivElement>) => {
+      if (e.target !== e.currentTarget) return
+      if (!isOpen) onExitComplete?.()
+    },
+    [isOpen, onExitComplete],
   )
 
   const handleArrivalRowPress = useCallback(() => {
@@ -192,6 +202,7 @@ export function ClaimOfferModal({
       <ClaimPromoSheetShell
         open={isOpen}
         onOpenChange={handleDrawerOpenChange}
+        onContentAnimationEnd={handleContentAnimationEnd}
         container={container}
         zOverlay={Z_CLAIM_MODAL_OVERLAY}
         zContent={Z_CLAIM_MODAL_CONTENT}
@@ -291,7 +302,6 @@ export function ClaimOfferModal({
         <PaymentSelector
           value={paymentMethod}
           onChange={setPaymentMethod}
-          detailPresentation="inline-selected"
           showSectionSeparator={false}
           sectionTitle={CLAIM_PAYMENT_SECTION_TITLE}
           sectionIntro={CLAIM_PAYMENT_SECTION_INTRO}
@@ -299,8 +309,6 @@ export function ClaimOfferModal({
             dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
             cardOrCash: CLAIM_PAYMENT_VENUE_OPTION_LABEL,
           }}
-          getOptionDetail={getClaimPaymentOptionDetail}
-          showDineoutDetailIcon
         />
 
         <ClaimModalOfferDetails offer={offer} />

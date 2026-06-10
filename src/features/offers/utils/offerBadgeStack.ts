@@ -3,7 +3,10 @@ import { isTimedOfferWindowLiveAt } from "@/features/discover/utils/filterDiscov
 import { RESTAURANT_WEEKLY_OPEN_HOURS } from "@/features/restaurant/data/restaurantFixedOpenHours"
 import { buildOpenHoursUiState } from "@/features/restaurant/utils/restaurantOpenHoursUi"
 import { formatTimeWindowLabel } from "@/features/offers/utils/offerCampaign"
-import { isTimedOfferDisplayActive } from "@/features/offers/utils/offerDisplayActive"
+import {
+  isTimedOfferDisplayActive,
+  parseCampaignTimeWindowLabel,
+} from "@/features/offers/utils/offerDisplayActive"
 
 export type BadgeStackMode = "default" | "liveNow"
 
@@ -50,7 +53,7 @@ export function isVenueOpenNow(now: Date): boolean {
 }
 
 /**
- * Live badge: ranged window contains now and venue is open.
+ * Live badge: ranged window contains now (half-open [start, end)).
  * All-day uses “All day” copy and is sorted as claimable, not live.
  */
 export function isOfferLiveForBadge(
@@ -58,9 +61,36 @@ export function isOfferLiveForBadge(
   now: Date,
 ): boolean {
   if (offer.window.kind === "all-day") return false
-  return (
-    isTimedOfferWindowLiveAt(now, offer.window) && isVenueOpenNow(now)
-  )
+  return isTimedOfferWindowLiveAt(now, offer.window)
+}
+
+function formatLiveUntilEndLabel(end: string): string {
+  return `Until ${end}`
+}
+
+/** Campaign pill copy (`19:00–23:00`) → live offers show end time only. */
+export function formatCampaignBadgeTimeLabel(
+  timeWindow: string,
+  now: Date,
+): string {
+  const parsed = parseCampaignTimeWindowLabel(timeWindow)
+  if (!parsed || parsed.kind === "all-day") return timeWindow
+  if (isTimedOfferWindowLiveAt(now, parsed)) {
+    return formatLiveUntilEndLabel(parsed.end)
+  }
+  return timeWindow
+}
+
+export function formatBadgeTimeLabel(
+  offer: RestaurantTimedOffer,
+  now: Date,
+): string {
+  const w = offer.window
+  if (w.kind === "all-day") return "All day"
+  if (isOfferLiveForBadge(offer, now)) {
+    return formatLiveUntilEndLabel(w.end)
+  }
+  return formatTimeWindowLabel(w)
 }
 
 function offerStartMinutes(offer: RestaurantTimedOffer): number {
@@ -76,18 +106,6 @@ function compareOffersForBadgePriority(
     return b.discountPercent - a.discountPercent
   }
   return offerStartMinutes(a) - offerStartMinutes(b)
-}
-
-export function formatBadgeTimeLabel(
-  offer: RestaurantTimedOffer,
-  now: Date,
-): string {
-  const w = offer.window
-  if (w.kind === "all-day") return "All day"
-  if (isOfferLiveForBadge(offer, now)) {
-    return `Until ${w.end}`
-  }
-  return formatTimeWindowLabel(w)
 }
 
 /**

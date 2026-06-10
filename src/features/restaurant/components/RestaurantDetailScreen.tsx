@@ -483,6 +483,7 @@ export function RestaurantDetailScreen({
         isOpen={addressSheetOpen}
         onOpenChange={setAddressSheetOpen}
         container={portalRoot}
+        restaurantName={model.name}
         address={model.address}
         restaurantSlug={model.slug}
         mapsHref={mapsHref}

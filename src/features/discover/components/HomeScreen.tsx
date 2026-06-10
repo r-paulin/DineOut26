@@ -92,6 +92,11 @@ import type {
 } from "@/features/offers/offers.types"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
 import { useModalOverlayLock } from "@/shared/hooks/useModalOverlayLock"
+import {
+  MOTION_REDUCED_S,
+  MOTION_SHEET_SEQUENTIAL_GAP_S,
+  motionReduced,
+} from "@/shared/motion"
 
 const MapLayer = lazy(() =>
   import("@/features/map/components/MapLayer").then((m) => ({
@@ -254,6 +259,9 @@ export function HomeScreen() {
   /** Resolved offer for {@link ClaimOfferModal}; avoids re-looking up by id (can fail across demo rebuilds). */
   const [pendingClaimOffer, setPendingClaimOffer] =
     useState<ClaimOfferModalOffer | null>(null)
+  const [claimModalOpen, setClaimModalOpen] = useState(false)
+  const pendingPostClaimSuccessRef = useRef<ClaimedOffer | null>(null)
+  const claimModalExitHandledRef = useRef(false)
   const [activeOfferConflict, setActiveOfferConflict] = useState<{
     blocking: ClaimedOffer
     pendingOffer: ClaimOfferModalOffer
@@ -262,6 +270,69 @@ export function HomeScreen() {
   const [postClaimSuccess, setPostClaimSuccess] = useState<ClaimedOffer | null>(
     null,
   )
+  const postClaimSuccessTimerRef = useRef<number | null>(null)
+  const clearScheduledPostClaimSuccess = useCallback(() => {
+    if (postClaimSuccessTimerRef.current != null) {
+      window.clearTimeout(postClaimSuccessTimerRef.current)
+      postClaimSuccessTimerRef.current = null
+    }
+  }, [])
+
+  const dismissPostClaimSuccess = useCallback(() => {
+    clearScheduledPostClaimSuccess()
+    setPostClaimSuccess(null)
+  }, [clearScheduledPostClaimSuccess])
+
+  /** iOS-style sequential sheets: animate claim modal out, then present success. */
+  const schedulePostClaimSuccess = useCallback(
+    (claimed: ClaimedOffer) => {
+      clearScheduledPostClaimSuccess()
+      pendingPostClaimSuccessRef.current = claimed
+      setClaimModalOpen(false)
+    },
+    [clearScheduledPostClaimSuccess],
+  )
+
+  const dismissClaimModalImmediate = useCallback(() => {
+    pendingPostClaimSuccessRef.current = null
+    clearScheduledPostClaimSuccess()
+    setClaimModalOpen(false)
+    setPendingClaimOffer(null)
+  }, [clearScheduledPostClaimSuccess])
+
+  const handleClaimModalExitComplete = useCallback(() => {
+    if (claimModalExitHandledRef.current) return
+    claimModalExitHandledRef.current = true
+
+    const claimed = pendingPostClaimSuccessRef.current
+    if (claimed) {
+      pendingPostClaimSuccessRef.current = null
+      setPendingClaimOffer(null)
+      const delayMs = Math.round(
+        (motionReduced() ? MOTION_REDUCED_S : MOTION_SHEET_SEQUENTIAL_GAP_S) *
+          1000,
+      )
+      postClaimSuccessTimerRef.current = window.setTimeout(() => {
+        postClaimSuccessTimerRef.current = null
+        setPostClaimSuccess(claimed)
+      }, delayMs)
+      return
+    }
+
+    setPendingClaimOffer(null)
+  }, [clearScheduledPostClaimSuccess])
+
+  useEffect(() => {
+    if (claimModalOpen) claimModalExitHandledRef.current = false
+  }, [claimModalOpen])
+
+  useEffect(
+    () => () => {
+      clearScheduledPostClaimSuccess()
+    },
+    [clearScheduledPostClaimSuccess],
+  )
+
   const [claimedByOfferId, setClaimedByOfferId] = useState<
     Record<string, ClaimedOffer>
   >({})
@@ -341,11 +412,11 @@ export function HomeScreen() {
     (claim: ClaimedOffer) => {
       closeSectionList()
       setSearchOpen(false)
-      setPendingClaimOffer(null)
-      setPostClaimSuccess(null)
+      dismissClaimModalImmediate()
+      dismissPostClaimSuccess()
       setClaimedView(claim)
     },
-    [closeSectionList, setSearchOpen],
+    [closeSectionList, dismissClaimModalImmediate, dismissPostClaimSuccess, setSearchOpen],
   )
 
   /** Claimed offer over an open or newly opened restaurant detail (chip, pay bill, etc.). */
@@ -360,21 +431,21 @@ export function HomeScreen() {
   const handleHomeClaimedOfferPress = useCallback(
     (claim: ClaimedOffer) => {
       setClaimedView(null)
-      setPendingClaimOffer(null)
-      setPostClaimSuccess(null)
+      dismissClaimModalImmediate()
+      dismissPostClaimSuccess()
       openRestaurantDetail(claim.restaurantSlug)
     },
-    [openRestaurantDetail],
+    [dismissClaimModalImmediate, dismissPostClaimSuccess, openRestaurantDetail],
   )
 
   const handleDiscoverRestaurantPress = useCallback(
     (slug: string) => {
       setClaimedView(null)
-      setPendingClaimOffer(null)
-      setPostClaimSuccess(null)
+      dismissClaimModalImmediate()
+      dismissPostClaimSuccess()
       openRestaurantDetail(slug)
     },
-    [openRestaurantDetail],
+    [dismissClaimModalImmediate, dismissPostClaimSuccess, openRestaurantDetail],
   )
 
   const claimedOfferPageRestaurant = useMemo(() => {
@@ -439,9 +510,12 @@ export function HomeScreen() {
         })
         return
       }
+      clearScheduledPostClaimSuccess()
+      pendingPostClaimSuccessRef.current = null
       setPendingClaimOffer(mapOfferCardToClaimModalOffer(card))
+      setClaimModalOpen(true)
     },
-    [baseRestaurantDetail, restaurantDetailSlug, snackbar],
+    [baseRestaurantDetail, clearScheduledPostClaimSuccess, restaurantDetailSlug, snackbar],
   )
 
   const completeClaim = useCallback(
@@ -471,10 +545,9 @@ export function HomeScreen() {
           : undefined,
       })
       setClaimedByOfferId((prev) => ({ ...prev, [card.id]: claimed }))
-      setPendingClaimOffer(null)
-      setPostClaimSuccess(claimed)
+      schedulePostClaimSuccess(claimed)
     },
-    [restaurantDetailSlug],
+    [restaurantDetailSlug, schedulePostClaimSuccess],
   )
 
   const handleOfferAvailablePress = useCallback(
@@ -550,8 +623,8 @@ export function HomeScreen() {
   }, [activeOfferConflict, baseRestaurantDetail, completeClaim, snackbar])
 
   const handlePostClaimSuccessDone = useCallback(() => {
-    setPostClaimSuccess(null)
-  }, [])
+    dismissPostClaimSuccess()
+  }, [dismissPostClaimSuccess])
 
   const handleClaimedOfferClose = useCallback(() => {
     setClaimedView(null)
@@ -581,11 +654,11 @@ export function HomeScreen() {
     (offerId: string) => {
       setClaimedByOfferId((prev) => removeClaimedOfferById(prev, offerId))
       setClaimedView(null)
-      setPendingClaimOffer(null)
-      setPostClaimSuccess(null)
+      dismissClaimModalImmediate()
+      dismissPostClaimSuccess()
       closeRestaurantDetail()
     },
-    [closeRestaurantDetail],
+    [closeRestaurantDetail, dismissClaimModalImmediate, dismissPostClaimSuccess],
   )
 
   const handlePayFromClaimedOfferPrepare = useCallback(() => {
@@ -680,7 +753,7 @@ export function HomeScreen() {
       }
       setClaimedView(null)
       setPayBillEntry(null)
-      setPendingClaimOffer(null)
+      dismissClaimModalImmediate()
       if (showSnackbar) {
         scheduleSnackbarAdd(snackbar.add, createPostPaymentHomeSnackbar(() => {
           // Review flow not wired yet; placeholder lives in the toast.
@@ -976,7 +1049,7 @@ export function HomeScreen() {
           claimedOffersById={claimedByOfferId}
           paidOffersById={paidByOfferId}
           onBack={() => {
-            setPendingClaimOffer(null)
+            dismissClaimModalImmediate()
             if (claimedView) {
               dismissClaimedViewAnimated(() => {
                 closeRestaurantDetail()
@@ -1038,14 +1111,15 @@ export function HomeScreen() {
       {restaurantDetailSlug && pendingClaimOffer ? (
         <ClaimOfferModal
           key={pendingClaimOffer.id}
-          isOpen
+          isOpen={claimModalOpen}
           onOpenChange={(open) => {
-            if (!open) setPendingClaimOffer(null)
+            if (!open) setClaimModalOpen(false)
           }}
           offer={pendingClaimOffer}
           restaurantSlug={restaurantDetailSlug}
           claimedByOfferId={claimedByOfferId}
-          onClose={() => setPendingClaimOffer(null)}
+          onClose={() => setClaimModalOpen(false)}
+          onExitComplete={handleClaimModalExitComplete}
           onClaimed={handleClaimed}
           onConflict={handleClaimConflict}
           container={portalRoot ?? undefined}
@@ -1071,7 +1145,7 @@ export function HomeScreen() {
           isOpen
           paymentMethod={postClaimSuccess.paymentMethod}
           onOpenChange={(open) => {
-            if (!open) setPostClaimSuccess(null)
+            if (!open) dismissPostClaimSuccess()
           }}
           onDone={handlePostClaimSuccessDone}
           container={portalRoot}

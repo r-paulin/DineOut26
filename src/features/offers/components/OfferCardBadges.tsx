@@ -4,7 +4,10 @@ import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
 import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.data"
 import type { OfferCardCampaign } from "@/features/offers/offers.types"
 import { hasCampaignBadges } from "@/features/offers/utils/mapPlaceCardView"
-import { buildTimedOfferBadgeModels } from "@/features/offers/utils/offerBadgeStack"
+import {
+  buildTimedOfferBadgeModels,
+  formatCampaignBadgeTimeLabel,
+} from "@/features/offers/utils/offerBadgeStack"
 import {
   campaignTimeWindowDisplayActive,
   useOfferDisplayNow,
@@ -111,7 +114,11 @@ export function OfferCardBadges({
       content={
         <OfferBadgeOfferCopy
           discountLabel={discountLabel}
-          timeWindow={timeWindow}
+          timeWindow={
+            timeWindow ?
+              formatCampaignBadgeTimeLabel(timeWindow, now)
+            : undefined
+          }
         />
       }
     />

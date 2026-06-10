@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
   type AnimationEvent,
+  type CSSProperties,
   type ReactNode,
 } from "react"
 import { Drawer } from "vaul"
@@ -19,6 +20,12 @@ import {
   SHEET_CLOSE_ON_SURFACE_CLASS,
   SHEET_CLOSE_OVER_MEDIA_CLASS,
 } from "@/shared/utils/sheetCloseButtonClass"
+import {
+  MOTION_REDUCED_S,
+  MOTION_SHEET_DISMISS_S,
+  MOTION_SHEET_S,
+  motionReduced,
+} from "@/shared/motion"
 import {
   VAUL_SHEET_FOOTER_CLASS,
   VAUL_SHEET_OVERLAY_CLASS,
@@ -127,6 +134,13 @@ export function ClaimPromoSheetShell({
       SHEET_CLOSE_ICON_OVER_MEDIA_CLASS
     : SHEET_CLOSE_ICON_ON_SURFACE_CLASS
   const [motionActive, setMotionActive] = useState(open)
+  const reducedMotion = motionReduced()
+  const sheetEnterS = reducedMotion ? MOTION_REDUCED_S : MOTION_SHEET_S
+  const sheetDismissS = reducedMotion ? MOTION_REDUCED_S : MOTION_SHEET_DISMISS_S
+  const sheetMotionStyle = {
+    "--motion-sheet-enter-s": `${sheetEnterS}s`,
+    "--motion-sheet-dismiss-s": `${sheetDismissS}s`,
+  } as CSSProperties
 
   const handleOpenChange = useCallback(
     (next: boolean) => {
@@ -163,10 +177,12 @@ export function ClaimPromoSheetShell({
     >
       <Drawer.Portal>
         <Drawer.Overlay
+          data-app-sheet-overlay=""
           className={VAUL_SHEET_OVERLAY_CLASS}
-          style={{ zIndex: zOverlay }}
+          style={{ zIndex: zOverlay, ...sheetMotionStyle }}
         />
         <Drawer.Content
+          data-app-sheet=""
           className={[
             vaulSheetContentClassName("default", isFit ? "fit" : "fill"),
             surfaceClass,
@@ -175,7 +191,7 @@ export function ClaimPromoSheetShell({
           ]
             .filter(Boolean)
             .join(" ")}
-          style={{ zIndex: zContent }}
+          style={{ zIndex: zContent, ...sheetMotionStyle }}
           aria-labelledby={visibleTitleId}
           aria-describedby={visibleDescriptionId}
           onAnimationEnd={handleContentAnimationEnd}

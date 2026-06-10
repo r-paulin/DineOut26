@@ -4,8 +4,8 @@ export const MOTION_PUSH_S = 0.42
 /** Bottom sheet present. */
 export const MOTION_SHEET_S = 0.32
 
-/** Bottom sheet dismiss (slightly faster than enter). */
-export const MOTION_SHEET_DISMISS_S = 0.24
+/** Bottom sheet dismiss (~UISheetPresentationController, emphasized exit). */
+export const MOTION_SHEET_DISMISS_S = 0.38
 
 /** In-page tab panel slide, venue bar, staggered blocks. */
 export const MOTION_IN_PAGE_S = 0.35
@@ -24,6 +24,16 @@ export const MOTION_REDUCED_S = 0.12
 
 /** Delay before at-venue bar entrance after panel push starts. */
 export const MOTION_VENUE_BAR_DELAY_S = MOTION_PUSH_S * 0.25
+
+/**
+ * Breathing room after one sheet finishes dismissing before the next presents.
+ * Matches iOS sequential modal presentation (HIG: avoid stacking transitions).
+ */
+export const MOTION_SHEET_SEQUENTIAL_GAP_S = 0.12
+
+/** Claim modal dismiss + gap before post-claim success sheet enters. */
+export const MOTION_POST_CLAIM_SUCCESS_DELAY_S =
+  MOTION_SHEET_DISMISS_S + MOTION_SHEET_SEQUENTIAL_GAP_S
 
 /** Drag dismiss thresholds (bottom sheets). */
 export const MOTION_SHEET_DISMISS_DRAG_PX = 80

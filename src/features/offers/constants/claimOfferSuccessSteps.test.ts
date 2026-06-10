@@ -8,7 +8,7 @@ describe("getClaimOfferSuccessSteps", () => {
     expect(steps.map((s) => s.title)).toEqual([
       "Check in with your code",
       "Ask for the bill when ready",
-      "Pay via DineOut",
+      "Pay via Bolt Food",
     ])
   })
 

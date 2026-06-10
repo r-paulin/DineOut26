@@ -77,6 +77,7 @@ export function ClaimOfferSuccessSheet({
       visibleDescriptionId={SUCCESS_SUBTITLE_ID}
       hero="success-badge"
       sheetHeight="fit"
+      footerBordered={false}
       footer={
         <Button type="button" variant="primary" size="lg" fullWidth onClick={onDone}>
           {CLAIM_OFFER_SUCCESS_CTA}
@@ -114,7 +115,7 @@ function ClaimSuccessStepList({
   stepIcons: ReactElement[]
 }) {
   return (
-    <ul className="m-0 flex list-none flex-col px-6 pb-10">
+    <ul className="m-0 flex list-none flex-col px-6 pb-3">
       {steps.map((step, index) => (
         <li key={step.title}>
           <ClaimSuccessStepRow

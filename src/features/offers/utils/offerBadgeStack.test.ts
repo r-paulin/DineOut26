@@ -3,15 +3,18 @@ import type { RestaurantTimedOffer } from "@/features/offers/data/restaurantOffe
 import {
   buildTimedOfferBadgeModels,
   formatBadgeTimeLabel,
+  formatCampaignBadgeTimeLabel,
   isOfferLiveForBadge,
   isTimedOfferExpiredToday,
   isVenueOpenNow,
   sortOffersForBadgeDisplay,
 } from "./offerBadgeStack"
 
-/** Saturday — venue open 12:00–23:00 (prototype grid). */
+/** Saturday — used when prototype venue hours are closed. */
 const SAT_1150 = new Date(2024, 5, 15, 11, 50, 0, 0)
 const SAT_1230 = new Date(2024, 5, 15, 12, 30, 0, 0)
+/** Wednesday — venue open 11:00–21:00 in prototype grid. */
+const WED_1230 = new Date(2024, 5, 12, 12, 30, 0, 0)
 /** Before venue opens. */
 const SAT_1000 = new Date(2024, 5, 15, 10, 0, 0, 0)
 
@@ -44,20 +47,43 @@ describe("isVenueOpenNow", () => {
   })
 
   it("is true during service hours", () => {
-    expect(isVenueOpenNow(SAT_1230)).toBe(true)
+    expect(isVenueOpenNow(WED_1230)).toBe(true)
   })
 })
 
 describe("formatBadgeTimeLabel", () => {
-  it("uses Until end when live and venue open", () => {
+  it("uses Until end when the offer window is live", () => {
     const o = offer(20, { kind: "range", start: "11:00", end: "14:00" })
     expect(formatBadgeTimeLabel(o, SAT_1230)).toBe("Until 14:00")
   })
 
-  it("uses range when window active but venue closed", () => {
+  it("uses Until end when live even if prototype venue hours are closed", () => {
+    const o = offer(20, { kind: "range", start: "19:00", end: "23:00" })
+    const sat2111 = new Date(2024, 5, 15, 21, 11, 0, 0)
+    expect(isVenueOpenNow(sat2111)).toBe(false)
+    expect(formatBadgeTimeLabel(o, sat2111)).toBe("Until 23:00")
+  })
+
+  it("uses range when the window has not started yet", () => {
     const o = offer(20, { kind: "range", start: "09:00", end: "17:00" })
-    expect(isOfferLiveForBadge(o, SAT_1000)).toBe(false)
-    expect(formatBadgeTimeLabel(o, SAT_1000)).toBe("09:00–17:00")
+    const beforeOpen = new Date(2024, 5, 15, 8, 0, 0, 0)
+    expect(formatBadgeTimeLabel(o, beforeOpen)).toBe("09:00–17:00")
+  })
+})
+
+describe("formatCampaignBadgeTimeLabel", () => {
+  it("uses Until end for live campaign pill copy", () => {
+    const sat2111 = new Date(2024, 5, 15, 21, 11, 0, 0)
+    expect(formatCampaignBadgeTimeLabel("19:00–23:00", sat2111)).toBe(
+      "Until 23:00",
+    )
+  })
+
+  it("keeps full range before the window starts", () => {
+    const beforeOpen = new Date(2024, 5, 15, 18, 0, 0, 0)
+    expect(formatCampaignBadgeTimeLabel("19:00–23:00", beforeOpen)).toBe(
+      "19:00–23:00",
+    )
   })
 })
 
