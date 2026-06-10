@@ -4,7 +4,6 @@ import {
   buildTimedOfferBadgeModels,
   formatBadgeTimeLabel,
   formatCampaignBadgeTimeLabel,
-  isOfferLiveForBadge,
   isTimedOfferExpiredToday,
   isVenueOpenNow,
   sortOffersForBadgeDisplay,
