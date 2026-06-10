@@ -1,7 +1,6 @@
 import { Typography } from "@bolteu/kalep-react"
 import CashbackColoured from "@bolteu/kalep-react-icons/dist/CashbackColoured"
 import Lock from "@bolteu/kalep-react-icons/dist/Lock"
-import Percent from "@bolteu/kalep-react-icons/dist/Percent"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { useOfferCountdown } from "@/features/offers/components/ClaimedOfferPage/useOfferCountdown"
@@ -70,23 +69,23 @@ export function OfferBannerStickerRow({
     )
   }
 
-  const rowClass =
-    sticker.kind === "scarcity" ? SCARCITY_STICKER_ROW_CLASS : STICKER_ROW_CLASS
+  if (sticker.kind === "scarcity") {
+    return (
+      <div className={SCARCITY_STICKER_ROW_CLASS}>
+        <Typography variant="body-xs-accent" color="primary-inverted" as="p">
+          {sticker.text}
+        </Typography>
+      </div>
+    )
+  }
 
   return (
-    <div className={rowClass}>
-      {sticker.kind === "scarcity" ?
-        <Percent
-          className={`${STICKER_ICON_CLASS} ${iconClass}`}
-          aria-hidden
-        />
-      : sticker.kind === "locked" ?
+    <div className={STICKER_ROW_CLASS}>
+      {sticker.kind === "locked" ?
         <Lock className={`${STICKER_ICON_CLASS} ${iconClass}`} aria-hidden />
       : <Time className={`${STICKER_ICON_CLASS} ${iconClass}`} aria-hidden />}
       <Typography variant="body-xs-regular" color={textColor} as="p">
-        {sticker.kind === "scarcity" ||
-        sticker.kind === "expired" ||
-        sticker.kind === "locked" ?
+        {sticker.kind === "expired" || sticker.kind === "locked" ?
           sticker.text
         : ""}
       </Typography>
