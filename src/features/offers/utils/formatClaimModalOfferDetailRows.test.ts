@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 import type { ClaimOfferModalOffer } from "@/features/offers/offers.types"
-import { formatClaimModalOfferDetailRows } from "@/features/offers/utils/formatClaimModalOfferDetailRows"
+import {
+  formatClaimModalOfferAvailability,
+  formatClaimModalOfferDetailRows,
+} from "@/features/offers/utils/formatClaimModalOfferDetailRows"
 
 const baseOffer: ClaimOfferModalOffer = {
   id: "o1",
@@ -18,12 +21,30 @@ const baseOffer: ClaimOfferModalOffer = {
 }
 
 describe("formatClaimModalOfferDetailRows", () => {
-  it("returns minimum order, available, and applicable rows", () => {
+  it("returns minimum order, applicable, and available rows in Figma order", () => {
     const rows = formatClaimModalOfferDetailRows(baseOffer)
     expect(rows).toEqual([
       { label: "Minimum order", value: "10,00 €" },
-      { label: "Available", value: "Today, 19:00 - 23:00" },
       { label: "Applicable", value: "Total bill" },
+      { label: "Available", value: "Today · 19:00–23:00" },
     ])
+  })
+})
+
+describe("formatClaimModalOfferAvailability", () => {
+  it("strips Arrive between prefix and uses middle dot + en-dash", () => {
+    expect(
+      formatClaimModalOfferAvailability("17 May", "Arrive between 15:00 - 16:00"),
+    ).toBe("17 May · 15:00–16:00")
+  })
+
+  it("converts hyphen in plain time windows to en-dash", () => {
+    expect(formatClaimModalOfferAvailability("Today", "19:00 - 23:00")).toBe(
+      "Today · 19:00–23:00",
+    )
+  })
+
+  it("passes through already-formatted time without extra changes", () => {
+    expect(formatClaimModalOfferAvailability("Today", "All day")).toBe("Today · All day")
   })
 })

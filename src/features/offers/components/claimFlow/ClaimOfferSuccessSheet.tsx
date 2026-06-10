@@ -1,12 +1,15 @@
 import { Button, Typography } from "@bolteu/kalep-react"
-import Food from "@bolteu/kalep-react-icons/dist/Food"
-import Lock from "@bolteu/kalep-react-icons/dist/Lock"
+import Cash from "@bolteu/kalep-react-icons/dist/Cash"
 import MobilePayment from "@bolteu/kalep-react-icons/dist/MobilePayment"
 import Pin from "@bolteu/kalep-react-icons/dist/Pin"
 import Stop from "@bolteu/kalep-react-icons/dist/Stop"
-import Time from "@bolteu/kalep-react-icons/dist/Time"
 import type { ReactElement } from "react"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
+import {
+  CLAIM_OFFER_SUCCESS_CTA,
+  CLAIM_OFFER_SUCCESS_SUBTITLE,
+  CLAIM_OFFER_SUCCESS_TITLE,
+} from "@/features/offers/constants/claimOfferSuccessCopy"
 import {
   getClaimOfferSuccessSteps,
   type ClaimOfferSuccessStep,
@@ -22,56 +25,44 @@ function getClaimSuccessStepIcons(
 ): ReactElement[] {
   const iconClass = "shrink-0 text-action-primary"
   const shared: ReactElement[] = [
-    <Time key="hours" size="lg" className={iconClass} aria-hidden />,
-    <Pin key="venue" size="lg" className={iconClass} aria-hidden />,
-    <Lock key="pin" size="lg" className={iconClass} aria-hidden />,
-    <Food key="food" size="lg" className={iconClass} aria-hidden />,
+    <Pin key="check-in" size="lg" className={iconClass} aria-hidden />,
+    <Stop key="bill" size="lg" className={iconClass} aria-hidden />,
   ]
   return paymentMethod === "dineout" ?
       [
         ...shared,
         <MobilePayment key="pay" size="lg" className={iconClass} aria-hidden />,
       ]
-    : [...shared, <Stop key="pay" size="lg" className={iconClass} aria-hidden />]
+    : [...shared, <Cash key="pay" size="lg" className={iconClass} aria-hidden />]
 }
 
 const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
+const SUCCESS_TITLE_ID = "claim-offer-success-title"
+const SUCCESS_SUBTITLE_ID = "claim-offer-success-subtitle"
+
 export interface ClaimOfferSuccessSheetProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  discountPercent: number
   paymentMethod: PaymentMethod
-  restaurantName: string
   onDone: () => void
   container?: HTMLElement | null
 }
 
-export function formatHowToUseOfferAtRestaurant(restaurantName: string): string {
-  const name = restaurantName.trim()
-  return name.length > 0 ?
-      `How to use the offer at ${name}?`
-    : "How to use the offer?"
-}
-
 /**
- * Post-claim instructions (Figma `16081:16511` DineOut / `16096:15054` card-cash).
+ * Post-claim instructions (Figma `17327:18233` DineOut / `17327:18251` card-cash).
  */
 export function ClaimOfferSuccessSheet({
   isOpen,
   onOpenChange,
-  discountPercent,
   paymentMethod,
-  restaurantName,
   onDone,
   container,
 }: ClaimOfferSuccessSheetProps) {
-  const steps = getClaimOfferSuccessSteps(paymentMethod, discountPercent)
+  const steps = getClaimOfferSuccessSteps(paymentMethod)
   const stepIcons = getClaimSuccessStepIcons(paymentMethod)
-  const title = `${discountPercent}% discount claimed`
-  const subtitle = formatHowToUseOfferAtRestaurant(restaurantName)
 
   return (
     <ClaimPromoSheetShell
@@ -80,27 +71,35 @@ export function ClaimOfferSuccessSheet({
       container={container}
       zOverlay={Z_CLAIM_MODAL_OVERLAY}
       zContent={Z_CLAIM_MODAL_CONTENT}
-      title={title}
-      description="How to use your claimed offer"
+      title={CLAIM_OFFER_SUCCESS_TITLE}
+      description={CLAIM_OFFER_SUCCESS_SUBTITLE}
+      visibleTitleId={SUCCESS_TITLE_ID}
+      visibleDescriptionId={SUCCESS_SUBTITLE_ID}
       hero="success-badge"
       sheetHeight="fit"
       footer={
         <Button type="button" variant="primary" size="lg" fullWidth onClick={onDone}>
-          Done
+          {CLAIM_OFFER_SUCCESS_CTA}
         </Button>
       }
     >
       <div className="flex flex-col gap-3 px-6 pb-3 pt-6">
         <Typography
+          id={SUCCESS_TITLE_ID}
           variant="heading-m-accent"
           color="primary"
           as="h2"
           inlineStyle={SEMIBOLD}
         >
-          {title}
+          {CLAIM_OFFER_SUCCESS_TITLE}
         </Typography>
-        <Typography variant="body-m-regular" color="primary" as="p">
-          {subtitle}
+        <Typography
+          id={SUCCESS_SUBTITLE_ID}
+          variant="body-m-regular"
+          color="primary"
+          as="p"
+        >
+          {CLAIM_OFFER_SUCCESS_SUBTITLE}
         </Typography>
       </div>
 
@@ -117,11 +116,11 @@ function ClaimSuccessStepList({
   stepIcons: ReactElement[]
 }) {
   return (
-    <ul className="m-0 flex list-none flex-col px-6 pb-6">
+    <ul className="m-0 flex list-none flex-col px-6 pb-10">
       {steps.map((step, index) => (
         <li key={step.title}>
           <ClaimSuccessStepRow
-            icon={stepIcons[index] ?? stepIcons[0]!}
+            icon={stepIcons[index]!}
             step={step}
           />
           {index < steps.length - 1 ?

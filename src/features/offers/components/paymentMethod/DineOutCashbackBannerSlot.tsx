@@ -58,14 +58,16 @@ export function DineOutCashbackBannerSlot({
       }
 
       setOpen(false)
-      const frame = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      let innerFrame = 0
+      const outerFrame = requestAnimationFrame(() => {
+        innerFrame = requestAnimationFrame(() => {
           if (animationGenerationRef.current !== generation) return
           setOpen(true)
         })
       })
       return () => {
-        cancelAnimationFrame(frame)
+        cancelAnimationFrame(outerFrame)
+        cancelAnimationFrame(innerFrame)
       }
     }
 
@@ -136,15 +138,10 @@ export function DineOutCashbackBannerSlot({
   )
 }
 
-export function paymentMethodOptionClass(
-  withDivider: boolean,
-  showSubtitle = false,
-): string {
-  const padding =
-    showSubtitle ? "pb-[9px] pt-[10px]" : "pb-[15px] pt-4"
+export function paymentMethodOptionClass(withDivider: boolean): string {
   return [
-    "flex w-full cursor-pointer flex-row items-start gap-3",
-    padding,
+    "flex w-full cursor-pointer flex-col gap-0.5",
+    "pt-4",
     withDivider ? "border-b border-separator" : "",
   ]
     .filter(Boolean)
@@ -236,17 +233,16 @@ export function PaymentMethodSheetHeader({
   }
 
   return (
-    <div className="flex flex-col px-6 pt-0">
-      <div className="flex gap-3 pt-[15px]">
-        <div id={headingId} className="flex min-w-0 flex-1 flex-col gap-1">
-          <Typography variant="body-m-accent" color="primary" as="p">
-            {title}
-          </Typography>
-          <Typography variant="body-s-regular" color="secondary" as="p">
-            {description}
-          </Typography>
-        </div>
-      </div>
+    <div
+      id={headingId}
+      className="flex flex-col gap-0.5 px-6 pt-0 pb-2"
+    >
+      <Typography variant="body-m-accent" color="primary" as="p">
+        {title}
+      </Typography>
+      <Typography variant="body-s-regular" color="secondary" as="p">
+        {description}
+      </Typography>
     </div>
   )
 }

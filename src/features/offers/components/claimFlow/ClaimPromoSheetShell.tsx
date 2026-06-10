@@ -39,6 +39,10 @@ export interface ClaimPromoSheetShellProps {
   zContent?: number
   title: string
   description?: string
+  /** When set, visible content supplies the dialog title (avoids duplicate sr-only + visible heading). */
+  visibleTitleId?: string
+  /** When set, visible content supplies the dialog description. */
+  visibleDescriptionId?: string
   hero?: ClaimPromoSheetHeroVariant
   heroImageSrc?: string
   /** Applied to hero `<img>` when `hero` is `offer-image` (default `object-cover`). */
@@ -101,6 +105,8 @@ export function ClaimPromoSheetShell({
   zContent = Z_RESTAURANT_SHEET_CONTENT,
   title,
   description,
+  visibleTitleId,
+  visibleDescriptionId,
   hero = "none",
   heroImageSrc,
   heroImageClassName,
@@ -113,7 +119,6 @@ export function ClaimPromoSheetShell({
   children,
 }: ClaimPromoSheetShellProps) {
   const isFit = sheetHeight === "fit"
-  const hasPinnedFooter = footer != null
   const closeOverHero = hero !== "none"
   const closeButtonClass =
     closeOverHero ? SHEET_CLOSE_OVER_MEDIA_CLASS : SHEET_CLOSE_ON_SURFACE_CLASS
@@ -163,7 +168,7 @@ export function ClaimPromoSheetShell({
         />
         <Drawer.Content
           className={[
-            vaulSheetContentClassName("default", hasPinnedFooter ? "fill" : isFit ? "fit" : "fill"),
+            vaulSheetContentClassName("default", isFit ? "fit" : "fill"),
             surfaceClass,
             "transform-gpu",
             motionActive ? "will-change-transform" : "",
@@ -171,10 +176,14 @@ export function ClaimPromoSheetShell({
             .filter(Boolean)
             .join(" ")}
           style={{ zIndex: zContent }}
+          aria-labelledby={visibleTitleId}
+          aria-describedby={visibleDescriptionId}
           onAnimationEnd={handleContentAnimationEnd}
         >
-          <Dialog.Title className="sr-only">{title}</Dialog.Title>
-          {description ?
+          {visibleTitleId ?
+            null
+          : <Dialog.Title className="sr-only">{title}</Dialog.Title>}
+          {description && !visibleDescriptionId ?
             <Dialog.Description className="sr-only">
               {description}
             </Dialog.Description>
@@ -196,10 +205,9 @@ export function ClaimPromoSheetShell({
 
           <div
             className={[
-              VAUL_SHEET_SCROLL_BODY_CLASS,
-              isFit && !hasPinnedFooter ?
-                "max-h-[calc(min(97dvh,var(--app-h,100dvh))-5rem)]"
-              : "",
+              isFit ?
+                "touch-pan-y overflow-y-auto overscroll-y-contain max-h-[calc(min(97dvh,var(--app-h,100dvh))-5rem)]"
+              : VAUL_SHEET_SCROLL_BODY_CLASS,
             ]
               .filter(Boolean)
               .join(" ")}

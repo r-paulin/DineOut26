@@ -1069,9 +1069,7 @@ export function HomeScreen() {
         <ClaimOfferSuccessSheet
           key={postClaimSuccess.offerId}
           isOpen
-          discountPercent={postClaimSuccess.discountPercent}
           paymentMethod={postClaimSuccess.paymentMethod}
-          restaurantName={baseRestaurantDetail?.name ?? ""}
           onOpenChange={(open) => {
             if (!open) setPostClaimSuccess(null)
           }}

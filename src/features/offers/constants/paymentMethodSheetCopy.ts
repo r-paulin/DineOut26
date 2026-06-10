@@ -1,6 +1,20 @@
+import { formatDineOutClaimCashbackBannerHeadline } from "@/features/offers/constants/dineOutStackablePromo"
 import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
 import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
 import type { PaymentMethod } from "@/features/offers/offers.types"
+
+/** Figma `16142:22260` — claim modal payment section header. */
+export const CLAIM_PAYMENT_SECTION_TITLE = "How will you pay?" as const
+
+export const CLAIM_PAYMENT_SECTION_INTRO =
+  "Select how you'll pay the bill after dining" as const
+
+/** Figma `16142:22260` — card/cash radio primary label in claim flow. */
+export const CLAIM_PAYMENT_VENUE_OPTION_LABEL = "Pay the venue directly" as const
+
+/** Figma `16142:22260` — inline detail when venue payment is selected. */
+export const CLAIM_PAYMENT_CARD_CASH_INLINE_DETAIL =
+  "Pay by card or cash. No cashback." as const
 
 /** Figma `16393:40712` — DineOut radio option (claim flow). */
 export const PAYMENT_METHOD_DINEOUT_OPTION_LABEL =
@@ -31,5 +45,14 @@ export function getPaymentMethodOptionDetail(
 ): string | undefined {
   if (method === "dineout") return formatPaymentMethodDineoutDetail()
   if (method === "card_or_cash") return PAYMENT_METHOD_CARD_CASH_DETAIL
+  return undefined
+}
+
+/** Inline detail under the selected radio in the claim modal (Figma `16142:22260`). */
+export function getClaimPaymentOptionDetail(
+  method: PaymentMethod,
+): string | undefined {
+  if (method === "dineout") return formatDineOutClaimCashbackBannerHeadline()
+  if (method === "card_or_cash") return CLAIM_PAYMENT_CARD_CASH_INLINE_DETAIL
   return undefined
 }

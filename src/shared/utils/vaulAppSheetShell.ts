@@ -34,7 +34,7 @@ export function vaulSheetContentClassName(
   const layoutClass =
     layout === "fill" ?
       "flex min-h-0 flex-col overflow-hidden"
-    : "h-fit overflow-hidden"
+    : "flex h-fit flex-col overflow-hidden"
   return [
     "fixed bottom-0 left-0 right-0 outline-none",
     maxH,

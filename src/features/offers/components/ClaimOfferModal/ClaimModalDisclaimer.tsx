@@ -9,8 +9,8 @@ export function ClaimModalDisclaimer() {
       <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
       <div className="flex flex-col gap-3 pt-3">
       <Typography variant="body-s-regular" color="secondary" as="p">
-        Offers are valid only for the selected number of people and arrival time.
-        Late arrivals or additional people may invalidate the offer. During busy
+        Offers are valid only for the selected number of guests and arrival time.
+        Late arrivals or additional guests may invalidate the offer. During busy
         periods, you may need to wait for a table.
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">

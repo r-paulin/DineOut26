@@ -25,6 +25,13 @@ import {
   Z_CLAIM_MODAL_OVERLAY,
 } from "@/features/restaurant/constants/screenLayers"
 import { GuestPickerSheet } from "./GuestPickerSheet"
+import {
+  CLAIM_PAYMENT_SECTION_INTRO,
+  CLAIM_PAYMENT_SECTION_TITLE,
+  CLAIM_PAYMENT_VENUE_OPTION_LABEL,
+  getClaimPaymentOptionDetail,
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
+} from "@/features/offers/constants/paymentMethodSheetCopy"
 import { PaymentSelector } from "./PaymentSelector"
 import { TimeSlotSheet } from "./TimeSlotSheet"
 
@@ -219,54 +226,82 @@ export function ClaimOfferModal({
         />
 
         <div className="flex flex-col">
-          <button
-            type="button"
-            className={PICKER_ROW_CLASS}
-            onClick={handleArrivalRowPress}
-          >
-            <Typography as="span" variant="body-m-regular" color="primary">
-              When will you arrive?
-            </Typography>
-            <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-[8px] bg-neutral-secondary px-3 py-2">
+          <div>
+            <button
+              type="button"
+              className={PICKER_ROW_CLASS}
+              onClick={handleArrivalRowPress}
+            >
               <Typography
                 as="span"
                 variant="body-m-accent"
                 color="primary"
                 inlineStyle={SEMIBOLD}
-                noWrap
               >
-                {arrivalTime}
+                When will you arrive?
               </Typography>
-              <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
-            </span>
-          </button>
+              <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-[8px] bg-neutral-secondary px-3 py-2">
+                <Typography
+                  as="span"
+                  variant="body-m-accent"
+                  color="primary"
+                  inlineStyle={SEMIBOLD}
+                  noWrap
+                >
+                  {arrivalTime}
+                </Typography>
+                <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
+              </span>
+            </button>
+            <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+          </div>
 
-          <button
-            type="button"
-            className={PICKER_ROW_CLASS}
-            onClick={() => setGuestSheetOpen(true)}
-          >
-            <Typography as="span" variant="body-m-regular" color="primary">
-              How many people?
-            </Typography>
-            <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-[8px] bg-neutral-secondary px-3 py-2">
+          <div>
+            <button
+              type="button"
+              className={PICKER_ROW_CLASS}
+              onClick={() => setGuestSheetOpen(true)}
+            >
               <Typography
                 as="span"
                 variant="body-m-accent"
                 color="primary"
                 inlineStyle={SEMIBOLD}
-                noWrap
               >
-                {peopleChipLabel}
+                How many people?
               </Typography>
-              <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
-            </span>
-          </button>
+              <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-[8px] bg-neutral-secondary px-3 py-2">
+                <Typography
+                  as="span"
+                  variant="body-m-accent"
+                  color="primary"
+                  inlineStyle={SEMIBOLD}
+                  noWrap
+                >
+                  {peopleChipLabel}
+                </Typography>
+                <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
+              </span>
+            </button>
+            <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+          </div>
         </div>
 
-        <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
-
-        <PaymentSelector value={paymentMethod} onChange={setPaymentMethod} />
+        {/* Figma `16142:22260` — no divider between payment radios (unlike picker rows above). */}
+        <PaymentSelector
+          value={paymentMethod}
+          onChange={setPaymentMethod}
+          detailPresentation="inline-selected"
+          showSectionSeparator={false}
+          sectionTitle={CLAIM_PAYMENT_SECTION_TITLE}
+          sectionIntro={CLAIM_PAYMENT_SECTION_INTRO}
+          optionLabels={{
+            dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
+            cardOrCash: CLAIM_PAYMENT_VENUE_OPTION_LABEL,
+          }}
+          getOptionDetail={getClaimPaymentOptionDetail}
+          showDineoutDetailIcon
+        />
 
         <ClaimModalOfferDetails offer={offer} />
         <ClaimModalDisclaimer />

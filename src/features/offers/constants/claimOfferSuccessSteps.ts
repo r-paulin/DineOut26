@@ -7,56 +7,45 @@ export type ClaimOfferSuccessStep = {
   subtitle: string
 }
 
-function sharedClaimSteps(discountPercent: number): ClaimOfferSuccessStep[] {
-  const pct = String(discountPercent)
-  return [
-    {
-      title: "Arrive during the offer hours",
-      subtitle: "Your discount is available while the offer is active",
-    },
-    {
-      title: "Tap I'm at venue",
-      subtitle: "The button appears on the restaurant page once you arrive",
-    },
-    {
-      title: "Show the PIN to the staff",
-      subtitle: "This confirms your DineOut offer",
-    },
-    {
-      title: "Enjoy your meal",
-      subtitle: `Your ${pct}% discount applies to the final bill`,
-    },
-  ]
+const CHECK_IN_STEP: ClaimOfferSuccessStep = {
+  title: "Check in with your code",
+  subtitle:
+    "We'll give you a code when you arrive to share with staff at the venue",
 }
 
-function dineOutSteps(discountPercent: number): ClaimOfferSuccessStep[] {
-  return [
-    ...sharedClaimSteps(discountPercent),
-    {
-      title: "Pay in the app",
-      subtitle: "Enter the receipt total and confirm payment.",
-    },
-  ]
+/** Figma `17327:18233` / `17327:18251` — generic post-claim steps (no per-offer discount %). */
+const ASK_FOR_BILL_STEP: ClaimOfferSuccessStep = {
+  title: "Ask for the bill when ready",
+  subtitle: "Check your offer has already been applied",
 }
 
-function cardOrCashSteps(discountPercent: number): ClaimOfferSuccessStep[] {
-  const pct = String(discountPercent)
-  return [
-    ...sharedClaimSteps(discountPercent),
-    {
-      title: "Pay at the venue",
-      subtitle: `Make sure the ${pct}% discount is applied to your bill, then pay by card or cash.`,
-    },
-  ]
+const PAY_VIA_DINEOUT_STEP: ClaimOfferSuccessStep = {
+  title: "Pay via DineOut",
+  subtitle: "Enter the total shown on the bill and complete the steps to pay",
 }
+
+const SETTLE_UP_STEP: ClaimOfferSuccessStep = {
+  title: "Settle up as usual",
+  subtitle:
+    "Pay the venue directly with cash, card, or whatever payment methods they accept",
+}
+
+const DINEOUT_STEPS: ClaimOfferSuccessStep[] = [
+  CHECK_IN_STEP,
+  ASK_FOR_BILL_STEP,
+  PAY_VIA_DINEOUT_STEP,
+]
+
+const CARD_OR_CASH_STEPS: ClaimOfferSuccessStep[] = [
+  CHECK_IN_STEP,
+  ASK_FOR_BILL_STEP,
+  SETTLE_UP_STEP,
+]
 
 export function getClaimOfferSuccessSteps(
   paymentMethod: PaymentMethod,
-  discountPercent: number,
 ): ClaimOfferSuccessStep[] {
-  return paymentMethod === "dineout" ?
-      dineOutSteps(discountPercent)
-    : cardOrCashSteps(discountPercent)
+  return paymentMethod === "dineout" ? DINEOUT_STEPS : CARD_OR_CASH_STEPS
 }
 
 export function claimOfferSuccessVariant(

@@ -35,7 +35,7 @@ export function ClaimOfferFooterActions({
         <div className="flex w-full items-center justify-center gap-1 overflow-hidden">
           <PercentFlower
             size="sm"
-            className="shrink-0 text-danger-secondary"
+            className="shrink-0 text-danger-primary"
             aria-hidden
           />
           <Typography variant="body-s-regular" color="primary" as="p" noWrap>
