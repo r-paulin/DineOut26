@@ -56,6 +56,8 @@ export interface DineOutPromoSheetProps {
   isVisible: boolean
   onDismiss: () => void
   heroImage: string
+  /** Defaults to {@link DINEOUT_PROMO_CTA_LABEL}. */
+  ctaLabel?: string
 }
 
 /**
@@ -66,6 +68,7 @@ export function DineOutPromoSheet({
   isVisible,
   onDismiss,
   heroImage,
+  ctaLabel = DINEOUT_PROMO_CTA_LABEL,
 }: DineOutPromoSheetProps) {
   const { portalRoot } = useDeviceShell()
   const host =
@@ -425,7 +428,7 @@ export function DineOutPromoSheet({
               fullWidth
               onClick={() => onDismiss()}
             >
-              {DINEOUT_PROMO_CTA_LABEL}
+              {ctaLabel}
             </Button>
           </div>
         </div>

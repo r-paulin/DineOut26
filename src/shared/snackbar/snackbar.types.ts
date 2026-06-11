@@ -2,6 +2,8 @@ export interface SnackbarContent {
   title?: string
   /** Main message (required for parity with legacy Kalep snackbar API). */
   description: string
+  /** Secondary line color when a {@link title} is shown. Defaults to primary-inverted. */
+  descriptionColor?: "primary-inverted" | "secondary-inverted"
   actions?: Array<{
     label: string
     onClick: () => void

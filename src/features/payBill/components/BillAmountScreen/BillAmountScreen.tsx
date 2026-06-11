@@ -8,8 +8,8 @@ import { ReceiptAmountBlock } from "@/features/payBill/components/BillAmountScre
 import { BillAmountTitleSection } from "@/features/payBill/components/BillAmountScreen/BillAmountTitleSection"
 import { useAnimatedBillCents } from "@/features/payBill/hooks/useAnimatedBillCents"
 import {
-  BILL_AMOUNT_SUBTITLE_CLAIMED,
   BILL_AMOUNT_SUBTITLE_DEFAULT,
+  formatBillAmountSubtitleClaimed,
 } from "@/features/payBill/constants/billAmountScreenCopy"
 import {
   billStateFromFormattedInput,
@@ -58,7 +58,9 @@ export function BillAmountScreen({
   const valid = isBillAmountValidForContinue(state)
 
   const subtitle =
-    claimedOffer ? BILL_AMOUNT_SUBTITLE_CLAIMED : BILL_AMOUNT_SUBTITLE_DEFAULT
+    claimedOffer ?
+      formatBillAmountSubtitleClaimed(claimedOffer.discountPercent)
+    : BILL_AMOUNT_SUBTITLE_DEFAULT
 
   /** Native keyboard: one rAF focus + single retry for portal / iOS timing. */
   useLayoutEffect(() => {

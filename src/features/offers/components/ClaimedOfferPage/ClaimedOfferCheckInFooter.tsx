@@ -25,7 +25,7 @@ export function ClaimedOfferCheckInFooter({
       data-snackbar-anchor=""
       className={claimedOfferLayout.stickyFooter}
     >
-      <Typography variant="body-s-regular" color="primary" as="p" align="center">
+      <Typography variant="body-s-regular" color="secondary" as="p" align="center">
         <b>{CLAIMED_OFFER_CHECK_IN_FOOTER_PROMO_LEAD}</b>
         {` ${CLAIMED_OFFER_CHECK_IN_FOOTER_PROMO_TAIL}`}
       </Typography>

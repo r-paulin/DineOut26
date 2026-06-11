@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 import {
-  BILL_AMOUNT_SUBTITLE_CLAIMED,
   BILL_AMOUNT_SUBTITLE_DEFAULT,
   BILL_AMOUNT_TITLE,
+  formatBillAmountSubtitleClaimed,
 } from "./billAmountScreenCopy"
 
 describe("billAmountScreenCopy", () => {
@@ -10,9 +10,9 @@ describe("billAmountScreenCopy", () => {
     expect(BILL_AMOUNT_TITLE).toBe("Enter bill total")
   })
 
-  it("uses receipt-check subtitle when paying with a claimed offer", () => {
-    expect(BILL_AMOUNT_SUBTITLE_CLAIMED).toBe(
-      "Check your offer is shown on the receipt",
+  it("formats claimed-offer subtitle with discount percent", () => {
+    expect(formatBillAmountSubtitleClaimed(20)).toBe(
+      "Check that your 20% discount is shown on the receipt, then enter the final bill amount.",
     )
   })
 

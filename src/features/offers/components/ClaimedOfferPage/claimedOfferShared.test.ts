@@ -34,7 +34,7 @@ describe("formatClaimedOfferPaymentLabel", () => {
   it("uses Figma 17459 detail row copy", () => {
     expect(formatClaimedOfferPaymentLabel("dineout")).toBe("Pay with Bolt Food")
     expect(formatClaimedOfferPaymentLabel("card_or_cash")).toBe(
-      "Pay the venue directly",
+      "Pay by card or cash",
     )
   })
 })

@@ -7,7 +7,8 @@ import {
   DINEOUT_CASHBACK_COIN_SLOT_PX,
 } from "@/features/offers/constants/dineoutCashbackCoinLayout"
 import {
-  DINEOUT_CASHBACK_BANNER_SECONDARY,
+  DINEOUT_CASHBACK_BANNER_HEADLINE_SUFFIX,
+  formatDineOutClaimCashbackBannerAccent,
   formatDineOutClaimCashbackBannerHeadline,
 } from "@/features/offers/constants/dineOutStackablePromo"
 
@@ -17,28 +18,34 @@ const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
+const BODY_S_LINE = {
+  lineHeight: "var(--body-s-line-height, 20px)",
+} as const
+
 export interface DineOutCashbackBannerProps {
   /** Cashback percent for the headline (defaults to product default). */
   cashbackPercent?: number
-  /** Override secondary line (defaults to payment-flow copy). */
+  /** Optional second line (e.g. restaurant Offers dismissible banner). */
   secondaryText?: string
   /** When set, renders Figma close control (`16672:56696`). */
   onDismiss?: () => void
   className?: string
 }
 
-/**
- * Figma `_Cashback Banner (DineOut)` (`16381:27984`) — payment-method promo card.
- */
+/** Figma `_Cashback Banner (DineOut)` coin frame — right-aligned clip. */
 const COIN_IMAGE_CLASS =
   "absolute h-full max-w-none left-[-20.9%] top-[28.73%] w-[150%]"
 
+/**
+ * Figma `_Cashback Banner (DineOut)` (`17421:31531`) — payment-method promo card.
+ */
 export function DineOutCashbackBanner({
   cashbackPercent,
-  secondaryText = DINEOUT_CASHBACK_BANNER_SECONDARY,
+  secondaryText,
   onDismiss,
   className,
 }: DineOutCashbackBannerProps) {
+  const accent = formatDineOutClaimCashbackBannerAccent(cashbackPercent)
   const headline = formatDineOutClaimCashbackBannerHeadline(cashbackPercent)
 
   return (
@@ -52,25 +59,37 @@ export function DineOutCashbackBanner({
           paddingTop: DINEOUT_CASHBACK_BANNER_PADDING_PX.y,
           paddingBottom: DINEOUT_CASHBACK_BANNER_PADDING_PX.y,
         }}
+        aria-label={headline}
       >
-        <div className="flex min-w-0 flex-col gap-1">
-          <Typography
-            as="p"
-            variant="body-s-accent"
-            color="primary"
-            inlineStyle={{ ...SEMIBOLD, fontFeatureSettings: FONT_FEAT }}
+        <p
+          className="m-0 min-w-0 bolt-font-body-s-regular text-primary"
+          style={{ ...BODY_S_LINE, fontFeatureSettings: FONT_FEAT }}
+        >
+          <span
+            className="bolt-font-body-s-accent"
+            style={{
+              ...SEMIBOLD,
+              ...BODY_S_LINE,
+              fontFeatureSettings: FONT_FEAT,
+            }}
           >
-            {headline}
-          </Typography>
+            {accent}
+          </span>
+          {DINEOUT_CASHBACK_BANNER_HEADLINE_SUFFIX}
+        </p>
+        {secondaryText ?
           <Typography
             as="p"
             variant="body-s-regular"
             color="secondary"
-            inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
+            inlineStyle={{
+              lineHeight: "var(--body-s-line-height, 20px)",
+              fontFeatureSettings: FONT_FEAT,
+            }}
           >
             {secondaryText}
           </Typography>
-        </div>
+        : null}
         {onDismiss ?
           <button
             type="button"

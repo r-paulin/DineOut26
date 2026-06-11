@@ -1,7 +1,10 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Typography } from "@bolteu/kalep-react"
 import CheckCircle from "@bolteu/kalep-react-icons/dist/CheckCircle"
 import Decline from "@bolteu/kalep-react-icons/dist/Decline"
+import HelpCircle from "@bolteu/kalep-react-icons/dist/HelpCircle"
+import { DineOutPromoSheet } from "@/features/offers/components/DineOutPromoSheet"
+import { DINEOUT_PROMO_IMG_WRAP } from "@/features/offers/components/dineOutPromoFigmaAssets"
 import { DineOutCashbackBannerSlot } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
 import {
   RESTAURANT_OFFERS_CASHBACK_BANNER_SECONDARY,
@@ -11,12 +14,16 @@ import { useOfferDateTabs } from "@/features/restaurant/hooks/useOfferDateTabs"
 import { useOfferPanelTransition } from "@/features/restaurant/hooks/useOfferPanelTransition"
 import { useOfferTabPanelViewportHeight } from "@/features/restaurant/hooks/useOfferTabPanelViewportHeight"
 import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
-import { sortRestaurantOfferCardsByClaim } from "@/features/restaurant/utils/sortRestaurantOfferCards"
+import { sortRestaurantOfferCardsByStartTime } from "@/features/restaurant/utils/sortRestaurantOfferCards"
 import type {
   RestaurantOfferCardModel,
   RestaurantOfferDateTab,
   UserClaim,
 } from "@/features/restaurant/restaurantDetail.types"
+import {
+  RESTAURANT_OFFERS_HOW_IT_WORKS_CTA,
+  RESTAURANT_OFFERS_HOW_IT_WORKS_LINK,
+} from "@/features/restaurant/constants/restaurantOffersSectionCopy"
 import { RestaurantDetailOffersEmptyState } from "./RestaurantDetailOffersEmptyState"
 import { OfferBanner } from "./OfferBanner"
 
@@ -33,6 +40,8 @@ const TAB_BOTTOM_SLOT = "flex h-6 w-full shrink-0 items-center justify-center"
 const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
+
+const FONT_FEAT = "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
 function tabHasUserClaim(
   tabId: string,
@@ -110,12 +119,42 @@ export function RestaurantDetailOffersSection({
   const { visible: cashbackBannerVisible, dismiss: dismissCashbackBanner } =
     useRestaurantOffersCashbackBanner(venueSlug)
 
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false)
+
   return (
     <section className="flex w-full flex-col gap-4 pb-3 pt-6" aria-label="Offers">
-      <div className="px-6">
+      <DineOutPromoSheet
+        isVisible={howItWorksOpen}
+        onDismiss={() => setHowItWorksOpen(false)}
+        heroImage={DINEOUT_PROMO_IMG_WRAP}
+        ctaLabel={RESTAURANT_OFFERS_HOW_IT_WORKS_CTA}
+      />
+      <div className="flex flex-col gap-2 px-6">
         <Typography variant="heading-m-accent" color="primary" as="h2">
           Offers
         </Typography>
+        <button
+          type="button"
+          className="flex w-fit items-center border-none bg-transparent p-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
+          onClick={() => setHowItWorksOpen(true)}
+        >
+          <Typography
+            variant="body-s-accent"
+            color="action-primary"
+            as="span"
+            inlineStyle={{
+              ...SEMIBOLD,
+              fontFeatureSettings: FONT_FEAT,
+            }}
+          >
+            {RESTAURANT_OFFERS_HOW_IT_WORKS_LINK}
+          </Typography>
+          <HelpCircle
+            size="sm"
+            className="ml-1.5 shrink-0 text-action-primary"
+            aria-hidden
+          />
+        </button>
       </div>
       <DineOutCashbackBannerSlot
         visible={cashbackBannerVisible}
@@ -209,11 +248,8 @@ export function RestaurantDetailOffersSection({
       >
         {tabs.map((tab, idx) => {
           const isActive = tab.id === activeTabId
-          const tabCards = sortRestaurantOfferCardsByClaim(
+          const tabCards = sortRestaurantOfferCardsByStartTime(
             offersByTabId[tab.id] ?? [],
-            userClaims,
-            Date.now(),
-            paidOffersById,
           )
           const offset = idx - activeIdx
           return (

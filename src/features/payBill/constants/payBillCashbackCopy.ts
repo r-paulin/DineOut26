@@ -1,16 +1,22 @@
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 
-/** Figma `16364:30080` — caption under the pay hero amount. */
-export const PAY_BILL_HERO_CAPTION = "Total with discount applied" as const
+/** Figma `16381:28166` — pay-screen cashback upsell headline prefix. */
+export const PAY_CASHBACK_UPSELL_PREFIX =
+  "Complete your payment to " as const
 
-/** Figma `16381:28166` — pay-screen cashback upsell accent segment. */
+/** Figma `16381:28166` — pay-screen cashback upsell semibold segment. */
 export function formatPayCashbackUpsellAccent(cashbackEur: number): string {
-  return `Earning ${formatEurMajor(cashbackEur)} back`
+  return `get ${formatEurMajor(cashbackEur)} cashback`
 }
 
-/** Figma `16381:28166` — pay-screen cashback upsell regular segment. */
+/** Figma `16381:28166` — pay-screen cashback upsell headline suffix. */
 export const PAY_CASHBACK_UPSELL_SUFFIX =
-  " as Bolt Balance to use on Bolt Food" as const
+  " in your Bolt Food account." as const
+
+/** Full single-line headline (aria). */
+export function formatPayCashbackUpsellHeadline(cashbackEur: number): string {
+  return `${PAY_CASHBACK_UPSELL_PREFIX}${formatPayCashbackUpsellAccent(cashbackEur)}${PAY_CASHBACK_UPSELL_SUFFIX}`
+}
 
 /** Figma `_Cashback` `16413:122635` — paid confirmation headline. */
 export const PAY_CONFIRM_CASHBACK_TITLE = "Cashback received" as const

@@ -28,6 +28,7 @@ import type { ClaimedOffer, PaymentMethod } from "@/features/offers/offers.types
 import gsap from "gsap"
 import { createClaimedOfferCheckInSnackbar } from "@/features/offers/constants/claimedOfferCheckInSnackbar"
 import { cancelOffer } from "@/features/offers/utils/claimOffer"
+import { resolveClaimedOfferDateLabel } from "@/features/offers/utils/formatClaimedArrivalDate"
 import { Z_CLAIMED_OFFER_PAGE } from "@/features/restaurant/constants/screenLayers"
 import { AnimatedCollapse } from "@/shared/components/AnimatedCollapse"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
@@ -116,7 +117,6 @@ export const ClaimedOfferPage = forwardRef<
 
   const snackbar = useSnackbar()
   const snackbarAnchorRef = useRef<HTMLDivElement>(null)
-  const wasCheckedInRef = useRef(checkedIn)
 
   /** Close chrome fades before the panel slides away (Figma exit read). */
   const runDismiss = useCallback(
@@ -177,13 +177,6 @@ export const ClaimedOfferPage = forwardRef<
     setSheetPortal(rootRef.current)
   }, [rootRef])
 
-  useLayoutEffect(() => {
-    const wasCheckedIn = wasCheckedInRef.current
-    wasCheckedInRef.current = checkedIn
-    if (wasCheckedIn || !checkedIn) return
-    return scheduleSnackbarAdd(snackbar.add, createClaimedOfferCheckInSnackbar())
-  }, [checkedIn, snackbar])
-
   const handleAnimatedClose = useCallback(() => {
     runDismiss()
   }, [runDismiss])
@@ -215,7 +208,8 @@ export const ClaimedOfferPage = forwardRef<
   const handleCheckIn = useCallback(() => {
     if (expired || checkedIn) return
     onCheckInRef.current?.(claim.offerId)
-  }, [checkedIn, claim.offerId, expired])
+    scheduleSnackbarAdd(snackbar.add, createClaimedOfferCheckInSnackbar())
+  }, [checkedIn, claim.offerId, expired, snackbar])
 
   const handlePay = useCallback(() => {
     if (!checkedIn || !onPayWithBoltDineOutRef.current) return
@@ -307,7 +301,7 @@ export const ClaimedOfferPage = forwardRef<
               </AnimatedCollapse>
 
               <ClaimedOfferDetailsSection
-                arrivalDate={claim.arrivalDate}
+                arrivalDate={resolveClaimedOfferDateLabel(claim)}
                 arrivalTime={claim.arrivalTime}
                 guestCount={claim.guestCount}
                 paymentMethod={claim.paymentMethod}

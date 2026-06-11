@@ -363,7 +363,7 @@ describe("paid offer banner copy", () => {
     expect(formatOfferBannerCashbackEarnedLabel(5)).toBe("€5 cashback earned")
     expect(formatOfferBannerCashbackEarnedLabel(1.8)).toBe("€1,80 cashback earned")
     expect(formatOfferBannerDineOutUpsellSticker()).toBe(
-      "Pay with DineOut next time and earn 15% back",
+      "Pay with Bolt Food and earn 15% back",
     )
   })
 })
@@ -407,7 +407,7 @@ describe("buildPaidOfferBannerContent", () => {
     expect(c.action).toBeNull()
     expect(c.sticker).toEqual({
       kind: "dineout-upsell",
-      text: "Pay with DineOut next time and earn 15% back",
+      text: "Pay with Bolt Food and earn 15% back",
     })
   })
 })

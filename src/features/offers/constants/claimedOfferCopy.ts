@@ -1,3 +1,7 @@
+import {
+  CLAIM_PAYMENT_VENUE_OPTION_LABEL,
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
+} from "@/features/offers/constants/paymentMethodSheetCopy"
 import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
 
 /** Figma `17459:*` — hero subtitle before check-in. */
@@ -54,18 +58,22 @@ export const CLAIMED_OFFER_IVE_PAID_LABEL = "I've paid" as const
 export const CLAIMED_OFFER_PAYMENT_CHANGE_LABEL = "Change" as const
 
 /** Figma `17459:*` — payment detail row values. */
-export const CLAIMED_OFFER_PAYMENT_ROW_DINEOUT = "Pay with Bolt Food" as const
-export const CLAIMED_OFFER_PAYMENT_ROW_VENUE = "Pay the venue directly" as const
+export const CLAIMED_OFFER_PAYMENT_ROW_DINEOUT =
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL
+
+export const CLAIMED_OFFER_PAYMENT_ROW_VENUE = CLAIM_PAYMENT_VENUE_OPTION_LABEL
 
 /** Figma `17475:185868` — venue payment confirmation alert. */
-export const VENUE_PAYMENT_CONFIRM_TITLE = "Pay the venue directly?" as const
+export const VENUE_PAYMENT_CONFIRM_TITLE =
+  `${CLAIM_PAYMENT_VENUE_OPTION_LABEL}?` as const
 
 export const VENUE_PAYMENT_CONFIRM_BODY =
-  "You won't earn Bolt Balance if you pay the venue directly" as const
+  "You won't earn Bolt Balance if you pay by card or cash" as const
 
-export const VENUE_PAYMENT_CONFIRM_PRIMARY_CTA = "Pay venue directly" as const
+export const VENUE_PAYMENT_CONFIRM_PRIMARY_CTA = CLAIM_PAYMENT_VENUE_OPTION_LABEL
 
-export const VENUE_PAYMENT_CONFIRM_SECONDARY_CTA = "Pay via Bolt Food" as const
+export const VENUE_PAYMENT_CONFIRM_SECONDARY_CTA =
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL
 
 /** Figma `17459:183448` — disclaimer lines. */
 export const CLAIMED_OFFER_DISCLAIMER_EXCLUDES =

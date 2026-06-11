@@ -2,6 +2,7 @@ import { Typography } from "@bolteu/kalep-react"
 import { useLayoutEffect, useRef, useState, type ReactNode, type TransitionEvent } from "react"
 import { DineOutCashbackBanner } from "@/features/offers/components/DineOutCashbackBanner"
 import {
+  CLAIM_PAYMENT_VENUE_OPTION_LABEL,
   PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
 } from "@/features/offers/constants/paymentMethodSheetCopy"
 import {
@@ -175,7 +176,7 @@ export interface PaymentMethodOptionLabels {
 
 export const CLAIM_FLOW_PAYMENT_LABELS: PaymentMethodOptionLabels = {
   dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
-  cardOrCash: "Pay by card or cash",
+  cardOrCash: CLAIM_PAYMENT_VENUE_OPTION_LABEL,
 } as const
 
 export const CLAIMED_OFFER_PAYMENT_LABELS: PaymentMethodOptionLabels = {

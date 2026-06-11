@@ -1,4 +1,3 @@
-import { Typography } from "@bolteu/kalep-react"
 import dineoutCashbackCoinUrl from "@/features/offers/assets/dineout-cashback-coin.png"
 import {
   DINEOUT_CASHBACK_BANNER_PADDING_PX,
@@ -6,6 +5,8 @@ import {
 } from "@/features/offers/constants/dineoutCashbackCoinLayout"
 import {
   formatPayCashbackUpsellAccent,
+  formatPayCashbackUpsellHeadline,
+  PAY_CASHBACK_UPSELL_PREFIX,
   PAY_CASHBACK_UPSELL_SUFFIX,
 } from "@/features/payBill/constants/payBillCashbackCopy"
 
@@ -30,12 +31,13 @@ export function PayBillCashbackUpsell({
   cashbackEur,
 }: PayBillCashbackUpsellProps) {
   const accent = formatPayCashbackUpsellAccent(cashbackEur)
+  const headline = formatPayCashbackUpsellHeadline(cashbackEur)
 
   return (
     <div className="w-full shrink-0 px-6 pb-3">
       <div
         className="relative min-h-[68px] min-w-[15rem] w-full shrink-0 overflow-hidden rounded-[12px] bg-action-secondary"
-        aria-label={`${accent}${PAY_CASHBACK_UPSELL_SUFFIX}`}
+        aria-label={headline}
       >
         <div
           className="flex min-h-[68px] min-w-0 flex-col justify-center"
@@ -47,28 +49,20 @@ export function PayBillCashbackUpsell({
           }}
         >
           <p
-            className="m-0 text-primary"
+            className="m-0 min-w-0 bolt-font-body-s-regular text-primary"
             style={{ fontFeatureSettings: FONT_FEAT }}
           >
-            <Typography
-              as="span"
-              variant="body-s-accent"
-              color="primary"
-              inlineStyle={{
+            {PAY_CASHBACK_UPSELL_PREFIX}
+            <span
+              className="bolt-font-body-s-accent"
+              style={{
                 ...SEMIBOLD,
                 fontFeatureSettings: FONT_FEAT,
               }}
             >
               {accent}
-            </Typography>
-            <Typography
-              as="span"
-              variant="body-s-regular"
-              color="primary"
-              inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
-            >
-              {PAY_CASHBACK_UPSELL_SUFFIX}
-            </Typography>
+            </span>
+            {PAY_CASHBACK_UPSELL_SUFFIX}
           </p>
         </div>
         <div

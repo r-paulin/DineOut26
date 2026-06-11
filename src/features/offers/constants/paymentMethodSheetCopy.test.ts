@@ -7,6 +7,7 @@ import {
   CLAIM_PAYMENT_SECTION_INTRO,
   CLAIM_PAYMENT_SECTION_TITLE,
   CLAIM_PAYMENT_VENUE_OPTION_LABEL,
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
   formatPaymentMethodDineoutDetail,
   getClaimPaymentOptionDetail,
   getPaymentMethodOptionDetail,
@@ -27,7 +28,8 @@ describe("paymentMethodSheetCopy", () => {
     expect(CLAIM_PAYMENT_SECTION_INTRO).toBe(
       "Select how you'll pay the bill after dining",
     )
-    expect(CLAIM_PAYMENT_VENUE_OPTION_LABEL).toBe("Pay the venue directly")
+    expect(PAYMENT_METHOD_DINEOUT_OPTION_LABEL).toBe("Pay with Bolt Food")
+    expect(CLAIM_PAYMENT_VENUE_OPTION_LABEL).toBe("Pay by card or cash")
   })
 
   it("formats DineOut detail for claimed-offer payment sheet", () => {
@@ -41,6 +43,12 @@ describe("paymentMethodSheetCopy", () => {
       formatPaymentMethodDineoutDetail(),
     )
     expect(getPaymentMethodOptionDetail("card_or_cash")).toBeUndefined()
+  })
+
+  it("formats cashback banner headline copy", () => {
+    expect(formatDineOutClaimCashbackBannerHeadline()).toBe(
+      `Get ${formatDiscountPercent(DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT)}% cashback on your total bill when you pay in the app`,
+    )
   })
 
   it("getClaimPaymentOptionDetail returns claim-modal inline detail", () => {

@@ -1,3 +1,7 @@
+import {
+  CLAIM_PAYMENT_VENUE_OPTION_LABEL,
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
+} from "@/features/offers/constants/paymentMethodSheetCopy"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 
 export type ClaimOfferSuccessVariant = "dineout" | "card_or_cash"
@@ -20,14 +24,14 @@ const ASK_FOR_BILL_STEP: ClaimOfferSuccessStep = {
 }
 
 const PAY_VIA_DINEOUT_STEP: ClaimOfferSuccessStep = {
-  title: "Pay via Bolt Food",
+  title: PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
   subtitle: "Enter the total shown on the bill and complete the steps to pay",
 }
 
 const SETTLE_UP_STEP: ClaimOfferSuccessStep = {
-  title: "Settle up as usual",
+  title: CLAIM_PAYMENT_VENUE_OPTION_LABEL,
   subtitle:
-    "Pay the venue directly with cash, card, or whatever payment methods they accept",
+    "Settle the bill at the venue using cash, card, or other methods they accept",
 }
 
 const DINEOUT_STEPS: ClaimOfferSuccessStep[] = [

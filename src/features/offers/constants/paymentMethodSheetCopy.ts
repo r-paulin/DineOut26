@@ -10,19 +10,18 @@ export const CLAIM_PAYMENT_SECTION_INTRO =
   "Select how you'll pay the bill after dining" as const
 
 /** Figma `16142:22260` — card/cash radio primary label in claim flow. */
-export const CLAIM_PAYMENT_VENUE_OPTION_LABEL = "Pay the venue directly" as const
+export const CLAIM_PAYMENT_VENUE_OPTION_LABEL = "Pay by card or cash" as const
 
 /** Figma `16142:22260` — inline detail when venue payment is selected. */
 export const CLAIM_PAYMENT_CARD_CASH_INLINE_DETAIL =
   "Pay by card or cash. No cashback." as const
 
 /** Figma `16393:40712` — DineOut radio option (claim flow). */
-export const PAYMENT_METHOD_DINEOUT_OPTION_LABEL =
-  "Pay via Bolt Food app" as const
+export const PAYMENT_METHOD_DINEOUT_OPTION_LABEL = "Pay with Bolt Food" as const
 
-/** @deprecated Use {@link CLAIMED_OFFER_PAYMENT_ROW_DINEOUT} on claimed-offer sheet. */
+/** @deprecated Use {@link PAYMENT_METHOD_DINEOUT_OPTION_LABEL}. */
 export const PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE =
-  "Paying via Bolt Food app" as const
+  PAYMENT_METHOD_DINEOUT_OPTION_LABEL
 
 /** Figma claimed-offer payment sheet — “Choose how to pay”. */
 export const PAYMENT_METHOD_SHEET_TITLE = "Choose how to pay" as const

@@ -67,7 +67,7 @@ describe("claimedOfferCopy (Figma 17459)", () => {
 
   it("uses detail row payment labels and Change action", () => {
     expect(CLAIMED_OFFER_PAYMENT_ROW_DINEOUT).toBe("Pay with Bolt Food")
-    expect(CLAIMED_OFFER_PAYMENT_ROW_VENUE).toBe("Pay the venue directly")
+    expect(CLAIMED_OFFER_PAYMENT_ROW_VENUE).toBe("Pay by card or cash")
     expect(CLAIMED_OFFER_PAYMENT_CHANGE_LABEL).toBe("Change")
   })
 
@@ -89,11 +89,11 @@ describe("claimedOfferCopy (Figma 17459)", () => {
   })
 
   it("uses venue payment confirmation alert copy (Figma 17475)", () => {
-    expect(VENUE_PAYMENT_CONFIRM_TITLE).toBe("Pay the venue directly?")
+    expect(VENUE_PAYMENT_CONFIRM_TITLE).toBe("Pay by card or cash?")
     expect(VENUE_PAYMENT_CONFIRM_BODY).toBe(
-      "You won't earn Bolt Balance if you pay the venue directly",
+      "You won't earn Bolt Balance if you pay by card or cash",
     )
-    expect(VENUE_PAYMENT_CONFIRM_PRIMARY_CTA).toBe("Pay venue directly")
-    expect(VENUE_PAYMENT_CONFIRM_SECONDARY_CTA).toBe("Pay via Bolt Food")
+    expect(VENUE_PAYMENT_CONFIRM_PRIMARY_CTA).toBe("Pay by card or cash")
+    expect(VENUE_PAYMENT_CONFIRM_SECONDARY_CTA).toBe("Pay with Bolt Food")
   })
 })

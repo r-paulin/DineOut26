@@ -1,5 +1,5 @@
 import { Typography } from "@bolteu/kalep-react"
-import { PAY_BILL_HERO_CAPTION } from "@/features/payBill/constants/payBillCashbackCopy"
+import { PAY_SCREEN_TOTAL_LABEL } from "@/features/payBill/constants/payScreenCopy"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import { payBillHeroMainPriceStyle } from "@/features/payBill/utils/payBillNumericDisplay"
 
@@ -29,7 +29,7 @@ export function PayBillPayHero({ finalAmt }: PayBillPayHeroProps) {
         as="p"
         inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
       >
-        {PAY_BILL_HERO_CAPTION}
+        {PAY_SCREEN_TOTAL_LABEL}
       </Typography>
     </section>
   )

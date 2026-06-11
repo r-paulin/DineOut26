@@ -323,7 +323,7 @@ export function PayScreen({
                 />
               : null}
             </div>
-            <div className="mt-2 border-t border-solid border-separator pt-2">
+            <div className="mt-2 border-t border-solid border-separator pt-4">
               <ReceiptItem
                 label={PAY_SCREEN_TOTAL_LABEL}
                 amount={formatEurMajor(finalAmt)}

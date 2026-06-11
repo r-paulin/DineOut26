@@ -1,3 +1,4 @@
+import { resolveClaimedOfferDateLabel } from "@/features/offers/utils/formatClaimedArrivalDate"
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
 import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
 import { clampRemainingSpotsForDisplay } from "@/features/offers/data/selectPrimaryTimedOffer"
@@ -130,8 +131,11 @@ export function formatOfferBannerScheduleLine(
   return `${dateLabel} · ${time}`
 }
 
-export function formatOfferBannerArrivalLine(claim: ClaimedOffer): string {
-  return `${claim.arrivalDate} · ${claim.arrivalTime}`
+export function formatOfferBannerArrivalLine(
+  claim: ClaimedOffer,
+  nowMs: number = Date.now(),
+): string {
+  return `${resolveClaimedOfferDateLabel(claim, nowMs)} · ${claim.arrivalTime}`
 }
 
 /** Claimed banner secondary line (Figma) — e.g. "30% discount". */
@@ -167,7 +171,7 @@ export function formatOfferBannerCashbackEarnedLabel(eur: number): string {
 export function formatOfferBannerDineOutUpsellSticker(
   percent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
 ): string {
-  return `Pay with DineOut next time and earn ${formatDiscountPercent(percent)}% back`
+  return `Pay with Bolt Food and earn ${formatDiscountPercent(percent)}% back`
 }
 
 export interface BuildPaidOfferBannerContentArgs {

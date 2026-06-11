@@ -5,4 +5,4 @@ export const PAY_SCREEN_BILL_TOTAL_LABEL = "Bill total" as const
 
 export const PAY_SCREEN_TIP_LABEL = "Tip" as const
 
-export const PAY_SCREEN_TOTAL_LABEL = "Total" as const
+export const PAY_SCREEN_TOTAL_LABEL = "Total to pay" as const

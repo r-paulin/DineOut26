@@ -41,8 +41,12 @@ function CloseControl({ onDismiss }: { onDismiss: () => void }) {
  * Toast body: matches Kalep Snackbar visuals; entry/exit motion is GSAP-driven
  * (Sonner list-item transitions are neutralized in CSS for this toaster).
  */
+const TITLE_COMPACT_LINE = {
+  lineHeight: "var(--body-m-compact-line-height, 20px)",
+} as const
+
 export function SnackbarToast({ id, content }: SnackbarToastProps) {
-  const { title, description, actions } = content
+  const { title, description, actions, descriptionColor } = content
   const { showCloseButton, swipeToDismiss, timeoutMs } =
     resolveSnackbarDismiss(content)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -165,6 +169,11 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
 
   const hasDescription = description.trim().length > 0
   const stackedLayout = Boolean(actionButtons)
+  const descriptionClassName = joinClassNames(
+    descriptionColor === "secondary-inverted" ?
+      "text-secondary-inverted"
+    : undefined,
+  )
 
   return (
     <div
@@ -173,9 +182,9 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
       aria-labelledby={title ? titleId : undefined}
       aria-describedby={hasDescription ? descriptionId : undefined}
       className={joinClassNames(
-        "relative w-full max-w-full rounded-lg bg-neutral-primary px-4 py-3",
+        "relative min-h-[48px] w-full max-w-full rounded-[12px] bg-neutral-primary px-4 py-3",
         "bolt-font-body-s-regular text-primary-inverted",
-        "min-w-0 w-full shadow-[0_1px_1.5px_rgba(47,49,61,0.04),0_4px_4px_rgba(47,49,61,0.08),0_8px_8px_rgba(47,49,61,0.08)]",
+        "min-w-0 shadow-[0_1px_1.5px_rgba(47,49,61,0.04),0_4px_4px_rgba(47,49,61,0.08),0_8px_8px_rgba(47,49,61,0.08)]",
         stackedLayout ? "flex flex-col gap-2" : "flex items-center gap-4",
         swipeToDismiss ? "touch-pan-y" : undefined,
       )}
@@ -187,13 +196,19 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
               {title ?
                 <div
                   id={titleId}
-                  className="bolt-font-body-m-accent font-semibold"
+                  className="py-0.5 bolt-font-body-m-accent font-semibold"
+                  style={TITLE_COMPACT_LINE}
                 >
                   {title}
                 </div>
               : null}
               {hasDescription ?
-                <div id={descriptionId}>{description}</div>
+                <div
+                  id={descriptionId}
+                  className={joinClassNames("py-0.5", descriptionClassName)}
+                >
+                  {description}
+                </div>
               : null}
             </div>
             {showCloseButton ?
@@ -211,13 +226,19 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
             {title ?
               <div
                 id={titleId}
-                className="bolt-font-body-m-accent mb-1 font-semibold"
+                className="py-0.5 bolt-font-body-m-accent font-semibold"
+                style={TITLE_COMPACT_LINE}
               >
                 {title}
               </div>
             : null}
             {hasDescription ?
-              <div id={descriptionId}>{description}</div>
+              <div
+                id={descriptionId}
+                className={joinClassNames("py-0.5", descriptionClassName)}
+              >
+                {description}
+              </div>
             : null}
           </div>
           {showCloseButton ?
