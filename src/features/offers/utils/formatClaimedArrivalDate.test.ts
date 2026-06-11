@@ -25,7 +25,6 @@ describe("resolveClaimedOfferDateLabel", () => {
       resolveClaimedOfferDateLabel(
         {
           arrivalDate: "Thursday, 11 June",
-          arrivalTime: "13:30",
           offerScheduleYmd: "2026-06-11",
           claimedAt: nowMs - 60_000,
         },
@@ -40,7 +39,6 @@ describe("resolveClaimedOfferDateLabel", () => {
       resolveClaimedOfferDateLabel(
         {
           arrivalDate: "Friday, 12 June",
-          arrivalTime: "13:30",
           offerScheduleYmd: "2026-06-12",
           claimedAt: nowMs,
         },
