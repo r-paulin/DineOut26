@@ -1,142 +1,84 @@
 import { Typography } from "@bolteu/kalep-react"
+import HelpCircle from "@bolteu/kalep-react-icons/dist/HelpCircle"
 import { BoltDineOutLogo } from "@/features/offers/components/ClaimedOfferPage/BoltDineOutLogo"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
+import { HERO_SUBTITLE_STYLE, SEMIBOLD } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
 import {
-  HERO_ON_DARK_TEXT_STYLE,
-  PIN_COUNTDOWN_TEXT_STYLE,
-  SEMIBOLD,
-  formatWelcomeAtRestaurant,
-} from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
-import {
-  CLAIMED_OFFER_PIN_LABEL,
-  CLAIMED_OFFER_WELCOME_INSTRUCTION,
+  CLAIMED_OFFER_HERO_SUBTITLE_CHECKED_IN,
+  CLAIMED_OFFER_HERO_SUBTITLE_NOT_CHECKED_IN,
+  CLAIMED_OFFER_HOW_IT_WORKS_LABEL,
 } from "@/features/offers/constants/claimedOfferCopy"
-import { parseClaimPinForDisplay } from "@/features/offers/components/ClaimedOfferPage/parseClaimPinForDisplay"
-import {
-  formatOfferWindowClosesLabel,
-  useOfferCountdown,
-} from "@/features/offers/components/ClaimedOfferPage/useOfferCountdown"
 
-/**
- * Includes Kalep heading defaults (`cv03`, `cv04`) so we don't strip them when
- * adding lining/proportional figure features for PIN digits.
- */
-const PIN_FONT_FEAT = "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
+const HERO_TITLE_STYLE = {
+  ...SEMIBOLD,
+  color: "var(--color-static-content-key-light)",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+} as const
 
-const PIN_DIGIT_STYLE = {
-  fontFeatureSettings: PIN_FONT_FEAT,
+const HOW_IT_WORKS_STYLE = {
+  color: "var(--color-content-active-action-primary-inverted)",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1",
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
-  ...HERO_ON_DARK_TEXT_STYLE,
 } as const
 
 export interface ClaimedOfferHeroSectionProps {
   restaurantName: string
-  /** Numeric PIN string (digits only). Non-digit characters trigger a dev warning. */
-  pin: string
-  offerWindowCloses: string
+  checkedIn: boolean
+  onHowItWorksPress?: () => void
 }
 
-/** Figma `16144:200886` — live countdown inside PIN card. */
-function ClaimedOfferPinCountdown({ offerWindowCloses }: { offerWindowCloses: string }) {
-  const { expired, countdownHms } = useOfferCountdown(offerWindowCloses)
-  const label = formatOfferWindowClosesLabel(expired, countdownHms)
-
-  return (
-    <div
-      className={claimedOfferLayout.pinFrameCountdown}
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      <Typography
-        variant="body-xs-regular"
-        as="p"
-        align="center"
-        inlineStyle={PIN_COUNTDOWN_TEXT_STYLE}
-      >
-        {label}
-      </Typography>
-    </div>
-  )
-}
-
+/** Figma `17459:*` — logo, restaurant name, check-in-dependent subtitle, help link. */
 export function ClaimedOfferHeroSection({
   restaurantName,
-  pin,
-  offerWindowCloses,
+  checkedIn,
+  onHowItWorksPress,
 }: ClaimedOfferHeroSectionProps) {
-  const pinResult = parseClaimPinForDisplay(pin)
+  const subtitle =
+    checkedIn ?
+      CLAIMED_OFFER_HERO_SUBTITLE_CHECKED_IN
+    : CLAIMED_OFFER_HERO_SUBTITLE_NOT_CHECKED_IN
 
   return (
     <section data-mode="dark" className={claimedOfferLayout.hero}>
-      <div className={claimedOfferLayout.heroLogoRow}>
-        <BoltDineOutLogo />
-      </div>
+      <BoltDineOutLogo />
 
       <div className={claimedOfferLayout.heroCopy}>
         <Typography
-          variant="heading-s-accent"
+          variant="heading-m-accent"
           as="h1"
           align="center"
-          inlineStyle={{ ...SEMIBOLD, ...HERO_ON_DARK_TEXT_STYLE }}
+          inlineStyle={HERO_TITLE_STYLE}
         >
-          {formatWelcomeAtRestaurant(restaurantName)}
+          {restaurantName}
         </Typography>
         <Typography
-          variant="body-m-regular"
+          variant="body-s-regular"
           as="p"
           align="center"
-          inlineStyle={HERO_ON_DARK_TEXT_STYLE}
+          inlineStyle={HERO_SUBTITLE_STYLE}
         >
-          {CLAIMED_OFFER_WELCOME_INSTRUCTION}
+          {subtitle}
         </Typography>
       </div>
 
-      <div className={claimedOfferLayout.pinBlock}>
-        <div className={claimedOfferLayout.pinFrame}>
-          <div className={claimedOfferLayout.pinFrameLabel}>
-            <Typography
-              variant="body-s-regular"
-              as="p"
-              align="center"
-              inlineStyle={HERO_ON_DARK_TEXT_STYLE}
-            >
-              {CLAIMED_OFFER_PIN_LABEL}
-            </Typography>
-          </div>
-          {pinResult.ok ?
-            <div
-              className={claimedOfferLayout.pinDigitsRow}
-              role="group"
-              aria-label={`PIN ${pinResult.digits.join(" ")}`}
-            >
-              {pinResult.digits.map((digit, index) => (
-                <div
-                  key={`${index}-${digit}`}
-                  className={claimedOfferLayout.pinDigit}
-                >
-                  <Typography
-                    variant="heading-m-accent"
-                    as="span"
-                    align="center"
-                    inlineStyle={PIN_DIGIT_STYLE}
-                  >
-                    {digit}
-                  </Typography>
-                </div>
-              ))}
-            </div>
-          : <Typography
-              variant="body-s-regular"
-              as="p"
-              align="center"
-              inlineStyle={HERO_ON_DARK_TEXT_STYLE}
-            >
-              {pinResult.message}
-            </Typography>
-          }
-          <ClaimedOfferPinCountdown offerWindowCloses={offerWindowCloses} />
-        </div>
-      </div>
+      <button
+        type="button"
+        className={claimedOfferLayout.howItWorksRow}
+        onClick={onHowItWorksPress}
+      >
+        <Typography
+          variant="body-s-accent"
+          as="span"
+          inlineStyle={HOW_IT_WORKS_STYLE}
+        >
+          {CLAIMED_OFFER_HOW_IT_WORKS_LABEL}
+        </Typography>
+        <HelpCircle
+          size="sm"
+          className="shrink-0 text-active-action-primary-inverted"
+          aria-hidden
+        />
+      </button>
     </section>
   )
 }

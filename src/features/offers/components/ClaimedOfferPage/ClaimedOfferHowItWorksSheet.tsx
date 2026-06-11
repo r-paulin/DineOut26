@@ -5,79 +5,81 @@ import {
   getClaimOfferInstructionsStepIcons,
 } from "@/features/offers/components/claimFlow/ClaimOfferInstructionsStepList"
 import {
-  CLAIM_OFFER_SUCCESS_CTA,
-  CLAIM_OFFER_SUCCESS_SUBTITLE,
-  CLAIM_OFFER_SUCCESS_TITLE,
-} from "@/features/offers/constants/claimOfferSuccessCopy"
+  CLAIMED_OFFER_HOW_IT_WORKS_SHEET_SUBTITLE,
+  CLAIMED_OFFER_HOW_IT_WORKS_SHEET_TITLE,
+} from "@/features/offers/constants/claimedOfferCopy"
+import { CLAIM_OFFER_SUCCESS_CTA } from "@/features/offers/constants/claimOfferSuccessCopy"
 import { getClaimOfferSuccessSteps } from "@/features/offers/constants/claimOfferSuccessSteps"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 import {
-  Z_CLAIM_MODAL_CONTENT,
-  Z_CLAIM_MODAL_OVERLAY,
+  Z_CLAIMED_OFFER_SHEET_CONTENT,
+  Z_CLAIMED_OFFER_SHEET_OVERLAY,
 } from "@/features/restaurant/constants/screenLayers"
 
 const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
-const SUCCESS_TITLE_ID = "claim-offer-success-title"
-const SUCCESS_SUBTITLE_ID = "claim-offer-success-subtitle"
+const HOW_IT_WORKS_TITLE_ID = "claimed-offer-how-it-works-title"
+const HOW_IT_WORKS_SUBTITLE_ID = "claimed-offer-how-it-works-subtitle"
 
-export interface ClaimOfferSuccessSheetProps {
-  isOpen: boolean
+export interface ClaimedOfferHowItWorksSheetProps {
+  open: boolean
   onOpenChange: (open: boolean) => void
   paymentMethod: PaymentMethod
-  onDone: () => void
   container?: HTMLElement | null
 }
 
-/**
- * Post-claim instructions (Figma `17327:18233` DineOut / `17327:18251` card-cash).
- */
-export function ClaimOfferSuccessSheet({
-  isOpen,
+/** Figma `17327:*` steps — opened from claimed-offer hero “How your offer works”. */
+export function ClaimedOfferHowItWorksSheet({
+  open,
   onOpenChange,
   paymentMethod,
-  onDone,
   container,
-}: ClaimOfferSuccessSheetProps) {
+}: ClaimedOfferHowItWorksSheetProps) {
   const steps = getClaimOfferSuccessSteps(paymentMethod)
   const stepIcons = getClaimOfferInstructionsStepIcons(paymentMethod)
 
   return (
     <ClaimPromoSheetShell
-      open={isOpen}
+      open={open}
       onOpenChange={onOpenChange}
       container={container}
-      zOverlay={Z_CLAIM_MODAL_OVERLAY}
-      zContent={Z_CLAIM_MODAL_CONTENT}
-      title={CLAIM_OFFER_SUCCESS_TITLE}
-      description={CLAIM_OFFER_SUCCESS_SUBTITLE}
-      visibleTitleId={SUCCESS_TITLE_ID}
-      visibleDescriptionId={SUCCESS_SUBTITLE_ID}
+      zOverlay={Z_CLAIMED_OFFER_SHEET_OVERLAY}
+      zContent={Z_CLAIMED_OFFER_SHEET_CONTENT}
+      title={CLAIMED_OFFER_HOW_IT_WORKS_SHEET_TITLE}
+      description={CLAIMED_OFFER_HOW_IT_WORKS_SHEET_SUBTITLE}
+      visibleTitleId={HOW_IT_WORKS_TITLE_ID}
+      visibleDescriptionId={HOW_IT_WORKS_SUBTITLE_ID}
       hero="success-badge"
       sheetHeight="fit"
       footerBordered={false}
       footer={
-        <Button type="button" variant="primary" size="lg" fullWidth onClick={onDone}>
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          fullWidth
+          onClick={() => onOpenChange(false)}
+        >
           {CLAIM_OFFER_SUCCESS_CTA}
         </Button>
       }
     >
       <div className="flex flex-col gap-3 px-6 pb-3 pt-6">
-        <h2 id={SUCCESS_TITLE_ID} className="m-0 p-0">
+        <h2 id={HOW_IT_WORKS_TITLE_ID} className="m-0 p-0">
           <Typography
             variant="heading-m-accent"
             color="primary"
             as="span"
             inlineStyle={SEMIBOLD}
           >
-            {CLAIM_OFFER_SUCCESS_TITLE}
+            {CLAIMED_OFFER_HOW_IT_WORKS_SHEET_TITLE}
           </Typography>
         </h2>
-        <p id={SUCCESS_SUBTITLE_ID} className="m-0 p-0">
+        <p id={HOW_IT_WORKS_SUBTITLE_ID} className="m-0 p-0">
           <Typography variant="body-m-regular" color="primary" as="span">
-            {CLAIM_OFFER_SUCCESS_SUBTITLE}
+            {CLAIMED_OFFER_HOW_IT_WORKS_SHEET_SUBTITLE}
           </Typography>
         </p>
       </div>

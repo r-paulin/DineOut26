@@ -10,19 +10,16 @@ import {
   formatPaymentMethodDineoutDetail,
   getClaimPaymentOptionDetail,
   getPaymentMethodOptionDetail,
-  PAYMENT_METHOD_CARD_CASH_DETAIL,
-  PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
-  PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE,
+  PAYMENT_METHOD_SHEET_CONFIRM_CTA,
   PAYMENT_METHOD_SHEET_INTRO,
   PAYMENT_METHOD_SHEET_TITLE,
 } from "./paymentMethodSheetCopy"
 
 describe("paymentMethodSheetCopy", () => {
-  it("uses edit-sheet title and intro", () => {
-    expect(PAYMENT_METHOD_SHEET_TITLE).toBe("Payment method")
-    expect(PAYMENT_METHOD_SHEET_INTRO).toBe(
-      "Pay at the venue after dining. Choose your preferred payment method.",
-    )
+  it("uses claimed-offer payment sheet title and intro", () => {
+    expect(PAYMENT_METHOD_SHEET_TITLE).toBe("Choose how to pay")
+    expect(PAYMENT_METHOD_SHEET_INTRO).toBe("You won't be charged yet")
+    expect(PAYMENT_METHOD_SHEET_CONFIRM_CTA).toBe("Confirm")
   })
 
   it("uses claim-modal payment section copy", () => {
@@ -33,32 +30,17 @@ describe("paymentMethodSheetCopy", () => {
     expect(CLAIM_PAYMENT_VENUE_OPTION_LABEL).toBe("Pay the venue directly")
   })
 
-  it("uses Bolt Food app payment option labels", () => {
-    expect(PAYMENT_METHOD_DINEOUT_OPTION_LABEL).toBe("Pay via Bolt Food app")
-    expect(PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE).toBe(
-      "Paying via Bolt Food app",
-    )
-  })
-
-  it("formats DineOut detail with default percent for edit sheet", () => {
+  it("formats DineOut detail for claimed-offer payment sheet", () => {
     expect(formatPaymentMethodDineoutDetail()).toBe(
-      `Pay via app and get ${DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT}% back in Bolt Balance after payment`,
+      `Earn ${formatDiscountPercent(DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT)}% back as Bolt Balance`,
     )
   })
 
-  it("uses static card/cash detail for edit sheet", () => {
-    expect(PAYMENT_METHOD_CARD_CASH_DETAIL).toBe(
-      "Pay directly at the venue. No cashback will be applied.",
+  it("getPaymentMethodOptionDetail returns dineout detail only", () => {
+    expect(getPaymentMethodOptionDetail("dineout")).toBe(
+      formatPaymentMethodDineoutDetail(),
     )
-  })
-
-  it("getPaymentMethodOptionDetail returns edit-sheet detail", () => {
-    expect(getPaymentMethodOptionDetail("dineout")).toContain(
-      `${formatDiscountPercent(DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT)}%`,
-    )
-    expect(getPaymentMethodOptionDetail("card_or_cash")).toBe(
-      PAYMENT_METHOD_CARD_CASH_DETAIL,
-    )
+    expect(getPaymentMethodOptionDetail("card_or_cash")).toBeUndefined()
   })
 
   it("getClaimPaymentOptionDetail returns claim-modal inline detail", () => {

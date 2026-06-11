@@ -10,6 +10,7 @@ import {
 } from "react"
 import { createPortal } from "react-dom"
 import { BillAmountDisplayRow } from "@/features/payBill/components/shared/BillAmountDisplayRow"
+import { CUSTOM_TIP_HEADING } from "@/features/payBill/constants/tipScreenCopy"
 import { useAnimatedBillCents } from "@/features/payBill/hooks/useAnimatedBillCents"
 import {
   applyNumpadKey,
@@ -43,9 +44,6 @@ const FONT_FEAT =
 
 const SHEET_MOTION =
   "transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
-
-/** Figma `15935:24418` — custom tip sheet heading. */
-const CUSTOM_TIP_HEADING = "Add a tip" as const
 
 /**
  * Custom tip bottom sheet inside the pay-bill shell (Figma `15935:24418`).

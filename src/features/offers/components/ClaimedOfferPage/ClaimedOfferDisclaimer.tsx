@@ -1,6 +1,10 @@
 import { Typography } from "@bolteu/kalep-react"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
-import { OFFER_APPLICABLE_TOTAL_BILL_DISCLAIMER } from "@/features/offers/constants/offerApplicabilityCopy"
+import {
+  CLAIMED_OFFER_DISCLAIMER_DISCOUNT_COMBINATION,
+  CLAIMED_OFFER_DISCLAIMER_EXCLUDES,
+  CLAIMED_OFFER_DISCLAIMER_VALIDITY,
+} from "@/features/offers/constants/claimedOfferCopy"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 
 const DEFAULT_MIN_ORDER_EUR = 10
@@ -10,6 +14,7 @@ export interface ClaimedOfferDisclaimerProps {
   onTermsPress: () => void
 }
 
+/** Figma `17459:183448` — offer disclaimer block. */
 export function ClaimedOfferDisclaimer({
   minOrderEur = DEFAULT_MIN_ORDER_EUR,
   onTermsPress,
@@ -20,16 +25,13 @@ export function ClaimedOfferDisclaimer({
         {`Minimum order value: ${formatEurMajor(minOrderEur)}.`}
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
-        {OFFER_APPLICABLE_TOTAL_BILL_DISCLAIMER}
+        {CLAIMED_OFFER_DISCLAIMER_EXCLUDES}
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
-        Offers are valid only for the selected number of guests and arrival time.
-        Late arrivals or additional guests may invalidate the offer. During busy
-        periods, you may need to wait for a table.
+        {CLAIMED_OFFER_DISCLAIMER_VALIDITY}
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
-        Only one restaurant discount may be applied per bill. DineOut cashback or
-        payment rewards may be combined with restaurant discount where eligible.
+        {CLAIMED_OFFER_DISCLAIMER_DISCOUNT_COMBINATION}
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
         Venues may add a service charge and other{" "}

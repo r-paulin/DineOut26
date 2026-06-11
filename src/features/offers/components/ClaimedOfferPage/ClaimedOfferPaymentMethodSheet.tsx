@@ -4,6 +4,7 @@ import { PaymentSelector } from "@/features/offers/components/ClaimOfferModal/Pa
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
 import { CLAIMED_OFFER_PAYMENT_LABELS } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
 import {
+  PAYMENT_METHOD_SHEET_CONFIRM_CTA,
   PAYMENT_METHOD_SHEET_INTRO,
   PAYMENT_METHOD_SHEET_TITLE,
 } from "@/features/offers/constants/paymentMethodSheetCopy"
@@ -18,6 +19,8 @@ export interface ClaimedOfferPaymentMethodSheetProps {
   onOpenChange: (open: boolean) => void
   value: PaymentMethod
   onChange: (next: PaymentMethod) => void
+  /** Bolt Food → venue: close sheet and show {@link VenuePaymentConfirmDialog}. */
+  onVenuePaymentConfirmRequest?: () => void
   container?: HTMLElement | null
 }
 
@@ -27,6 +30,7 @@ export function ClaimedOfferPaymentMethodSheet({
   onOpenChange,
   value,
   onChange,
+  onVenuePaymentConfirmRequest,
   container,
 }: ClaimedOfferPaymentMethodSheetProps) {
   const [draft, setDraft] = useState<PaymentMethod>(value)
@@ -36,6 +40,15 @@ export function ClaimedOfferPaymentMethodSheet({
   }, [open, value])
 
   const handleSave = () => {
+    if (
+      draft === "card_or_cash" &&
+      value === "dineout" &&
+      onVenuePaymentConfirmRequest
+    ) {
+      onOpenChange(false)
+      onVenuePaymentConfirmRequest()
+      return
+    }
     onChange(draft)
     onOpenChange(false)
   }
@@ -56,7 +69,7 @@ export function ClaimedOfferPaymentMethodSheet({
       footerClassName="pt-4 pb-8"
       footer={
         <Button type="button" variant="primary" size="lg" fullWidth onClick={handleSave}>
-          Save
+          {PAYMENT_METHOD_SHEET_CONFIRM_CTA}
         </Button>
       }
     >
@@ -66,6 +79,7 @@ export function ClaimedOfferPaymentMethodSheet({
         titleVariant="heading-s-bottom-sheet"
         optionLabels={CLAIMED_OFFER_PAYMENT_LABELS}
         detailPresentation="inline-selected"
+        optionRowDensity="payment-sheet"
         showOptionDividers
         showSectionSeparator={false}
         groupName="claimed-offer-payment"

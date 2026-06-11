@@ -3,7 +3,8 @@ import Pin from "@bolteu/kalep-react-icons/dist/Pin"
 import { useLayoutEffect, useRef } from "react"
 import {
   RESTAURANT_AT_VENUE_BAR_CTA,
-  RESTAURANT_AT_VENUE_BAR_PROMO,
+  RESTAURANT_AT_VENUE_BAR_PROMO_LEAD,
+  RESTAURANT_AT_VENUE_BAR_PROMO_TAIL,
 } from "@/features/restaurant/constants/restaurantAtVenueBarCopy"
 import { useRestaurantAtVenueBarEntrance } from "@/features/restaurant/hooks/useRestaurantAtVenueBarEntrance"
 
@@ -43,11 +44,10 @@ export function RestaurantDetailAtVenueBar({
       className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] flex justify-center border-t border-separator bg-layer-floor-2 px-6 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]"
     >
       <div className="pointer-events-auto flex w-full flex-col items-center gap-3">
-        <p className="m-0 w-full overflow-hidden text-center">
-          <Typography variant="body-s-regular" color="secondary" as="span" noWrap>
-            {RESTAURANT_AT_VENUE_BAR_PROMO}
-          </Typography>
-        </p>
+        <Typography variant="body-s-regular" color="secondary" as="p" align="center">
+          <b>{RESTAURANT_AT_VENUE_BAR_PROMO_LEAD}</b>
+          {` ${RESTAURANT_AT_VENUE_BAR_PROMO_TAIL}`}
+        </Typography>
         <Button
           type="button"
           variant="primary"

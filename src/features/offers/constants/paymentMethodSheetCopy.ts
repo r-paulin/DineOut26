@@ -20,23 +20,26 @@ export const CLAIM_PAYMENT_CARD_CASH_INLINE_DETAIL =
 export const PAYMENT_METHOD_DINEOUT_OPTION_LABEL =
   "Pay via Bolt Food app" as const
 
-/** Same option when editing payment on claimed-offer sheet (present tense). */
+/** @deprecated Use {@link CLAIMED_OFFER_PAYMENT_ROW_DINEOUT} on claimed-offer sheet. */
 export const PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE =
   "Paying via Bolt Food app" as const
 
-/** Figma `16393:40712` — MODAL / Payment method. */
-export const PAYMENT_METHOD_SHEET_TITLE = "Payment method" as const
+/** Figma claimed-offer payment sheet — “Choose how to pay”. */
+export const PAYMENT_METHOD_SHEET_TITLE = "Choose how to pay" as const
 
-export const PAYMENT_METHOD_SHEET_INTRO =
-  "Pay at the venue after dining. Choose your preferred payment method." as const
+export const PAYMENT_METHOD_SHEET_INTRO = "You won't be charged yet" as const
 
+export const PAYMENT_METHOD_SHEET_CONFIRM_CTA = "Confirm" as const
+
+/** @deprecated Venue row has no inline detail on the payment sheet. */
 export const PAYMENT_METHOD_CARD_CASH_DETAIL =
   "Pay directly at the venue. No cashback will be applied." as const
 
+/** Selected Bolt Food row subtext on claimed-offer payment sheet. */
 export function formatPaymentMethodDineoutDetail(
   percent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
 ): string {
-  return `Pay via app and get ${formatDiscountPercent(percent)}% back in Bolt Balance after payment`
+  return `Earn ${formatDiscountPercent(percent)}% back as Bolt Balance`
 }
 
 /** Secondary line under the selected radio (claimed-offer sheet). */
@@ -44,7 +47,6 @@ export function getPaymentMethodOptionDetail(
   method: PaymentMethod,
 ): string | undefined {
   if (method === "dineout") return formatPaymentMethodDineoutDetail()
-  if (method === "card_or_cash") return PAYMENT_METHOD_CARD_CASH_DETAIL
   return undefined
 }
 

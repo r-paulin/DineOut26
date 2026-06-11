@@ -3,8 +3,11 @@ import { useLayoutEffect, useRef, useState, type ReactNode, type TransitionEvent
 import { DineOutCashbackBanner } from "@/features/offers/components/DineOutCashbackBanner"
 import {
   PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
-  PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE,
 } from "@/features/offers/constants/paymentMethodSheetCopy"
+import {
+  CLAIMED_OFFER_PAYMENT_ROW_DINEOUT,
+  CLAIMED_OFFER_PAYMENT_ROW_VENUE,
+} from "@/features/offers/constants/claimedOfferCopy"
 import {
   MOTION_IN_PAGE_S,
   MOTION_REDUCED_S,
@@ -138,10 +141,27 @@ export function DineOutCashbackBannerSlot({
   )
 }
 
-export function paymentMethodOptionClass(withDivider: boolean): string {
+export type PaymentOptionRowDensity = "default" | "payment-sheet"
+
+/** Figma `17459:185028` / `185029` — list row padding per state. */
+export function paymentMethodOptionClass(
+  withDivider: boolean,
+  expandedDetail = false,
+  density: PaymentOptionRowDensity = "default",
+): string {
+  if (density === "payment-sheet") {
+    return [
+      "flex w-full cursor-pointer flex-col",
+      expandedDetail ? "pt-[10px] pb-[9px]" : "pt-4 pb-[15px]",
+      withDivider ? "border-b border-separator" : "",
+    ]
+      .filter(Boolean)
+      .join(" ")
+  }
+
   return [
-    "flex w-full cursor-pointer flex-col gap-0.5",
-    "pt-4",
+    "flex w-full cursor-pointer flex-col",
+    expandedDetail ? "gap-2 py-2" : "gap-0.5 pt-4",
     withDivider ? "border-b border-separator" : "",
   ]
     .filter(Boolean)
@@ -159,8 +179,8 @@ export const CLAIM_FLOW_PAYMENT_LABELS: PaymentMethodOptionLabels = {
 } as const
 
 export const CLAIMED_OFFER_PAYMENT_LABELS: PaymentMethodOptionLabels = {
-  dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL_ACTIVE,
-  cardOrCash: "Paying with card or cash",
+  dineout: CLAIMED_OFFER_PAYMENT_ROW_DINEOUT,
+  cardOrCash: CLAIMED_OFFER_PAYMENT_ROW_VENUE,
 } as const
 
 /** Figma Heading XS / XS Accent (`16388:31183`). */
@@ -195,7 +215,7 @@ export function PaymentMethodSheetHeader({
     return (
       <div
         id={headingId}
-        className="flex min-h-8 flex-col gap-1 px-6 pt-5 pb-3 pr-12"
+        className="flex min-h-8 flex-col gap-1 py-3 pl-6 pr-3 pt-5"
       >
         <Typography variant="heading-s-accent" color="primary" as="p">
           {title}
@@ -235,7 +255,7 @@ export function PaymentMethodSheetHeader({
   return (
     <div
       id={headingId}
-      className="flex flex-col gap-0.5 px-6 pt-0 pb-2"
+      className="flex flex-col gap-0.5 px-6 pt-3 pb-2"
     >
       <Typography variant="body-m-accent" color="primary" as="p">
         {title}

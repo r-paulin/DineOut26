@@ -1,5 +1,5 @@
 /**
- * Layout tokens for Figma `16123:18340` (claimed offer / welcome + PIN screen).
+ * Layout tokens for Figma `17459:*` (claimed offer + venue check-in gate).
  *
  * Close + footer are absolutely positioned; the scroll container reserves
  * matching space at top/bottom so they never overlap the hero or sticky CTA.
@@ -9,43 +9,56 @@ export const claimedOfferLayout = {
   /** Full-page scroll (hero + light sections); only close + footer are fixed. */
   pageScroll:
     "flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain bg-special-brand-alt",
+  /** Figma close — 40×40, left 16px, top 24px + safe area, elevation 1. */
   fixedClose:
-    "pointer-events-auto absolute left-6 top-[max(1rem,var(--safe-area-top))] z-30 flex size-10 shrink-0 items-center justify-center rounded-full border-none bg-static-key-light p-0 text-static-key-dark shadow-[0px_2px_3px_rgba(0,0,0,0.16)] outline-none focus-visible:ring-2 focus-visible:ring-action-primary",
+    "pointer-events-auto absolute left-4 top-[max(1.5rem,var(--safe-area-top))] z-30 flex size-10 shrink-0 items-center justify-center rounded-full border-none bg-static-key-light p-0 text-static-key-dark shadow-[0px_2px_3px_rgba(0,0,0,0.16)] outline-none focus-visible:ring-2 focus-visible:ring-action-primary",
   /**
-   * Dark green hero to the top of the panel (no white safe-area strip).
-   * Top padding clears the fixed close: close top + 2.5rem height + 0.5rem gap.
+   * Dark green hero — Figma `17459:183421`: pt 64, px 24, pb 24 (visible).
+   * {@link shelfFloor} overlaps by 16px (`-mt-4`), so pb is 40px here.
    */
   hero:
-    "shrink-0 bg-special-brand-alt px-6 pb-10 pt-[max(3.5rem,calc(var(--safe-area-top)+3rem))]",
-  heroLogoRow: "flex justify-center pb-6",
-  /** Figma hero copy: centered column, dimension-300 gap. */
-  heroCopy: "flex flex-col items-center gap-3 self-stretch text-center",
-  pinBlock: "mt-6 flex w-full justify-center self-stretch",
+    "flex shrink-0 flex-col items-center gap-6 bg-special-brand-alt px-6 pb-10 pt-16 text-center [--color-content-active-action-primary-inverted:var(--content-active-action-primary-inverted)]",
+  heroCopy: "flex w-full flex-col items-center gap-3",
+  howItWorksRow:
+    "inline-flex cursor-pointer items-center justify-center gap-1.5 border-none bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-action-primary",
   /**
-   * Figma PIN card: dimension-300 padding + row gap, 8px column gap, sheet radius.
+   * Overlaps hero by 16px; stays transparent so `bg-special-brand-alt` shows in
+   * the white shelf’s top corner radii (Figma `17459:183440`).
    */
-  pinFrame:
-    "inline-grid w-full max-w-[min(100%,20rem)] grid-cols-1 grid-rows-[repeat(3,fit-content(100%))] gap-x-2 gap-y-3 rounded-[var(--sheet-radius)] border border-positive-secondary bg-positive-secondary p-3",
-  pinFrameLabel: "justify-self-stretch text-center",
-  /** Figma `16144:200886` — live offer window line below PIN digits. */
-  pinFrameCountdown: "justify-self-stretch text-center",
-  pinDigitsRow: "flex w-full flex-wrap justify-center justify-self-stretch gap-2",
-  /** Figma PIN cell — 48×56, 8px radius, brand-alt fill (`16144:200902`). */
-  pinDigit:
-    "flex h-14 w-12 shrink-0 items-center justify-center rounded-[8px] bg-special-brand-alt p-2.5",
+  shelfFloor: "relative z-[1] -mt-4 flex min-h-0 flex-1 flex-col",
+  /** Grouped fill below the white offer card (Figma `layer/floor-0-grouped` gap). */
+  shelfFloorFill: "min-h-0 flex-1 bg-layer-floor-0-grouped",
   /**
-   * Light body below hero — rounded top overlaps brand hero (Figma shelf).
-   * `flex-1` fills short viewports (no green gap); no `min-h-0`/`overflow-hidden`
-   * so content height can grow and the page scroll container scrolls.
+   * White detail shelf — 16px top radius; `overflow-hidden` clips children to curve.
    */
   lightBody:
-    "relative z-[1] -mt-4 flex flex-1 flex-col rounded-t-[var(--sheet-radius)] bg-layer-floor-1",
-  sectionHeadingPx: "px-6",
-  /** Offer details block — flat list, no section title. */
-  offerDetailsBlock: "shrink-0 pt-6",
+    "flex shrink-0 flex-col overflow-hidden rounded-t-[16px] bg-layer-floor-1",
+  offerTitleBlock: "shrink-0 px-6 pb-3 pt-6",
+  /** Figma `17459:184404` — inline PIN banner shelf. */
+  pinBannerOuter: "shrink-0 px-4 pb-3",
+  pinBannerInner:
+    "flex flex-row items-center justify-between gap-4 rounded-[8px] bg-action-primary p-3",
+  pinBannerLabel: "min-w-0 flex-1 text-left",
+  pinDigitsRow: "flex shrink-0 flex-row gap-1",
+  /** Figma PIN cell — 24×40, 4px radius, 4px padding. */
+  pinDigit:
+    "flex h-10 w-6 shrink-0 items-center justify-center rounded-[4px] bg-special-brand-alt p-1",
+  offerDetailsBlock: "shrink-0",
   detailsList: "m-0 flex list-none flex-col p-0",
-  disclaimer: "flex shrink-0 flex-col gap-3 px-6 pt-6",
-  /** White-body bottom reserve for fixed pay footer (must not live on green pageScroll). */
-  lightBodyPadWithFooter: "pb-[10.5rem]",
+  /** Inset list divider — 24px horizontal padding (Figma list item separator). */
+  detailRowSeparator: "px-6",
+  detailRowSeparatorLine: "h-px bg-separator",
+  cashbackUpsellWrap: "shrink-0 px-6 pb-3",
+  disclaimer: "flex shrink-0 flex-col gap-3 px-6 pb-10 pt-6",
+  /** White-body bottom reserve for fixed footer (~136px). */
+  lightBodyPadWithFooter: "pb-[8.5rem]",
   lightBodyPadNoFooter: "pb-6",
+  /** Sticky footer — Figma `_Screen Actions (DineOut)`. */
+  stickyFooter:
+    "pointer-events-auto absolute bottom-0 left-0 right-0 z-[3] flex flex-col gap-3 border-t border-separator bg-layer-floor-2 px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-4",
+  stickyFooterPromoRow: "flex items-center justify-center gap-1",
+  stickyFooterButton: "h-14 rounded-full",
+  /** Figma alert dialogs (`17475:185868`, cancel offer) — min 300px content width. */
+  alertDialogContent: "mx-auto flex w-full min-w-[300px] flex-col gap-6 pb-4",
+  alertDialogButtonStack: "flex w-full min-w-0 flex-col gap-2",
 } as const

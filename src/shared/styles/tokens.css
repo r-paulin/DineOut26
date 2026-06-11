@@ -39,6 +39,8 @@
   --green-500: #32bb78;
   --neutral-white: #ffffff;
   --content-action-primary-inverted: rgba(116, 239, 170, 1);
+  /** Figma `content-active/action-primary-inverted` — ghost links on `bg-special-brand-alt`. */
+  --content-active-action-primary-inverted: rgba(116, 239, 170, 1);
 
   /* === Typography sizes still consumed by CSS Modules === */
   --font-family: "Inter Variable", "Inter", system-ui, sans-serif;

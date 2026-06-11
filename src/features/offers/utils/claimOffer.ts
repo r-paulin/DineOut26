@@ -141,6 +141,12 @@ export function claimOffer(input: ClaimOfferInput): ClaimedOffer {
   }
 }
 
+/** Records venue check-in on an existing claim (prototype; server mutation in production). */
+export function checkInClaimOffer(claim: ClaimedOffer): ClaimedOffer {
+  if (claim.checkedInAt != null) return claim
+  return { ...claim, checkedInAt: Date.now() }
+}
+
 export class CancelOfferError extends Error {
   override readonly name = "CancelOfferError"
 }

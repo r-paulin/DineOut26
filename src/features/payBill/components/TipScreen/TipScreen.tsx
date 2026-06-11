@@ -7,6 +7,10 @@ import { TipPill } from "@/features/payBill/components/TipScreen/TipPill"
 import { useTipScreenEntrance, useTipScreenEntranceLock } from "@/features/payBill/hooks/useTipScreenEntrance"
 import type { TipOption } from "@/features/payBill/payBill.types"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
+import {
+  formatTipScreenBillTotalLabel,
+  TIP_SCREEN_SUBTITLE,
+} from "@/features/payBill/constants/tipScreenCopy"
 import { percentTipEur, TIP_SCREEN_PERCENT_PRESET_LIMIT } from "@/features/payBill/utils/tipPresets"
 
 const FONT_FEAT =
@@ -234,7 +238,7 @@ export function TipScreen({
               Tip your waiter
             </Typography>
             <Typography variant="body-m-regular" color="secondary" align="center" as="p">
-              This is a thank you for great service — 100% goes to the staff
+              {TIP_SCREEN_SUBTITLE}
             </Typography>
           </div>
         </div>
@@ -259,7 +263,7 @@ export function TipScreen({
               as="p"
               inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
             >
-              Total on receipt: {formatEurMajor(receiptTotalEur)}
+              {formatTipScreenBillTotalLabel(receiptTotalEur)}
             </Typography>
           </div>
         </div>

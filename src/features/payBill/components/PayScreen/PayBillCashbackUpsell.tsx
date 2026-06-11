@@ -1,60 +1,90 @@
 import { Typography } from "@bolteu/kalep-react"
-import payCashbackUpsellUrl from "@/features/payBill/assets/pay-cashback-upsell.png"
+import dineoutCashbackCoinUrl from "@/features/offers/assets/dineout-cashback-coin.png"
 import {
-  formatPayCashbackUpsellHeadline,
-  formatPayCashbackUpsellSecondary,
+  DINEOUT_CASHBACK_BANNER_PADDING_PX,
+  DINEOUT_CASHBACK_COIN_SLOT_PX,
+} from "@/features/offers/constants/dineoutCashbackCoinLayout"
+import {
+  formatPayCashbackUpsellAccent,
+  PAY_CASHBACK_UPSELL_SUFFIX,
 } from "@/features/payBill/constants/payBillCashbackCopy"
-import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
 
-const FONT_FEAT =
-  "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
+const FONT_FEAT = "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
+
+const SEMIBOLD = {
+  fontVariationSettings: "'wght' var(--font-weight-semibold)",
+} as const
+
+/** Figma `_Cashback Banner (DineOut)` coin frame — right-aligned clip. */
+const COIN_IMAGE_CLASS =
+  "absolute h-full max-w-none left-[-20.9%] top-[28.73%] w-[150%]"
 
 export interface PayBillCashbackUpsellProps {
   cashbackEur: number
-  cashbackPercent?: number
 }
 
 /**
- * Figma `16364:30051` — earn-back upsell flush above slide-to-pay (not a receipt discount row).
+ * Figma `_Cashback Banner (DineOut)` (`16381:28166`) — earn-back upsell above slide-to-pay.
  */
 export function PayBillCashbackUpsell({
   cashbackEur,
-  cashbackPercent = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
 }: PayBillCashbackUpsellProps) {
-  const headline = formatPayCashbackUpsellHeadline(cashbackEur)
-  const secondary = formatPayCashbackUpsellSecondary(cashbackPercent)
+  const accent = formatPayCashbackUpsellAccent(cashbackEur)
 
   return (
-    <section
-      className="relative w-full shrink-0 overflow-hidden rounded-t-2xl bg-action-secondary pl-[60px] pr-6 pt-4 pb-4"
-      aria-label={headline}
-    >
-      <img
-        src={payCashbackUpsellUrl}
-        alt=""
-        aria-hidden
-        className="pointer-events-none absolute bottom-0 left-0 h-[97px] w-14 object-contain object-left-bottom"
-        decoding="async"
-      />
-      <Typography
-        variant="body-l-accent"
-        color="primary"
-        as="p"
-        inlineStyle={{
-          fontVariationSettings: "'wght' var(--font-weight-semibold)",
-          fontFeatureSettings: FONT_FEAT,
-        }}
+    <div className="w-full shrink-0 px-6 pb-3">
+      <div
+        className="relative min-h-[68px] min-w-[15rem] w-full shrink-0 overflow-hidden rounded-[12px] bg-action-secondary"
+        aria-label={`${accent}${PAY_CASHBACK_UPSELL_SUFFIX}`}
       >
-        {headline}
-      </Typography>
-      <Typography
-        variant="body-s-regular"
-        color="secondary"
-        as="p"
-        inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
-      >
-        {secondary}
-      </Typography>
-    </section>
+        <div
+          className="flex min-h-[68px] min-w-0 flex-col justify-center"
+          style={{
+            paddingLeft: DINEOUT_CASHBACK_BANNER_PADDING_PX.xStart,
+            paddingRight: DINEOUT_CASHBACK_BANNER_PADDING_PX.xEnd,
+            paddingTop: DINEOUT_CASHBACK_BANNER_PADDING_PX.y,
+            paddingBottom: DINEOUT_CASHBACK_BANNER_PADDING_PX.y,
+          }}
+        >
+          <p
+            className="m-0 text-primary"
+            style={{ fontFeatureSettings: FONT_FEAT }}
+          >
+            <Typography
+              as="span"
+              variant="body-s-accent"
+              color="primary"
+              inlineStyle={{
+                ...SEMIBOLD,
+                fontFeatureSettings: FONT_FEAT,
+              }}
+            >
+              {accent}
+            </Typography>
+            <Typography
+              as="span"
+              variant="body-s-regular"
+              color="primary"
+              inlineStyle={{ fontFeatureSettings: FONT_FEAT }}
+            >
+              {PAY_CASHBACK_UPSELL_SUFFIX}
+            </Typography>
+          </p>
+        </div>
+        <div
+          className="pointer-events-none absolute bottom-0 right-0 h-[84px] overflow-hidden"
+          style={{ width: DINEOUT_CASHBACK_COIN_SLOT_PX }}
+          aria-hidden
+        >
+          <img
+            src={dineoutCashbackCoinUrl}
+            alt=""
+            decoding="async"
+            draggable={false}
+            className={COIN_IMAGE_CLASS}
+          />
+        </div>
+      </div>
+    </div>
   )
 }

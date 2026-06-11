@@ -80,7 +80,7 @@ export {
   SHEET_HEIGHT_PEEK,
   snapFromHeight,
 } from "./utils/bottomSheetLayout"
-export { claimOffer, cancelOffer, computeOfferWindowCloseIso, generateClaimPin } from "./utils/claimOffer"
+export { claimOffer, cancelOffer, checkInClaimOffer, computeOfferWindowCloseIso, generateClaimPin } from "./utils/claimOffer"
 export type { ClaimOfferInput } from "./utils/claimOffer"
 export {
   findActiveClaimForRestaurant,

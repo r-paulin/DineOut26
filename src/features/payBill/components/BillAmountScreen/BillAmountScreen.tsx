@@ -8,13 +8,16 @@ import { ReceiptAmountBlock } from "@/features/payBill/components/BillAmountScre
 import { BillAmountTitleSection } from "@/features/payBill/components/BillAmountScreen/BillAmountTitleSection"
 import { useAnimatedBillCents } from "@/features/payBill/hooks/useAnimatedBillCents"
 import {
+  BILL_AMOUNT_SUBTITLE_CLAIMED,
+  BILL_AMOUNT_SUBTITLE_DEFAULT,
+} from "@/features/payBill/constants/billAmountScreenCopy"
+import {
   billStateFromFormattedInput,
   billStateToCents,
   formatBillDisplayEur,
   initialBillNumpadState,
   isBillAmountValidForContinue,
 } from "@/features/payBill/utils/billAmount"
-import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
 import { useCoarsePointer } from "@/shared/hooks/useCoarsePointer"
 import { useVisualViewportLayout } from "@/shared/hooks/useVisualViewportLayout"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
@@ -23,7 +26,7 @@ const BILL_AMOUNT_ERROR_ID = "bill-amount-screen-error"
 
 export interface BillAmountScreenProps {
   restaurantName: string
-  /** When set, subtitle explains claimed discount % (Figma claimed variant). */
+  /** When set, subtitle prompts guest to verify offer on receipt (Figma claimed variant). */
   claimedOffer: ClaimedOffer | null
   onDismiss: () => void
   onContinue: (amount: number) => void
@@ -55,9 +58,7 @@ export function BillAmountScreen({
   const valid = isBillAmountValidForContinue(state)
 
   const subtitle =
-    claimedOffer ?
-      `Confirm the ${formatDiscountPercent(claimedOffer.discountPercent)}% discount is on the receipt and enter the final amount.`
-    : "Enter the final amount from your receipt."
+    claimedOffer ? BILL_AMOUNT_SUBTITLE_CLAIMED : BILL_AMOUNT_SUBTITLE_DEFAULT
 
   /** Native keyboard: one rAF focus + single retry for portal / iOS timing. */
   useLayoutEffect(() => {

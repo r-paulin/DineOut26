@@ -4,6 +4,7 @@ import {
   formatClaimedOfferPaymentLabel,
   formatGuestCountLabel,
   formatWelcomeAtRestaurant,
+  isClaimCheckedIn,
 } from "./claimedOfferShared"
 
 describe("formatClaimedOfferFoodLabel", () => {
@@ -13,27 +14,37 @@ describe("formatClaimedOfferFoodLabel", () => {
 })
 
 describe("formatGuestCountLabel", () => {
-  it("uses singular for 1 guest", () => {
-    expect(formatGuestCountLabel(1)).toBe("1 guest")
+  it("uses singular for 1 person", () => {
+    expect(formatGuestCountLabel(1)).toBe("1 person")
   })
   it("uses plural for other counts", () => {
-    expect(formatGuestCountLabel(0)).toBe("0 guests")
-    expect(formatGuestCountLabel(2)).toBe("2 guests")
-    expect(formatGuestCountLabel(10)).toBe("10 guests")
+    expect(formatGuestCountLabel(0)).toBe("0 people")
+    expect(formatGuestCountLabel(2)).toBe("2 people")
+    expect(formatGuestCountLabel(10)).toBe("10 people")
   })
 })
 
 describe("formatWelcomeAtRestaurant", () => {
-  it("uses 'Welcome at' phrasing (Figma 16123:18340)", () => {
+  it("uses legacy welcome phrasing", () => {
     expect(formatWelcomeAtRestaurant("Neiburgs")).toBe("Welcome at Neiburgs")
   })
 })
 
 describe("formatClaimedOfferPaymentLabel", () => {
-  it("uses claimed-offer payment sheet copy", () => {
-    expect(formatClaimedOfferPaymentLabel("dineout")).toBe("Paying via Bolt Food app")
+  it("uses Figma 17459 detail row copy", () => {
+    expect(formatClaimedOfferPaymentLabel("dineout")).toBe("Pay with Bolt Food")
     expect(formatClaimedOfferPaymentLabel("card_or_cash")).toBe(
-      "Paying with card or cash",
+      "Pay the venue directly",
     )
+  })
+})
+
+describe("isClaimCheckedIn", () => {
+  it("returns false without checkedInAt", () => {
+    expect(isClaimCheckedIn({})).toBe(false)
+  })
+
+  it("returns true when checkedInAt is set", () => {
+    expect(isClaimCheckedIn({ checkedInAt: 1 })).toBe(true)
   })
 })

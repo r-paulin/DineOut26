@@ -1,5 +1,5 @@
+import { Typography } from "@bolteu/kalep-react"
 import Calendar from "@bolteu/kalep-react-icons/dist/Calendar"
-import Offer from "@bolteu/kalep-react-icons/dist/Offer"
 import Payment from "@bolteu/kalep-react-icons/dist/Payment"
 import Pool from "@bolteu/kalep-react-icons/dist/Pool"
 import type { ReactElement } from "react"
@@ -7,35 +7,30 @@ import type { PaymentMethod } from "@/features/offers/offers.types"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import {
   ROW_ICON_CLASS,
-  formatClaimedOfferFoodLabel,
   formatClaimedOfferPaymentLabel,
   formatGuestCountLabel,
 } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
-import { ListItem } from "@/shared/components/ListItem"
-import { CLAIMED_OFFER_PAYMENT_METHOD_SWITCH_LABEL } from "@/features/offers/constants/claimedOfferCopy"
+import { CLAIMED_OFFER_PAYMENT_CHANGE_LABEL } from "@/features/offers/constants/claimedOfferCopy"
 
 export interface ClaimedOfferDetailsSectionProps {
   arrivalDate: string
   arrivalTime: string
   guestCount: number
-  discountPercent: number
-  offerDetailLabel?: string
   paymentMethod: PaymentMethod
   onPaymentMethodPress?: () => void
 }
 
+/** Figma `17459:*` — icon + value rows (no label stack). */
 export function ClaimedOfferDetailsSection({
   arrivalDate,
   arrivalTime,
   guestCount,
-  discountPercent,
-  offerDetailLabel,
   paymentMethod,
   onPaymentMethodPress,
 }: ClaimedOfferDetailsSectionProps) {
-  const offerLabel = offerDetailLabel ?? formatClaimedOfferFoodLabel(discountPercent)
   const paymentValue = formatClaimedOfferPaymentLabel(paymentMethod)
   const guestValue = formatGuestCountLabel(guestCount)
+  const dateValue = `${arrivalDate} · ${arrivalTime}`
 
   return (
     <section
@@ -45,26 +40,20 @@ export function ClaimedOfferDetailsSection({
       <ul className={claimedOfferLayout.detailsList}>
         <ClaimedOfferDetailRow
           icon={<Calendar size="md" className={ROW_ICON_CLASS} aria-hidden />}
-          label="Date"
-          value={`${arrivalDate} · ${arrivalTime}`}
+          value={dateValue}
+          ariaLabel={`Date, ${dateValue}`}
         />
         <ClaimedOfferDetailRow
           icon={<Pool size="md" className={ROW_ICON_CLASS} aria-hidden />}
-          label="Number of people"
           value={guestValue}
-        />
-        <ClaimedOfferDetailRow
-          icon={<Offer size="md" className={ROW_ICON_CLASS} aria-hidden />}
-          label="Offer"
-          value={offerLabel}
+          ariaLabel={`Number of people, ${guestValue}`}
         />
         <ClaimedOfferDetailRow
           icon={<Payment size="md" className={ROW_ICON_CLASS} aria-hidden />}
-          label="Payment method"
           value={paymentValue}
           trailingActionLabel={
             onPaymentMethodPress ?
-              CLAIMED_OFFER_PAYMENT_METHOD_SWITCH_LABEL
+              CLAIMED_OFFER_PAYMENT_CHANGE_LABEL
             : undefined
           }
           interactive={Boolean(onPaymentMethodPress)}
@@ -72,7 +61,7 @@ export function ClaimedOfferDetailsSection({
           ariaLabel={
             onPaymentMethodPress ?
               `Change payment method, currently ${paymentValue}`
-            : undefined
+            : `Payment method, ${paymentValue}`
           }
         />
       </ul>
@@ -82,39 +71,67 @@ export function ClaimedOfferDetailsSection({
 
 interface ClaimedOfferDetailRowProps {
   icon: ReactElement
-  label: string
   value: string
   trailingActionLabel?: string
   interactive?: boolean
   onPress?: () => void
-  ariaLabel?: string
+  showSeparator?: boolean
+  ariaLabel: string
 }
 
 function ClaimedOfferDetailRow({
   icon,
-  label,
   value,
   trailingActionLabel,
   interactive = false,
   onPress,
+  showSeparator = true,
   ariaLabel,
 }: ClaimedOfferDetailRowProps) {
+  const rowClass = `${claimedOfferLayout.pagePx} flex w-full items-center gap-3 pt-4 pb-[15px] text-left`
+  const body = (
+    <>
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {icon}
+        <Typography variant="body-m-regular" color="primary" as="span">
+          {value}
+        </Typography>
+      </div>
+      {trailingActionLabel ?
+        <span className="shrink-0">
+          <Typography
+            variant="body-m-accent"
+            color="action-primary"
+            as="span"
+            noWrap
+          >
+            {trailingActionLabel}
+          </Typography>
+        </span>
+      : null}
+    </>
+  )
+
   return (
     <li className="m-0 p-0">
-      <ListItem
-        icon={icon}
-        iconTone="primary"
-        label={label}
-        value={value}
-        showChevron={false}
-        trailingActionLabel={trailingActionLabel}
-        interactive={interactive}
-        onPress={onPress}
-        aria-label={ariaLabel}
-        showSeparator={false}
-        horizontalPadding="none"
-        className={claimedOfferLayout.sectionHeadingPx}
-      />
+      {interactive && onPress ?
+        <button
+          type="button"
+          className={`${rowClass} cursor-pointer border-none bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-action-primary`}
+          aria-label={ariaLabel}
+          onClick={onPress}
+        >
+          {body}
+        </button>
+      : <div className={rowClass} aria-label={ariaLabel}>
+          {body}
+        </div>
+      }
+      {showSeparator ?
+        <div className={claimedOfferLayout.detailRowSeparator}>
+          <div className={claimedOfferLayout.detailRowSeparatorLine} aria-hidden />
+        </div>
+      : null}
     </li>
   )
 }

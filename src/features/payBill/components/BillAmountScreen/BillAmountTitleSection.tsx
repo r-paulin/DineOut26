@@ -1,5 +1,7 @@
 import { Typography } from "@bolteu/kalep-react"
 
+import { BILL_AMOUNT_TITLE } from "@/features/payBill/constants/billAmountScreenCopy"
+
 const FONT_FEAT =
   "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1" as const
 
@@ -20,7 +22,7 @@ export function BillAmountTitleSection({ subtitle }: BillAmountTitleSectionProps
           fontFeatureSettings: FONT_FEAT,
         }}
       >
-        Total to pay
+        {BILL_AMOUNT_TITLE}
       </Typography>
       <Typography
         variant="body-s-regular"

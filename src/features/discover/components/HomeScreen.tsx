@@ -55,6 +55,7 @@ import {
   paidOfferRecordToClaimStub,
 } from "@/features/offers/utils/buildPaidOfferRecord"
 import { updateClaimedOfferPaymentMethod } from "@/features/offers/utils/updateClaimedOfferPaymentMethod"
+import { checkInClaimOffer } from "@/features/offers/utils/claimOffer"
 import { formatClaimedArrivalDate } from "@/features/offers/utils/formatClaimedArrivalDate"
 import {
   offerWindowBaseDateFromSchedule,
@@ -662,7 +663,7 @@ export function HomeScreen() {
   )
 
   const handlePayFromClaimedOfferPrepare = useCallback(() => {
-    if (!claimedView) return
+    if (!claimedView?.checkedInAt) return
     const claim = claimedView
     const detail = getRestaurantDetailDemo(claim.restaurantSlug)
     pendingPayBillEntryFromClaimRef.current = {
@@ -671,6 +672,20 @@ export function HomeScreen() {
       offer: claim,
     }
   }, [claimedView, catalogSnapshot])
+
+  const handleCheckInClaimedOffer = useCallback(
+    (offerId: string) => {
+      if (!claimedView || claimedView.offerId !== offerId) return
+      const checkedIn = checkInClaimOffer(claimedView)
+      setClaimedView(checkedIn)
+      setClaimedByOfferId((prev) => {
+        const current = prev[offerId]
+        if (!current) return prev
+        return { ...prev, [offerId]: checkInClaimOffer(current) }
+      })
+    },
+    [claimedView],
+  )
 
   const handlePayFromClaimedOfferComplete = useCallback(() => {
     const entry = pendingPayBillEntryFromClaimRef.current
@@ -796,7 +811,7 @@ export function HomeScreen() {
 
   const handleConfirmBillClaimedComplete = useCallback(() => {
     const claim = claimedView
-    if (!claim) return
+    if (!claim?.checkedInAt) return
     const paidRecord = buildPaidOfferRecordFromClaim(claim)
     finishSuccessfulPayment({
       restaurantSlug: claim.restaurantSlug,
@@ -917,6 +932,7 @@ export function HomeScreen() {
         claim={claimedView}
         onClose={handleClaimedOfferClose}
         onCancelOffer={handleCancelClaimedOffer}
+        onCheckIn={handleCheckInClaimedOffer}
         onPayWithBoltDineOut={handlePayFromClaimedOfferPrepare}
         onPayWithBoltDineOutComplete={handlePayFromClaimedOfferComplete}
         onConfirmBillComplete={handleConfirmBillClaimedComplete}

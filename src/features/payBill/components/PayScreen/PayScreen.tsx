@@ -15,6 +15,12 @@ import {
   narrowCheckoutPaymentOptionId,
   type CheckoutPaymentOptionId,
 } from "@/features/payBill/constants/checkoutPaymentOptions"
+import {
+  PAY_SCREEN_BILL_TOTAL_LABEL,
+  PAY_SCREEN_SUMMARY_TITLE,
+  PAY_SCREEN_TIP_LABEL,
+  PAY_SCREEN_TOTAL_LABEL,
+} from "@/features/payBill/constants/payScreenCopy"
 import { PayBillCashbackUpsell } from "@/features/payBill/components/PayScreen/PayBillCashbackUpsell"
 import { PayBillPayHero } from "@/features/payBill/components/PayScreen/PayBillPayHero"
 import { SlidingButton } from "@/features/payBill/components/PayScreen/SlidingButton"
@@ -296,12 +302,12 @@ export function PayScreen({
           <section className="flex shrink-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pt-6 pb-8 shadow-[var(--elevation-1)]">
             <div className="mb-2">
               <Typography variant="heading-s-accent" color="primary" as="h2">
-                Summary
+                {PAY_SCREEN_SUMMARY_TITLE}
               </Typography>
             </div>
             <div className="flex flex-col gap-2">
               <ReceiptItem
-                label="Receipt"
+                label={PAY_SCREEN_BILL_TOTAL_LABEL}
                 amount={formatEurMajor(receiptTotal)}
                 variant="regular"
                 labelColor="secondary"
@@ -309,7 +315,7 @@ export function PayScreen({
               />
               {tip != null && tip > 0 ?
                 <ReceiptItem
-                  label="Tip"
+                  label={PAY_SCREEN_TIP_LABEL}
                   amount={formatEurMajor(tip)}
                   variant="regular"
                   labelColor="secondary"
@@ -319,7 +325,7 @@ export function PayScreen({
             </div>
             <div className="mt-2 border-t border-solid border-separator pt-2">
               <ReceiptItem
-                label="Total"
+                label={PAY_SCREEN_TOTAL_LABEL}
                 amount={formatEurMajor(finalAmt)}
                 variant="total"
               />
@@ -384,10 +390,7 @@ export function PayScreen({
 
         <div className="flex shrink-0 flex-col bg-layer-floor-1">
           {cashbackEur > 0 ?
-            <PayBillCashbackUpsell
-              cashbackEur={cashbackEur}
-              cashbackPercent={d2}
-            />
+            <PayBillCashbackUpsell cashbackEur={cashbackEur} />
           : null}
           <footer
             data-snackbar-anchor=""

@@ -1,68 +1,57 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import CashbackColoured from "@bolteu/kalep-react-icons/dist/CashbackColoured"
-import { useRef, type RefObject } from "react"
-import { formatClaimedOfferDiscountSubtitle } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
+import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import {
-  isCashbackBannerVisible,
-  useClaimedOfferCashbackBanner,
-} from "@/features/offers/components/ClaimedOfferPage/useClaimedOfferCashbackBanner"
-import {
-  CLAIMED_OFFER_CARD_CASH_DONE_LABEL,
-  CLAIMED_OFFER_CONFIRM_BILL_META,
-  formatClaimedOfferFooterPromoText,
+  CLAIMED_OFFER_IVE_PAID_LABEL,
+  CLAIMED_OFFER_PAY_FOOTER_PROMO_DINEOUT_LEAD,
+  CLAIMED_OFFER_PAY_FOOTER_PROMO_DINEOUT_TAIL,
+  CLAIMED_OFFER_PAY_FOOTER_PROMO_VENUE_LEAD,
+  CLAIMED_OFFER_PAY_FOOTER_PROMO_VENUE_TAIL,
 } from "@/features/offers/constants/claimedOfferCopy"
 import type { PaymentMethod } from "@/features/offers/offers.types"
+import type { RefObject } from "react"
 
 export interface ClaimedOfferActionFooterProps {
   anchorRef: RefObject<HTMLDivElement | null>
   paymentMethod: PaymentMethod
-  discountPercent: number
   expired: boolean
   onPay: () => void
   onConfirmBill: () => void
 }
 
-/** Figma `16384:28098` / `16389:29235` — unified pay / confirm footer with GSAP cashback row. */
+/** Figma `17459:185244` / `185397` — pay footer after venue check-in. */
 export function ClaimedOfferActionFooter({
   anchorRef,
   paymentMethod,
-  discountPercent,
   expired,
   onPay,
   onConfirmBill,
 }: ClaimedOfferActionFooterProps) {
   const isDineout = paymentMethod === "dineout"
-  const discountSubtitle = formatClaimedOfferDiscountSubtitle(discountPercent)
-  const bannerVisible = isCashbackBannerVisible(paymentMethod)
 
-  const bannerSlotRef = useRef<HTMLDivElement>(null)
-  const bannerRef = useRef<HTMLDivElement>(null)
-  useClaimedOfferCashbackBanner(bannerSlotRef, bannerRef, bannerVisible)
+  const promoLead =
+    isDineout ?
+      CLAIMED_OFFER_PAY_FOOTER_PROMO_DINEOUT_LEAD
+    : CLAIMED_OFFER_PAY_FOOTER_PROMO_VENUE_LEAD
+
+  const promoTail =
+    isDineout ?
+      CLAIMED_OFFER_PAY_FOOTER_PROMO_DINEOUT_TAIL
+    : CLAIMED_OFFER_PAY_FOOTER_PROMO_VENUE_TAIL
+
+  const primaryLabel =
+    expired ?
+      "Offer expired"
+    : isDineout ?
+      "Pay bill"
+    : CLAIMED_OFFER_IVE_PAID_LABEL
 
   const ariaLabel =
     expired ?
       "Offer expired, payment unavailable"
     : isDineout ?
-      `Pay bill via Bolt Food app, ${discountSubtitle}`
-    : CLAIMED_OFFER_CARD_CASH_DONE_LABEL
-
-  const primaryButtonLabel =
-    expired ?
-      <Typography variant="body-l-accent" color="primary-inverted" as="span">
-        Offer expired
-      </Typography>
-    : isDineout ?
-      <span className="flex flex-col items-center gap-0">
-        <Typography variant="body-l-accent" color="primary-inverted" as="span">
-          Pay bill
-        </Typography>
-        <Typography variant="body-xs-regular" color="primary-inverted" as="span">
-          {discountSubtitle}
-        </Typography>
-      </span>
-    : <Typography variant="body-l-accent" color="primary-inverted" as="span">
-        {CLAIMED_OFFER_CARD_CASH_DONE_LABEL}
-      </Typography>
+      "Pay bill via Bolt Food app"
+    : CLAIMED_OFFER_IVE_PAID_LABEL
 
   const handlePrimary = isDineout ? onPay : onConfirmBill
 
@@ -70,8 +59,18 @@ export function ClaimedOfferActionFooter({
     <div
       ref={anchorRef}
       data-snackbar-anchor=""
-      className="pointer-events-auto absolute bottom-0 left-0 right-0 z-[3] flex flex-col gap-3 border-t border-separator bg-layer-floor-2 px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-4"
+      className={claimedOfferLayout.stickyFooter}
     >
+      <div className={claimedOfferLayout.stickyFooterPromoRow}>
+        {isDineout ?
+          <CashbackColoured size="sm" className="shrink-0" aria-hidden />
+        : null}
+        <Typography variant="body-s-regular" color="primary" as="p" align="center">
+          <b>{promoLead}</b>
+          {` ${promoTail}`}
+        </Typography>
+      </div>
+
       <div className={expired ? "opacity-50" : undefined}>
         <Button
           type="button"
@@ -82,29 +81,10 @@ export function ClaimedOfferActionFooter({
           aria-label={ariaLabel}
           onClick={handlePrimary}
         >
-          {primaryButtonLabel}
-        </Button>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <div ref={bannerSlotRef} className="overflow-hidden">
-          <div
-            ref={bannerRef}
-            className="flex items-center justify-center gap-1"
-            role="status"
-          >
-            <CashbackColoured size="sm" className="shrink-0" aria-hidden />
-            <Typography variant="body-s-regular" color="primary" as="p" align="center">
-              {formatClaimedOfferFooterPromoText()}
-            </Typography>
-          </div>
-        </div>
-
-        {!isDineout ?
-          <Typography variant="body-s-regular" color="secondary" as="p" align="center">
-            {CLAIMED_OFFER_CONFIRM_BILL_META}
+          <Typography variant="body-l-accent" color="primary-inverted" as="span">
+            {primaryLabel}
           </Typography>
-        : null}
+        </Button>
       </div>
     </div>
   )
