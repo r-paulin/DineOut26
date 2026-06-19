@@ -1,6 +1,13 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import { PaymentConfirmationCashbackBanner } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationCashbackBanner"
+import { PaymentConfirmationPinBanner } from "@/features/payBill/components/PaymentConfirmationScreen/PaymentConfirmationPinBanner"
 import { ReceiptItem } from "@/features/payBill/components/shared/ReceiptItem"
+import {
+  PAY_CONFIRM_BILL_TOTAL_LABEL,
+  PAY_CONFIRM_SUMMARY_TITLE,
+  PAY_CONFIRM_TIP_LABEL,
+  PAY_CONFIRM_TOTAL_PAID_LABEL,
+} from "@/features/payBill/constants/paymentConfirmationCopy"
 import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 
 const FONT_FEAT =
@@ -16,7 +23,7 @@ export interface PaymentConfirmationSummarySheetProps {
   onDone: () => void
 }
 
-/** Figma `15823:25243` — white sheet: payment code, summary, total, Done. */
+/** Figma `15823:25243` — flexible white sheet: PIN banner, summary, cashback, fixed Done. */
 export function PaymentConfirmationSummarySheet({
   paymentCode,
   receiptTotal,
@@ -29,86 +36,65 @@ export function PaymentConfirmationSummarySheet({
   return (
     <div
       data-confirm-sheet-body=""
-      className="flex max-h-[min(72vh,calc(var(--app-h)*0.72))] min-h-0 flex-col overflow-y-auto px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-6"
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
     >
-      <div className="flex shrink-0 flex-col gap-1 rounded-2xl bg-layer-floor-0-grouped px-6 py-3 text-center">
-        <Typography variant="body-xs-regular" color="secondary" as="p">
-          Payment code
-        </Typography>
-        <Typography
-          variant="heading-l-accent"
-          color="primary"
-          as="p"
-          align="center"
-          paddingTop={1}
-          inlineStyle={{
-            fontFeatureSettings: FONT_FEAT,
-            fontVariationSettings: "'wght' var(--font-weight-semibold)",
-          }}
-        >
-          {paymentCode}
-        </Typography>
-        <Typography variant="body-s-regular" color="primary" as="p" paddingTop={1}>
-          Show this code to the waiter to confirm your payment
-        </Typography>
-      </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pt-4">
+        <div className="shrink-0 px-4">
+          <PaymentConfirmationPinBanner paymentCode={paymentCode} />
+        </div>
 
-      <div className="mt-3 flex min-h-0 shrink-0 flex-col gap-2">
-        <Typography
-          variant="heading-xs-accent"
-          color="primary"
-          as="p"
-          inlineStyle={{
-            fontFeatureSettings: FONT_FEAT,
-            fontVariationSettings: "'wght' var(--font-weight-semibold)",
-          }}
-        >
-          Summary
-        </Typography>
+        <div className="flex shrink-0 flex-col gap-2 p-6">
+          <Typography
+            variant="heading-xs-accent"
+            color="primary"
+            as="h2"
+            inlineStyle={{
+              fontFeatureSettings: FONT_FEAT,
+              fontVariationSettings: "'wght' var(--font-weight-semibold)",
+            }}
+          >
+            {PAY_CONFIRM_SUMMARY_TITLE}
+          </Typography>
 
-        <div className="flex flex-col gap-1">
-          <ReceiptItem
-            label="Receipt"
-            amount={formatEurMajor(receiptTotal)}
-            variant="regular"
-            labelColor="secondary"
-            labelTypographyVariant="body-m-regular"
-          />
-          {tip != null && tip > 0 ?
+          <div className="flex flex-col gap-1">
             <ReceiptItem
-              label="Tip"
-              amount={formatEurMajor(tip)}
+              label={PAY_CONFIRM_BILL_TOTAL_LABEL}
+              amount={formatEurMajor(receiptTotal)}
               variant="regular"
               labelColor="secondary"
               labelTypographyVariant="body-m-regular"
             />
-          : null}
+            {tip != null && tip > 0 ?
+              <ReceiptItem
+                label={PAY_CONFIRM_TIP_LABEL}
+                amount={formatEurMajor(tip)}
+                variant="regular"
+                labelColor="secondary"
+                labelTypographyVariant="body-m-regular"
+              />
+            : null}
+          </div>
+
+          <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+
+          <ReceiptItem
+            label={PAY_CONFIRM_TOTAL_PAID_LABEL}
+            amount={formatEurMajor(paidAmount)}
+            variant="bold"
+            labelColor="primary"
+            labelTypographyVariant="body-m-accent"
+          />
         </div>
 
-        <div className="my-1 h-px w-full shrink-0 bg-separator" aria-hidden />
-
-        <ReceiptItem
-          label="Total paid"
-          amount={formatEurMajor(paidAmount)}
-          variant="bold"
-          labelColor="primary"
-          labelTypographyVariant="body-m-accent"
-        />
+        {showCashback && cashbackEur > 0 ?
+          <div className="shrink-0 px-6 pb-3">
+            <PaymentConfirmationCashbackBanner cashbackEur={cashbackEur} />
+          </div>
+        : null}
       </div>
 
-      {showCashback && cashbackEur > 0 ?
-        <div className="mt-3 shrink-0">
-          <PaymentConfirmationCashbackBanner cashbackEur={cashbackEur} />
-        </div>
-      : null}
-
-      <div className="mt-3 shrink-0">
-        <Button
-          variant="primary"
-          size="lg"
-          fullWidth
-          onClick={onDone}
-        >
+      <div className="shrink-0 px-6 pb-[max(2rem,var(--safe-area-bottom))]">
+        <Button variant="primary" size="lg" fullWidth onClick={onDone}>
           Done
         </Button>
       </div>

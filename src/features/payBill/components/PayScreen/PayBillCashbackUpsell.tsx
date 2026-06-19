@@ -25,7 +25,7 @@ export interface PayBillCashbackUpsellProps {
 }
 
 /**
- * Figma `_Cashback Banner (DineOut)` (`16381:28166`) — earn-back upsell above slide-to-pay.
+ * Figma `_Cashback Banner (DineOut)` (`16381:28166`) — below pay hero, above summary divider.
  */
 export function PayBillCashbackUpsell({
   cashbackEur,
@@ -34,7 +34,7 @@ export function PayBillCashbackUpsell({
   const headline = formatPayCashbackUpsellHeadline(cashbackEur)
 
   return (
-    <div className="w-full shrink-0 px-6 pb-3">
+    <div className="w-full shrink-0 px-6 pb-6">
       <div
         className="relative min-h-[68px] min-w-[15rem] w-full shrink-0 overflow-hidden rounded-[12px] bg-action-secondary"
         aria-label={headline}

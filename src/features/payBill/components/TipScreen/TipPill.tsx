@@ -9,7 +9,7 @@ export interface TipPillProps {
 }
 
 function tipPillAriaLabel(option: TipOption): string {
-  if (option.isCustom) return "Other tip amount"
+  if (option.isCustom) return "Custom tip amount"
   if (option.amount === 0 || option.label.toLowerCase().includes("no tip")) {
     return "No tip"
   }

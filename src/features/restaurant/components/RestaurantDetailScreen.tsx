@@ -29,7 +29,13 @@ import { RestaurantDetailAtVenueBar } from "./RestaurantDetailAtVenueBar"
 import { RestaurantDetailHeader } from "./RestaurantDetailHeader"
 import { RestaurantDetailOffersSection } from "./RestaurantDetailOffersSection"
 import { RestaurantDetailQuickActions } from "./RestaurantDetailQuickActions"
-import { RestaurantDetailSectionDivider } from "./RestaurantDetailSectionDivider"
+import {
+  CardDivider,
+  CARD_DIVIDER_GROOVE_BG_CLASS,
+  CARD_DIVIDER_SECTION_ABOVE_CLASS,
+  CARD_DIVIDER_SECTION_BELOW_CLASS,
+  CARD_DIVIDER_SECTION_MIDDLE_CLASS,
+} from "@/shared/components/CardDivider"
 import { RestaurantDetailStatsBar } from "./RestaurantDetailStatsBar"
 import { RestaurantAbout } from "./RestaurantAbout"
 import { RestaurantDetailMenuSection } from "./RestaurantDetailMenuSection"
@@ -331,7 +337,7 @@ export function RestaurantDetailScreen({
         >
           <div
             ref={scrollRef}
-            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-layer-floor-1"
+            className={`min-h-0 flex-1 overflow-y-auto overflow-x-hidden ${CARD_DIVIDER_GROOVE_BG_CLASS}`}
             onScroll={handleScroll}
             style={{
               paddingBottom:
@@ -354,7 +360,7 @@ export function RestaurantDetailScreen({
               onShare={handleShare}
               onOpenHours={onOpenHours === null ? undefined : handleOpenHours}
             />
-            <div className="bg-layer-floor-1 px-0 pb-0">
+            <div className={`${CARD_DIVIDER_SECTION_ABOVE_CLASS} px-0 pb-0`}>
               <RestaurantDetailStatsBar
                 ratingValue={model.ratingValue}
                 reviewsLine={model.reviewsLine}
@@ -384,7 +390,7 @@ export function RestaurantDetailScreen({
                 }
                 onOpenDetails={scrollToVenueSection}
               />
-              <RestaurantDetailSectionDivider />
+              <CardDivider />
               <RestaurantDetailOffersSection
                 venueSlug={model.slug}
                 tabs={model.offerDateTabs}
@@ -397,14 +403,17 @@ export function RestaurantDetailScreen({
                 onPaidOfferPress={onPaidOfferPress}
               />
             </div>
-            <RestaurantDetailSectionDivider />
-            <RestaurantDetailMenuSection
-              ref={menuSectionRef}
-              imageUrls={model.menuGalleryImages}
-              onOpenGallery={openMenuGalleryAt}
-            />
-            <RestaurantDetailSectionDivider />
-            <RestaurantDetailVenueSection
+            <CardDivider />
+            <div className={CARD_DIVIDER_SECTION_MIDDLE_CLASS}>
+              <RestaurantDetailMenuSection
+                ref={menuSectionRef}
+                imageUrls={model.menuGalleryImages}
+                onOpenGallery={openMenuGalleryAt}
+              />
+            </div>
+            <CardDivider />
+            <div className={CARD_DIVIDER_SECTION_BELOW_CLASS}>
+              <RestaurantDetailVenueSection
               ref={venueSectionRef}
               name={model.name}
               cuisineTags={model.cuisineTags}
@@ -420,7 +429,8 @@ export function RestaurantDetailScreen({
               onOpenReportProblem={() => {
                 setReportProblemOpen(true)
               }}
-            />
+              />
+            </div>
           </div>
           {aboutOpen ? (
             <div

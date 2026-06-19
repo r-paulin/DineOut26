@@ -10,6 +10,7 @@ import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import {
   formatTipScreenBillTotalLabel,
   TIP_SCREEN_SUBTITLE,
+  TIP_SCREEN_CUSTOM_PILL_LABEL,
 } from "@/features/payBill/constants/tipScreenCopy"
 import { percentTipEur, TIP_SCREEN_PERCENT_PRESET_LIMIT } from "@/features/payBill/utils/tipPresets"
 
@@ -30,7 +31,7 @@ export interface TipScreenProps {
 }
 
 /**
- * Tip selection (Figma `15822:12199`): 5%, 10%, 15%, No tip, Other;
+ * Tip selection (Figma `15822:12199`): 5%, 10%, 15%, No tip, Custom;
  * Continue only after the user picks an option; footer reserves CTA height to avoid layout shift.
  */
 export function TipScreen({
@@ -103,7 +104,12 @@ export function TipScreen({
     return [
       ...presets,
       noneOption,
-      { id: "other", label: "Other", amount: null, isCustom: true },
+      {
+        id: "other",
+        label: TIP_SCREEN_CUSTOM_PILL_LABEL,
+        amount: null,
+        isCustom: true,
+      },
     ]
   }, [receiptTotalEur, tipPercentPresets])
 

@@ -8,6 +8,7 @@ import Pin from "@bolteu/kalep-react-icons/dist/Pin"
 import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
 import type { ReactNode } from "react"
+import { RESTAURANT_VENUE_ADDRESS_ROW_LABEL } from "@/features/restaurant/constants/restaurantAddressSheetCopy"
 import { ListItem } from "@/shared/components/ListItem"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { toTelHref } from "@/shared/utils/telHref"
@@ -193,19 +194,19 @@ export function VenueInfoRows({
             icon={<Pin size="lg" className={ROW_ICON_CLASS} aria-hidden />}
             iconTone="primary"
             lineOrder="valueFirst"
-            label="Address"
+            label={RESTAURANT_VENUE_ADDRESS_ROW_LABEL}
             value={address}
             interactive
             onPress={onOpenAddress}
             horizontalPadding="none"
             showSeparator={false}
-            aria-label={`View address: ${address}`}
+            aria-label={`${RESTAURANT_VENUE_ADDRESS_ROW_LABEL}: ${address}`}
           />
         : <ListItem
             icon={<Pin size="lg" className={ROW_ICON_CLASS} aria-hidden />}
             iconTone="primary"
             lineOrder="valueFirst"
-            label="Address"
+            label={RESTAURANT_VENUE_ADDRESS_ROW_LABEL}
             value={address}
             href={mapsUrl}
             horizontalPadding="none"

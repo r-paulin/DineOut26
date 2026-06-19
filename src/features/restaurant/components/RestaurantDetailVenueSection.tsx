@@ -4,6 +4,7 @@ import Call from "@bolteu/kalep-react-icons/dist/Call"
 import Food from "@bolteu/kalep-react-icons/dist/Food"
 import Pin from "@bolteu/kalep-react-icons/dist/Pin"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
+import { RESTAURANT_VENUE_ADDRESS_ROW_LABEL } from "@/features/restaurant/constants/restaurantAddressSheetCopy"
 import { RESTAURANT_DETAIL_SECTION_TITLE_CLASS } from "@/features/restaurant/components/restaurantDetailSectionTitle"
 import { RestaurantVenueGallery } from "@/features/restaurant/components/RestaurantVenueGallery"
 import type { RestaurantDetailModel } from "@/features/restaurant/restaurantDetail.types"
@@ -68,14 +69,12 @@ export const RestaurantDetailVenueSection = forwardRef<
       className="flex w-full flex-col bg-layer-floor-1"
       aria-labelledby="restaurant-detail-venue-heading"
     >
-      <div className="relative z-[1] -mt-px w-full min-w-0 overflow-hidden rounded-t-lg bg-layer-floor-1">
-        <header className="px-6 pt-6">
-          <h2 className={RESTAURANT_DETAIL_SECTION_TITLE_CLASS} id="restaurant-detail-venue-heading">
-            Venue details
-          </h2>
-        </header>
-        <RestaurantVenueGallery venueGalleryCycles={venueGalleryCycles} />
-      </div>
+      <header className="px-6 pt-6">
+        <h2 className={RESTAURANT_DETAIL_SECTION_TITLE_CLASS} id="restaurant-detail-venue-heading">
+          Venue details
+        </h2>
+      </header>
+      <RestaurantVenueGallery venueGalleryCycles={venueGalleryCycles} />
       <div className="flex flex-col gap-1 px-6 pb-3 pt-6">
         <h2 className={VENUE_HEADING_CLASS} style={{ fontFeatureSettings: '"cv03" 1, "cv04" 1' }}>
           {name}
@@ -104,11 +103,11 @@ export const RestaurantDetailVenueSection = forwardRef<
             icon={<Pin size="lg" className={ROW_ICON_CLASS} aria-hidden />}
             iconTone="primary"
             lineOrder="valueFirst"
-            label="Address"
+            label={RESTAURANT_VENUE_ADDRESS_ROW_LABEL}
             value={address}
             interactive={Boolean(onOpenAddress)}
             onPress={onOpenAddress}
-            aria-label={`View address: ${address}`}
+            aria-label={`${RESTAURANT_VENUE_ADDRESS_ROW_LABEL}: ${address}`}
             horizontalPadding="none"
             showSeparator={false}
           />

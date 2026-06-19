@@ -18,10 +18,18 @@ export function formatPayCashbackUpsellHeadline(cashbackEur: number): string {
   return `${PAY_CASHBACK_UPSELL_PREFIX}${formatPayCashbackUpsellAccent(cashbackEur)}${PAY_CASHBACK_UPSELL_SUFFIX}`
 }
 
-/** Figma `_Cashback` `16413:122635` — paid confirmation headline. */
-export const PAY_CONFIRM_CASHBACK_TITLE = "Cashback received" as const
+/** Figma `17481:187954` — paid confirmation cashback prefix. */
+export const PAY_CONFIRM_CASHBACK_PREFIX = "You've received " as const
 
-/** Figma `_Cashback` `16413:122635` — paid confirmation subcopy. */
-export function formatPayConfirmCashbackDescription(cashbackEur: number): string {
-  return `${formatEurMajor(cashbackEur)} has been added to your Bolt Balance`
+/** Figma `17481:187954` — paid confirmation semibold segment. */
+export function formatPayConfirmCashbackAccent(cashbackEur: number): string {
+  return `${formatEurMajor(cashbackEur)} cashback`
+}
+
+/** Figma `17481:187954` — paid confirmation cashback suffix. */
+export const PAY_CONFIRM_CASHBACK_SUFFIX = " in your Bolt Food account." as const
+
+/** Full single-line headline (aria). */
+export function formatPayConfirmCashbackHeadline(cashbackEur: number): string {
+  return `${PAY_CONFIRM_CASHBACK_PREFIX}${formatPayConfirmCashbackAccent(cashbackEur)}${PAY_CONFIRM_CASHBACK_SUFFIX}`
 }

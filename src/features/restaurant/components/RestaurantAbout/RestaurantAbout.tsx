@@ -4,7 +4,12 @@ import { OfferCardListRatingStar } from "@/features/offers/components/OfferCardL
 import { RestaurantVenueGallery } from "@/features/restaurant/components/RestaurantVenueGallery"
 import { AccordionRow } from "./AccordionRow"
 import type { RestaurantAboutProps } from "./restaurantAbout.types"
-import { CardDivider } from "@/shared/components/CardDivider"
+import {
+  CardDivider,
+  CARD_DIVIDER_GROOVE_BG_CLASS,
+  CARD_DIVIDER_SECTION_ABOVE_CLASS,
+  CARD_DIVIDER_SECTION_BELOW_CLASS,
+} from "@/shared/components/CardDivider"
 import { useRestaurantAbout } from "./useRestaurantAbout"
 import { VenueInfoRows } from "./VenueInfoRow"
 
@@ -101,51 +106,54 @@ export function RestaurantAbout({
   )
 
   return (
-    <section className="flex w-full flex-col bg-layer-floor-1">
-      <div className="flex w-full min-w-0 flex-col gap-0.5 px-6 py-3">
-        <div className="min-w-0 max-w-full" title={restaurant.name}>
-          <Typography
-            variant="heading-m-accent"
-            color="primary"
-            as="h1"
-            noWrap
-          >
-            {restaurant.name}
-          </Typography>
+    <section className={`flex w-full flex-col ${CARD_DIVIDER_GROOVE_BG_CLASS}`}>
+      <div className={CARD_DIVIDER_SECTION_ABOVE_CLASS}>
+        <div className="flex w-full min-w-0 flex-col gap-0.5 px-6 py-3">
+          <div className="min-w-0 max-w-full" title={restaurant.name}>
+            <Typography
+              variant="heading-m-accent"
+              color="primary"
+              as="h1"
+              noWrap
+            >
+              {restaurant.name}
+            </Typography>
+          </div>
+          <div className="flex min-w-0 flex-wrap items-center gap-1 pb-1 pt-0">
+            {ratingBadge}
+            <Typography variant="body-s-regular" color="tertiary" as="span" inline>
+              ·
+            </Typography>
+            {priceEl}
+          </div>
         </div>
-        <div className="flex min-w-0 flex-wrap items-center gap-1 pb-1 pt-0">
-          {ratingBadge}
-          <Typography variant="body-s-regular" color="tertiary" as="span" inline>
-            ·
-          </Typography>
-          {priceEl}
+
+        <RestaurantVenueGallery venueGalleryCycles={venueGalleryCycles} className="pt-0" />
+
+        <div className="pt-2">
+          <VenueInfoRows
+            isOpenNow={restaurant.isOpenNow}
+            hoursRowSubtitle={restaurant.hoursRowSubtitle}
+            menuUrl={restaurant.menuUrl}
+            address={restaurant.address}
+            phone={restaurant.phone}
+            website={restaurant.website}
+            openExternalUrl={openExternalUrl}
+            onOpenHours={onOpenHours}
+            onOpenMenuGallery={onOpenMenuGallery}
+            onOpenAddress={onOpenAddress}
+            reserveUrl={restaurant.reserveUrl}
+            instagramUrl={restaurant.instagramUrl}
+            tiktokUrl={restaurant.tiktokUrl}
+            facebookUrl={restaurant.facebookUrl}
+          />
         </div>
-      </div>
-
-      <RestaurantVenueGallery venueGalleryCycles={venueGalleryCycles} className="pt-0" />
-
-      <div className="pt-2">
-        <VenueInfoRows
-          isOpenNow={restaurant.isOpenNow}
-          hoursRowSubtitle={restaurant.hoursRowSubtitle}
-          menuUrl={restaurant.menuUrl}
-          address={restaurant.address}
-          phone={restaurant.phone}
-          website={restaurant.website}
-          openExternalUrl={openExternalUrl}
-          onOpenHours={onOpenHours}
-          onOpenMenuGallery={onOpenMenuGallery}
-          onOpenAddress={onOpenAddress}
-          reserveUrl={restaurant.reserveUrl}
-          instagramUrl={restaurant.instagramUrl}
-          tiktokUrl={restaurant.tiktokUrl}
-          facebookUrl={restaurant.facebookUrl}
-        />
       </div>
 
       <CardDivider />
 
-      <div className="px-6 pt-6 pb-4">
+      <div className={CARD_DIVIDER_SECTION_BELOW_CLASS}>
+        <div className="px-6 pt-6 pb-4">
         <Typography
           variant="heading-xs-accent"
           color="primary"
@@ -224,6 +232,7 @@ export function RestaurantAbout({
           </Typography>
         </footer>
       ) : null}
+      </div>
     </section>
   )
 }

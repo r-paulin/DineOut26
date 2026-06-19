@@ -37,7 +37,12 @@ import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import { AppInfoBottomSheet } from "@/shared/components/AppInfoBottomSheet"
 import { MOTION_DETAIL_SCRIM } from "@/shared/motion"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
-import { CardDivider } from "@/shared/components/CardDivider"
+import {
+  CardDivider,
+  CARD_DIVIDER_GROOVE_BG_CLASS,
+  CARD_DIVIDER_SECTION_ABOVE_CLASS,
+  CARD_DIVIDER_SECTION_BELOW_CLASS,
+} from "@/shared/components/CardDivider"
 import {
   VAUL_SHEET_OVERLAY_CLASS,
   vaulSheetContentClassName,
@@ -294,111 +299,122 @@ export function PayScreen({
       />
 
       <div className="flex min-h-0 flex-1 flex-col">
-        <main className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-layer-floor-1">
-          <PayBillPayHero finalAmt={finalAmt} />
+        <main
+          className={`flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto ${CARD_DIVIDER_GROOVE_BG_CLASS}`}
+        >
+          <div
+            className={`${CARD_DIVIDER_SECTION_ABOVE_CLASS} flex min-h-0 flex-1 flex-col`}
+          >
+            <PayBillPayHero finalAmt={finalAmt} />
+            {cashbackEur > 0 ?
+              <PayBillCashbackUpsell cashbackEur={cashbackEur} />
+            : null}
+          </div>
 
           <CardDivider />
 
-          <section className="flex shrink-0 flex-col rounded-t-2xl bg-layer-floor-1 px-6 pt-6 pb-8 shadow-[var(--elevation-1)]">
-            <div className="mb-2">
+          <section
+            className={`flex shrink-0 flex-col shadow-[var(--elevation-1)] ${CARD_DIVIDER_SECTION_BELOW_CLASS}`}
+          >
+            <div className="flex flex-col gap-2 px-6 pt-6">
               <Typography variant="heading-s-accent" color="primary" as="h2">
                 {PAY_SCREEN_SUMMARY_TITLE}
               </Typography>
-            </div>
-            <div className="flex flex-col gap-2">
-              <ReceiptItem
-                label={PAY_SCREEN_BILL_TOTAL_LABEL}
-                amount={formatEurMajor(receiptTotal)}
-                variant="regular"
-                labelColor="secondary"
-                labelTypographyVariant="body-m-regular"
-              />
-              {tip != null && tip > 0 ?
+              <div className="flex flex-col gap-2">
                 <ReceiptItem
-                  label={PAY_SCREEN_TIP_LABEL}
-                  amount={formatEurMajor(tip)}
+                  label={PAY_SCREEN_BILL_TOTAL_LABEL}
+                  amount={formatEurMajor(receiptTotal)}
                   variant="regular"
                   labelColor="secondary"
                   labelTypographyVariant="body-m-regular"
                 />
-              : null}
-            </div>
-            <div className="mt-2 border-t border-solid border-separator pt-4">
-              <ReceiptItem
-                label={PAY_SCREEN_TOTAL_LABEL}
-                amount={formatEurMajor(finalAmt)}
-                variant="total"
-              />
+                {tip != null && tip > 0 ?
+                  <ReceiptItem
+                    label={PAY_SCREEN_TIP_LABEL}
+                    amount={formatEurMajor(tip)}
+                    variant="regular"
+                    labelColor="secondary"
+                    labelTypographyVariant="body-m-regular"
+                  />
+                : null}
+              </div>
+              <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+              <div className="pt-2">
+                <ReceiptItem
+                  label={PAY_SCREEN_TOTAL_LABEL}
+                  amount={formatEurMajor(finalAmt)}
+                  variant="total"
+                />
+              </div>
             </div>
 
-            <div className="mt-4 flex flex-col gap-2">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <PaymentWallet size="md" className="shrink-0 text-action-primary" />
-                  <div className="flex min-w-0 items-center gap-1">
+            <div
+              className={[
+                "flex w-full items-center gap-3 px-6 py-3",
+                hideCardRow ? "pb-8" : undefined,
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <PaymentWallet size="md" className="shrink-0 text-action-primary" />
+                <div className="flex min-w-0 items-center gap-1">
+                  <Typography variant="body-m-regular" color="primary" as="span">
+                    Bolt Balance
+                  </Typography>
+                  <button
+                    type="button"
+                    className="inline-flex border-none bg-transparent p-0"
+                    aria-label="Bolt Balance info"
+                    onClick={() => setBoltInfoSheet(true)}
+                  >
+                    <InfoCircleOutlined size="sm" className="text-secondary" aria-hidden />
+                  </button>
+                </div>
+              </div>
+              <span className="shrink-0">
+                <Typography variant="body-m-regular" color="primary" as="span" align="end">
+                  {formatEurMajor(fromBalance)}
+                </Typography>
+              </span>
+            </div>
+
+            {!hideCardRow ?
+              <div className="flex w-full items-center gap-3 px-6 pt-1.5 pb-8">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <span className="flex shrink-0 items-center">
+                    {checkoutFooterPaymentIcon(checkoutPaymentOptionId)}
+                  </span>
+                  <div className="flex min-w-0 flex-col items-start">
                     <Typography variant="body-m-regular" color="primary" as="span">
-                      Bolt Balance
+                      {checkoutPaymentOptionLabel(checkoutPaymentOptionId)}
                     </Typography>
                     <button
                       type="button"
-                      className="inline-flex border-none bg-transparent p-0"
-                      aria-label="Bolt Balance info"
-                      onClick={() => setBoltInfoSheet(true)}
+                      className="border-none bg-transparent p-0 text-left"
+                      aria-label="Change payment method"
+                      onClick={() => setPaymentPickerOpen(true)}
                     >
-                      <InfoCircleOutlined size="sm" className="text-secondary" aria-hidden />
+                      <Typography variant="body-s-regular" color="action-primary" as="span">
+                        Change
+                      </Typography>
                     </button>
                   </div>
                 </div>
-                <span className="shrink-0">
-                  <Typography variant="body-m-regular" color="primary" as="span">
-                    {formatEurMajor(fromBalance)}
+                <span className="shrink-0 self-center">
+                  <Typography variant="body-m-regular" color="primary" as="span" align="end">
+                    {formatEurMajor(fromCard)}
                   </Typography>
                 </span>
               </div>
-              {!hideCardRow ?
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex shrink-0">
-                      {checkoutFooterPaymentIcon(checkoutPaymentOptionId)}
-                    </span>
-                    <div className="flex min-w-0 flex-col gap-0 leading-none">
-                      <Typography variant="body-m-regular" color="primary" as="span">
-                        {checkoutPaymentOptionLabel(checkoutPaymentOptionId)}
-                      </Typography>
-                      <button
-                        type="button"
-                        className="mt-0.5 border-none bg-transparent p-0 text-left"
-                        aria-label="Change payment method"
-                        onClick={() => setPaymentPickerOpen(true)}
-                      >
-                        <Typography variant="body-s-regular" color="action-primary" as="span">
-                          Change
-                        </Typography>
-                      </button>
-                    </div>
-                  </div>
-                  <span className="shrink-0 self-center">
-                    <Typography variant="body-m-regular" color="primary" as="span">
-                      {formatEurMajor(fromCard)}
-                    </Typography>
-                  </span>
-                </div>
-              : null}
-            </div>
+            : null}
           </section>
         </main>
 
         <div className="flex shrink-0 flex-col bg-layer-floor-1">
-          {cashbackEur > 0 ?
-            <PayBillCashbackUpsell cashbackEur={cashbackEur} />
-          : null}
           <footer
             data-snackbar-anchor=""
-            className={
-              cashbackEur > 0 ?
-                "shrink-0 px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
-              : "shrink-0 border-t border-solid border-separator px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
-            }
+            className="shrink-0 border-t border-solid border-separator px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
           >
             <SlidingButton
               label="Pay bill"

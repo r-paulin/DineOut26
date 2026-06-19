@@ -1,7 +1,10 @@
 import { Typography } from "@bolteu/kalep-react"
 import type { ClaimOfferModalOffer } from "@/features/offers/offers.types"
 import { formatClaimModalOfferDetailRows } from "@/features/offers/utils/formatClaimModalOfferDetailRows"
-import { CardDivider } from "@/shared/components/CardDivider"
+import {
+  CardDivider,
+  CARD_DIVIDER_SECTION_BELOW_CLASS,
+} from "@/shared/components/CardDivider"
 
 /** Figma Heading XS / XS Accent (`16144:19986`). */
 const OFFER_DETAILS_HEADING_CLASS =
@@ -14,7 +17,7 @@ export function ClaimModalOfferDetails({ offer }: { offer: ClaimOfferModalOffer 
   return (
     <div className="flex flex-col">
       <CardDivider />
-      <div className="px-6 pb-1 pt-6">
+      <div className={`px-6 pb-1 pt-6 ${CARD_DIVIDER_SECTION_BELOW_CLASS}`}>
         <h2 className={OFFER_DETAILS_HEADING_CLASS}>Offer details</h2>
       </div>
       <div className="flex flex-col px-6 py-3 pb-3">

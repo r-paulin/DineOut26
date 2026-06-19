@@ -27,7 +27,6 @@ export type { RestaurantDetailAtVenueBarProps } from "./RestaurantDetailAtVenueB
 export { RestaurantDetailQuickActions } from "./RestaurantDetailQuickActions"
 export type { RestaurantDetailQuickActionsProps } from "./RestaurantDetailQuickActions"
 export { RestaurantDetailScreen } from "./RestaurantDetailScreen"
-export { RestaurantDetailSectionDivider } from "./RestaurantDetailSectionDivider"
 export { RestaurantDetailStatsBar } from "./RestaurantDetailStatsBar"
 export type { RestaurantDetailStatsBarProps } from "./RestaurantDetailStatsBar"
 export { RestaurantDetailVenueSection } from "./RestaurantDetailVenueSection"
