@@ -7,6 +7,7 @@ import {
   CLAIM_PAYMENT_SECTION_INTRO,
   CLAIM_PAYMENT_SECTION_TITLE,
   CLAIM_PAYMENT_VENUE_OPTION_LABEL,
+  PAYMENT_METHOD_CARD_CASH_SHEET_DETAIL,
   PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
   formatPaymentMethodDineoutDetail,
   getClaimPaymentOptionDetail,
@@ -38,11 +39,13 @@ describe("paymentMethodSheetCopy", () => {
     )
   })
 
-  it("getPaymentMethodOptionDetail returns dineout detail only", () => {
+  it("getPaymentMethodOptionDetail returns secondary lines for both options", () => {
     expect(getPaymentMethodOptionDetail("dineout")).toBe(
       formatPaymentMethodDineoutDetail(),
     )
-    expect(getPaymentMethodOptionDetail("card_or_cash")).toBeUndefined()
+    expect(getPaymentMethodOptionDetail("card_or_cash")).toBe(
+      PAYMENT_METHOD_CARD_CASH_SHEET_DETAIL,
+    )
   })
 
   it("formats cashback banner headline copy", () => {

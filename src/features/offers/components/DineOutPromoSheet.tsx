@@ -1,9 +1,7 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
-import Food from "@bolteu/kalep-react-icons/dist/Food"
 import MobilePayment from "@bolteu/kalep-react-icons/dist/MobilePayment"
 import PercentFlower from "@bolteu/kalep-react-icons/dist/PercentFlower"
-import Receipt from "@bolteu/kalep-react-icons/dist/Receipt"
 import Walk from "@bolteu/kalep-react-icons/dist/Walk"
 import gsap from "gsap"
 import {
@@ -23,6 +21,7 @@ import {
   DINEOUT_PROMO_INTRO,
   DINEOUT_PROMO_STEPS,
   DINEOUT_PROMO_TITLE,
+  type DineOutPromoStep,
 } from "@/features/offers/constants/dineOutPromoContent"
 import {
   EASE_EMPHASIZED_ENTER,
@@ -39,18 +38,37 @@ import {
   SHEET_CLOSE_ICON_OVER_MEDIA_CLASS,
   SHEET_CLOSE_OVER_MEDIA_CLASS,
 } from "@/shared/utils/sheetCloseButtonClass"
-import {
-  VAUL_SHEET_FOOTER_CLASS,
-  VAUL_SHEET_SCROLL_BODY_CLASS,
-} from "@/shared/utils/vaulAppSheetShell"
 
-const STEP_ICONS: ReactElement[] = [
-  <PercentFlower key="pct" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-  <Walk key="walk" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-  <Food key="food" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-  <Receipt key="receipt" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-  <MobilePayment key="pay" size="lg" className="shrink-0 text-action-primary" aria-hidden />,
-]
+/** Figma `17481:187747` — hero photo frame (393×262). */
+const PROMO_HERO_ASPECT = "393 / 262"
+
+/** Figma `17481:187748` — multiply overlay on hero (40% gray α0 → black α0.56). */
+const PROMO_HERO_OVERLAY_STYLE = {
+  background:
+    "linear-gradient(180deg, hsla(0, 0%, 40%, 0) 31.866%, hsla(0, 0%, 0%, 0.56) 90.008%)",
+} as const
+
+const STEP_ICONS: Record<DineOutPromoStep["id"], ReactElement> = {
+  discover: (
+    <PercentFlower
+      key="discover"
+      size="md"
+      className="shrink-0 text-action-primary"
+      aria-hidden
+    />
+  ),
+  "head-out": (
+    <Walk key="head-out" size="md" className="shrink-0 text-action-primary" aria-hidden />
+  ),
+  "pay-save": (
+    <MobilePayment
+      key="pay-save"
+      size="md"
+      className="shrink-0 text-action-primary"
+      aria-hidden
+    />
+  ),
+}
 
 export interface DineOutPromoSheetProps {
   isVisible: boolean
@@ -61,7 +79,7 @@ export interface DineOutPromoSheetProps {
 }
 
 /**
- * Bottom promo sheet (Figma `16084:48918`): scrim, hero cover, feature list,
+ * Bottom promo sheet (Figma `17481:187743`): scrim, hero cover, feature list,
  * sticky CTA, GSAP motion, swipe-down on hero, scrim tap / Escape / CTA / close.
  */
 export function DineOutPromoSheet({
@@ -334,14 +352,14 @@ export function DineOutPromoSheet({
         onPointerDown={scrimPointerDown}
         aria-hidden
       />
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 top-[var(--modal-top-gap)] z-[1] flex justify-center">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[1] flex items-end justify-center">
         <div
           ref={sheetRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
           aria-describedby={introId}
-          className="pointer-events-auto relative flex max-h-[min(97dvh,var(--app-h,100dvh))] min-h-0 w-full max-w-[var(--shell-width)] flex-col overflow-hidden rounded-t-[var(--sheet-radius)] bg-layer-floor-1 shadow-[var(--elevation-2)]"
+          className="pointer-events-auto relative flex h-fit max-h-[min(97dvh,var(--app-h,100dvh))] w-full max-w-[var(--shell-width)] flex-col overflow-hidden rounded-t-[var(--sheet-radius)] bg-layer-floor-1 shadow-[var(--elevation-2)]"
           onPointerDown={(e) => e.stopPropagation()}
         >
           <button
@@ -357,28 +375,33 @@ export function DineOutPromoSheet({
             />
           </button>
 
-          <div className={`${VAUL_SHEET_SCROLL_BODY_CLASS} min-h-0 flex-1`}>
+          <div className="touch-pan-y overflow-y-auto overscroll-y-contain max-h-[calc(min(97dvh,var(--app-h,100dvh))-5rem)]">
             <div
-              className="relative w-full touch-none"
-              style={{ aspectRatio: "375 / 250" }}
+              className="relative w-full shrink-0 touch-none overflow-hidden"
+              style={{ aspectRatio: PROMO_HERO_ASPECT }}
               onPointerDown={heroPointerDown}
               onPointerMove={heroPointerMove}
               onPointerUp={heroPointerUp}
               onPointerCancel={heroPointerUp}
             >
-              {!heroFailed ? (
+              <div className="absolute inset-0 bg-special-brand-alt" aria-hidden />
+              {!heroFailed ?
                 <img
                   key={heroImage}
                   src={heroImage}
                   alt=""
-                  className="block size-full object-cover"
+                  className="absolute inset-0 size-full object-cover object-center"
                   loading="eager"
                   decoding="async"
+                  draggable={false}
                   onError={() => setHeroFailed(true)}
                 />
-              ) : (
-                <div className="aspect-[375/250] w-full bg-special-brand-alt" aria-hidden />
-              )}
+              : null}
+              <div
+                className="pointer-events-none absolute inset-0 mix-blend-multiply"
+                style={PROMO_HERO_OVERLAY_STYLE}
+                aria-hidden
+              />
             </div>
 
             <div className="flex flex-col gap-2 p-6">
@@ -393,11 +416,11 @@ export function DineOutPromoSheet({
                 </Typography>
               </div>
               <ul className="m-0 flex list-none flex-col p-0" aria-label="How it works">
-                {DINEOUT_PROMO_STEPS.map((step, index) => (
-                  <li key={step.id} className="py-[10px]">
-                    <div className="flex gap-3">
-                      <span className="shrink-0">{STEP_ICONS[index]}</span>
-                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                {DINEOUT_PROMO_STEPS.map((step) => (
+                  <li key={step.id}>
+                    <div className="flex gap-3 pb-[9px] pt-[10px]">
+                      <span className="shrink-0">{STEP_ICONS[step.id]}</span>
+                      <div className="flex min-w-0 flex-1 flex-col">
                         <Typography
                           as="span"
                           variant="body-m-accent"
@@ -420,7 +443,7 @@ export function DineOutPromoSheet({
             </div>
           </div>
 
-          <div className={VAUL_SHEET_FOOTER_CLASS}>
+          <div className="shrink-0 bg-layer-floor-1 px-6 pb-[max(1.5rem,var(--safe-area-bottom))] pt-4">
             <Button
               type="button"
               variant="primary"

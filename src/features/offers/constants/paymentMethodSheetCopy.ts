@@ -30,9 +30,13 @@ export const PAYMENT_METHOD_SHEET_INTRO = "You won't be charged yet" as const
 
 export const PAYMENT_METHOD_SHEET_CONFIRM_CTA = "Confirm" as const
 
-/** @deprecated Venue row has no inline detail on the payment sheet. */
+/** Figma `16393:40712` — card/cash secondary line on claimed-offer payment sheet. */
+export const PAYMENT_METHOD_CARD_CASH_SHEET_DETAIL =
+  "Cashback doesn't apply" as const
+
+/** @deprecated Use {@link PAYMENT_METHOD_CARD_CASH_SHEET_DETAIL}. */
 export const PAYMENT_METHOD_CARD_CASH_DETAIL =
-  "Pay directly at the venue. No cashback will be applied." as const
+  PAYMENT_METHOD_CARD_CASH_SHEET_DETAIL
 
 /** Selected Bolt Food row subtext on claimed-offer payment sheet. */
 export function formatPaymentMethodDineoutDetail(
@@ -41,11 +45,12 @@ export function formatPaymentMethodDineoutDetail(
   return `Earn ${formatDiscountPercent(percent)}% back as Bolt Balance`
 }
 
-/** Secondary line under the selected radio (claimed-offer sheet). */
+/** Secondary line under each radio on the claimed-offer payment sheet. */
 export function getPaymentMethodOptionDetail(
   method: PaymentMethod,
 ): string | undefined {
   if (method === "dineout") return formatPaymentMethodDineoutDetail()
+  if (method === "card_or_cash") return PAYMENT_METHOD_CARD_CASH_SHEET_DETAIL
   return undefined
 }
 

@@ -10,6 +10,16 @@ const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
+/** Figma Body S/S Compact Accent — schedule / arrival data lines. */
+const BODY_S_COMPACT_ACCENT_STYLE = {
+  fontFamily: "var(--font-family)",
+  fontSize: "var(--body-s-font-size, 0.875rem)",
+  lineHeight: "18px",
+  letterSpacing: "-0.084px",
+  fontVariationSettings: "'wght' var(--font-weight-semibold)",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+} as const
+
 const CLAIMED_INNER_GRADIENT =
   "linear-gradient(90deg, rgba(0, 160, 64, 0.09) 0%, rgba(0, 160, 64, 0.09) 100%), linear-gradient(90deg, rgb(238, 241, 240) 0%, rgb(238, 241, 240) 100%)"
 
@@ -64,12 +74,13 @@ function OfferBannerDataLineRow({ line }: { line: OfferBannerDataLine }) {
   const color =
     line.tone ??
     (line.emphasis === "accent" ? "primary" : "secondary")
+  const compactAccent = color === "primary"
   return (
     <Typography
-      variant={line.emphasis === "accent" ? "body-s-accent" : "body-s-regular"}
+      variant={compactAccent ? "body-s-accent" : "body-s-regular"}
       color={color}
       as="p"
-      inlineStyle={line.emphasis === "accent" ? SEMIBOLD : undefined}
+      inlineStyle={compactAccent ? BODY_S_COMPACT_ACCENT_STYLE : undefined}
     >
       {line.text}
     </Typography>

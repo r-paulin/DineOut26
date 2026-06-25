@@ -158,7 +158,7 @@ export function PaymentSelector({
   showHeader = true,
   showSectionSeparator = true,
   groupName = "claim-offer-payment",
-  bannerSlotClassName = "px-6 pb-6",
+  bannerSlotClassName = "pb-3",
   detailPresentation = "banner",
   getOptionDetail = getPaymentMethodOptionDetail,
   showDineoutDetailIcon = false,
@@ -168,8 +168,12 @@ export function PaymentSelector({
   const isInlineDetail = detailPresentation === "inline-selected"
   const headingId = `${groupName}-heading`
 
-  const resolveDetail = (method: PaymentMethod, selected: boolean) =>
-    isInlineDetail && selected ? getOptionDetail(method) : undefined
+  const resolveDetail = (method: PaymentMethod, selected: boolean) => {
+    if (!isInlineDetail) return undefined
+    const detail = getOptionDetail(method)
+    if (optionRowDensity === "payment-sheet") return detail
+    return selected ? detail : undefined
+  }
 
   return (
     <div className="flex flex-col">
@@ -217,12 +221,20 @@ export function PaymentSelector({
                 detail={resolveDetail("dineout", isDineout)}
                 showDineoutDetailIcon={showDineoutDetailIcon}
                 method="dineout"
-                animateDetail={isInlineDetail}
+                animateDetail={
+                  isInlineDetail && optionRowDensity !== "payment-sheet"
+                }
                 rowDensity={optionRowDensity}
                 radioId={`${groupName}-dineout`}
                 radioValue="dineout"
               />
             </div>
+            {!isInlineDetail ?
+              <DineOutCashbackBannerSlot
+                visible={isDineout}
+                className={bannerSlotClassName}
+              />
+            : null}
             <div className="w-full">
               <PaymentMethodOptionRow
                 htmlFor={`${groupName}-card`}
@@ -236,7 +248,9 @@ export function PaymentSelector({
                 detail={resolveDetail("card_or_cash", !isDineout)}
                 showDineoutDetailIcon={showDineoutDetailIcon}
                 method="card_or_cash"
-                animateDetail={isInlineDetail}
+                animateDetail={
+                  isInlineDetail && optionRowDensity !== "payment-sheet"
+                }
                 rowDensity={optionRowDensity}
                 radioId={`${groupName}-card`}
                 radioValue="card_or_cash"
@@ -245,13 +259,6 @@ export function PaymentSelector({
           </div>
         </RadioGroup>
       </div>
-
-      {!isInlineDetail ?
-        <DineOutCashbackBannerSlot
-          visible={isDineout}
-          className={bannerSlotClassName}
-        />
-      : null}
     </div>
   )
 }

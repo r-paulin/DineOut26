@@ -44,7 +44,7 @@ export function RestaurantDetailAtVenueBar({
       className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] flex justify-center border-t border-separator bg-layer-floor-2 px-6 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]"
     >
       <div className="pointer-events-auto flex w-full flex-col items-center gap-3">
-        <Typography variant="body-s-regular" color="secondary" as="p" align="center">
+        <Typography variant="body-s-regular" color="primary" as="p" align="center">
           <b>{RESTAURANT_AT_VENUE_BAR_PROMO_LEAD}</b>
           {` ${RESTAURANT_AT_VENUE_BAR_PROMO_TAIL}`}
         </Typography>

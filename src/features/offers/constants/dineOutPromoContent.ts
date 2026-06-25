@@ -1,9 +1,9 @@
-/** Figma `16084:48918` — DineOut promo / how-it-works sheet copy. */
+/** Figma `17481:187743` — MODAL / Offer - Claimed (how DineOut works sheet). */
 
-export const DINEOUT_PROMO_TITLE = "Dine smarter with DineOut" as const
+export const DINEOUT_PROMO_TITLE = "How DineOut works" as const
 
 export const DINEOUT_PROMO_INTRO =
-  "Dine as usual. Pay with DineOut and enjoy the savings." as const
+  "Dine as usual. But get exclusive offers with DineOut." as const
 
 export const DINEOUT_PROMO_CTA_LABEL = "Explore offers" as const
 
@@ -15,33 +15,20 @@ export type DineOutPromoStep = {
 
 export const DINEOUT_PROMO_STEPS: DineOutPromoStep[] = [
   {
-    id: "search-claim",
-    title: "Search dining deals and claim yours",
+    id: "discover",
+    title: "Discover exclusive offers",
     subtitle:
-      "Unlock dining offers only available through Bolt Food DineOut",
+      "Find offers for new places or old favourites at times that suit you",
   },
   {
-    id: "go",
-    title: "Go to the restaurant",
-    subtitle:
-      "Arrive during the valid offer hours. Let the staff know you're using Bolt DineOut.",
+    id: "head-out",
+    title: "Head out to eat",
+    subtitle: "Enjoy food and drink as usual",
   },
   {
-    id: "dine",
-    title: "Dine as usual",
+    id: "pay-save",
+    title: "Pay with Bolt Food and save",
     subtitle:
-      "Ask for the menu, choose your dishes, and enjoy your meal.",
-  },
-  {
-    id: "receipt",
-    title: "Ask for the receipt",
-    subtitle:
-      "Request the final bill from the waiter. Review applied offers or rewards.",
-  },
-  {
-    id: "pay",
-    title: "Tap “Pay bill” in the app",
-    subtitle:
-      "Enter the total amount shown on your receipt and complete your payment in the app.",
+      "Save on your bill and earn Bolt Balance when you pay on the Bolt Food app",
   },
 ]

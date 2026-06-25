@@ -1,7 +1,8 @@
 import { Typography } from "@bolteu/kalep-react"
 import { OfferCardListRatingStar } from "@/features/offers/components/OfferCardListRatingStar"
 import {
-  SUMMARY_COL_DIVIDER,
+  SUMMARY_BAR_CLASS,
+  SUMMARY_COL_DIVIDER_ELM,
   SUMMARY_COL_STACK,
   SUMMARY_SUBLINE,
   SUMMARY_VALUE_LINE,
@@ -22,7 +23,7 @@ export interface RestaurantDetailStatsBarProps {
 
 /**
  * Restaurant summary: three equal columns, 1px dividers, rounded top 16px,
- * overlaps hero (Figma Consumer Dine-out restaurant detail).
+ * overlaps hero (Figma `16123:18008` Feed / Data).
  */
 export function RestaurantDetailStatsBar({
   ratingValue,
@@ -35,18 +36,14 @@ export function RestaurantDetailStatsBar({
   onOpenAddress,
 }: RestaurantDetailStatsBarProps) {
   return (
-    <div
-      className="relative z-[1] -mt-4 mx-0 flex w-full rounded-t-[16px] bg-layer-floor-1 px-2 pb-3 pt-5 shadow-[0_-0.25rem_0.75rem_rgba(0,0,0,0.08)]"
-      role="group"
-      aria-label="Restaurant summary"
-    >
+    <div className={SUMMARY_BAR_CLASS} role="group" aria-label="Restaurant summary">
       <button
         type="button"
         className={`${SUMMARY_COL_STACK} cursor-pointer border-0`}
         onClick={onOpenReviews}
         aria-label={`Rating ${ratingValue}, ${reviewsLine}`}
       >
-        <span className="flex items-center justify-center gap-1 leading-none">
+        <span className="flex items-center justify-center gap-1">
           <OfferCardListRatingStar />
           <Typography
             variant="body-s-accent"
@@ -64,10 +61,11 @@ export function RestaurantDetailStatsBar({
           {reviewsLine}
         </span>
       </button>
+      <div className={SUMMARY_COL_DIVIDER_ELM} aria-hidden />
       {onOpenPriceInfo ?
         <button
           type="button"
-          className={`${SUMMARY_COL_STACK} ${SUMMARY_COL_DIVIDER} cursor-pointer border-0`}
+          className={`${SUMMARY_COL_STACK} cursor-pointer border-0`}
           onClick={onOpenPriceInfo}
           aria-label={`Price range ${priceRange} per person`}
         >
@@ -87,7 +85,7 @@ export function RestaurantDetailStatsBar({
           </span>
         </button>
       : <div
-          className={`${SUMMARY_COL_STACK} ${SUMMARY_COL_DIVIDER}`}
+          className={SUMMARY_COL_STACK}
           aria-label={`Price range ${priceRange} per person`}
         >
           <Typography
@@ -106,40 +104,29 @@ export function RestaurantDetailStatsBar({
           </span>
         </div>
       }
+      <div className={SUMMARY_COL_DIVIDER_ELM} aria-hidden />
       <button
         type="button"
-        className={`${SUMMARY_COL_STACK} ${SUMMARY_COL_DIVIDER} cursor-pointer border-0 bg-transparent p-0 text-inherit`}
+        className={`${SUMMARY_COL_STACK} cursor-pointer border-0 bg-transparent text-inherit`}
         onClick={onOpenAddress}
         aria-label={`View address: ${areaLabel}, ${address}`}
       >
-        <div className="w-full min-w-0">
-          <Typography
-            variant="body-s-accent"
-            color="primary"
-            as="div"
-            align="center"
-            lines={1}
-            inlineStyle={SUMMARY_VALUE_LINE}
-          >
-            {areaLabel}
-          </Typography>
-        </div>
-        <div className="w-full min-w-0">
-          <Typography
-            variant="body-s-regular"
-            color="secondary"
-            as="div"
-            align="center"
-            lines={1}
-            inlineStyle={{
-              fontFamily: "var(--font-family)",
-              fontSize: "14px",
-              lineHeight: "1.125rem",
-            }}
-          >
-            {address}
-          </Typography>
-        </div>
+        <Typography
+          variant="body-s-accent"
+          color="primary"
+          as="div"
+          align="center"
+          lines={1}
+          inlineStyle={SUMMARY_VALUE_LINE}
+        >
+          {areaLabel}
+        </Typography>
+        <span
+          className={SUMMARY_SUBLINE}
+          style={{ fontFamily: "var(--font-family)" }}
+        >
+          {address}
+        </span>
       </button>
     </div>
   )

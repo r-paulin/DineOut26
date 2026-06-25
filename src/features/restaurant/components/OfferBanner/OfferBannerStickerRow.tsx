@@ -102,12 +102,12 @@ function OfferBannerCountdownSticker({
 }) {
   const { expired, countdownHms } = useOfferCountdown(claim.offerWindowCloses)
   const text =
-    expired ? "Offer ended" : `Offer ends in ${countdownHms}`
+    expired ? "Offer ended" : `Check in within ${countdownHms}`
 
   return (
     <div className={STICKER_ROW_CLASS}>
       <Time className={`${STICKER_ICON_CLASS} ${iconClass}`} aria-hidden />
-      <Typography variant="body-xs-regular" color="primary-inverted" as="p">
+      <Typography variant="body-xs-accent" color="primary-inverted" as="p">
         {text}
       </Typography>
     </div>

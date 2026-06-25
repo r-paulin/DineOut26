@@ -360,17 +360,17 @@ export function RestaurantDetailScreen({
               onShare={handleShare}
               onOpenHours={onOpenHours === null ? undefined : handleOpenHours}
             />
+            <RestaurantDetailStatsBar
+              ratingValue={model.ratingValue}
+              reviewsLine={model.reviewsLine}
+              priceRange={model.priceRange}
+              areaLabel={model.areaLabel}
+              address={model.address}
+              onOpenReviews={handleOpenReviews}
+              onOpenPriceInfo={onOpenPriceInfo ?? undefined}
+              onOpenAddress={handleOpenAddress}
+            />
             <div className={`${CARD_DIVIDER_SECTION_ABOVE_CLASS} px-0 pb-0`}>
-              <RestaurantDetailStatsBar
-                ratingValue={model.ratingValue}
-                reviewsLine={model.reviewsLine}
-                priceRange={model.priceRange}
-                areaLabel={model.areaLabel}
-                address={model.address}
-                onOpenReviews={handleOpenReviews}
-                onOpenPriceInfo={onOpenPriceInfo ?? undefined}
-                onOpenAddress={handleOpenAddress}
-              />
               <RestaurantDetailQuickActions
                 onOpenMenu={
                   onOpenMenu === null ? undefined : scrollToMenuSection
