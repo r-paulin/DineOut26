@@ -23,6 +23,18 @@ const BODY_S_COMPACT_ACCENT_STYLE = {
 const CLAIMED_INNER_GRADIENT =
   "linear-gradient(90deg, rgba(0, 160, 64, 0.09) 0%, rgba(0, 160, 64, 0.09) 100%), linear-gradient(90deg, rgb(238, 241, 240) 0%, rgb(238, 241, 240) 100%)"
 
+const PAID_INNER_GRADIENT =
+  "linear-gradient(90deg, rgba(0, 160, 64, 0.09) 0%, rgba(0, 160, 64, 0.09) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)"
+
+/** Figma Body S/S Compact Regular — e.g. paid total bill line. */
+const BODY_S_COMPACT_REGULAR_STYLE = {
+  fontFamily: "var(--font-family)",
+  fontSize: "var(--body-s-font-size, 0.875rem)",
+  lineHeight: "18px",
+  letterSpacing: "-0.084px",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+} as const
+
 export interface OfferBannerCardProps {
   content: OfferBannerContent
 }
@@ -38,10 +50,15 @@ export function OfferBannerCard({ content }: OfferBannerCardProps) {
       "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-separator bg-layer-floor-0-grouped p-3"
     : "relative min-h-[96px] w-full overflow-hidden rounded-[12px] border border-separator bg-layer-floor-2 p-3"
 
+  const innerGradient =
+    content.innerSurface === "paid" ? PAID_INNER_GRADIENT
+    : content.innerClaimed ? CLAIMED_INNER_GRADIENT
+    : undefined
+
   return (
     <div
       className={innerClass}
-      style={content.innerClaimed ? { backgroundImage: CLAIMED_INNER_GRADIENT } : undefined}
+      style={innerGradient ? { backgroundImage: innerGradient } : undefined}
     >
       <Typography
         variant="body-m-accent"
@@ -74,13 +91,25 @@ function OfferBannerDataLineRow({ line }: { line: OfferBannerDataLine }) {
   const color =
     line.tone ??
     (line.emphasis === "accent" ? "primary" : "secondary")
-  const compactAccent = color === "primary"
+  const typography =
+    line.typography ??
+    (color === "primary" ? "compact-accent" : "default")
+  const compactAccent = typography === "compact-accent"
+  const compactRegular = typography === "compact-regular"
   return (
     <Typography
-      variant={compactAccent ? "body-s-accent" : "body-s-regular"}
+      variant={
+        compactAccent ? "body-s-accent"
+        : compactRegular ? "body-s-regular"
+        : "body-s-regular"
+      }
       color={color}
       as="p"
-      inlineStyle={compactAccent ? BODY_S_COMPACT_ACCENT_STYLE : undefined}
+      inlineStyle={
+        compactAccent ? BODY_S_COMPACT_ACCENT_STYLE
+        : compactRegular ? BODY_S_COMPACT_REGULAR_STYLE
+        : undefined
+      }
     >
       {line.text}
     </Typography>

@@ -9,11 +9,12 @@ import {
   formatLimitedAvailabilityLabel,
   formatOfferBannerAvailabilityTime,
   formatOfferBannerArrivalLine,
-  formatOfferBannerCashbackEarnedLabel,
+  formatOfferBannerCashbackEarnedStickerLabel,
   formatOfferBannerClaimedDiscountLine,
   formatOfferBannerDineOutUpsellSticker,
   formatOfferBannerMinMaxLine,
   formatOfferBannerPaidAmountLine,
+  formatOfferBannerTotalBillLine,
   formatOfferBannerTitle,
   OFFER_BANNER_PAID_CASH_SUBTITLE,
   roundMaxSavingEurUp,
@@ -358,10 +359,15 @@ describe("buildStaticOfferBannerContent", () => {
 })
 
 describe("paid offer banner copy", () => {
-  it("formats paid amount and cashback earned labels", () => {
-    expect(formatOfferBannerPaidAmountLine(48)).toBe("Paid: 48,00 €")
-    expect(formatOfferBannerCashbackEarnedLabel(5)).toBe("€5 cashback earned")
-    expect(formatOfferBannerCashbackEarnedLabel(1.8)).toBe("€1,80 cashback earned")
+  it("formats total bill and cashback earned labels", () => {
+    expect(formatOfferBannerTotalBillLine(48)).toBe("Total bill: 48,00 €")
+    expect(formatOfferBannerPaidAmountLine(48)).toBe("Total bill: 48,00 €")
+    expect(formatOfferBannerCashbackEarnedStickerLabel(5)).toBe(
+      "€5,00 cashback earned",
+    )
+    expect(formatOfferBannerCashbackEarnedStickerLabel(1.8)).toBe(
+      "€1,80 cashback earned",
+    )
     expect(formatOfferBannerDineOutUpsellSticker()).toBe(
       "Pay with Bolt Food and earn 15% back",
     )
@@ -387,16 +393,21 @@ describe("buildPaidOfferBannerContent", () => {
     paidAt: Date.now(),
   }
 
-  it("DineOut paid: discount title, paid line, cashback action", () => {
+  it("DineOut paid: discount title, total bill line, paid action, cashback sticker", () => {
     const c = buildPaidOfferBannerContent({ paid: dineoutPaid, offer: baseOffer })
     expect(c.headline).toBe("30% off your bill")
-    expect(c.dataLines[0]?.text).toBe("Paid: 48,00 €")
+    expect(c.dataLines[0]?.text).toBe("Total bill: 48,00 €")
+    expect(c.dataLines[0]?.typography).toBe("compact-regular")
+    expect(c.innerSurface).toBe("paid")
     expect(c.action).toEqual({
-      kind: "cashback-earned",
-      label: "€5 cashback earned",
+      kind: "paid",
+      label: "Paid",
       disabled: false,
     })
-    expect(c.sticker).toBeNull()
+    expect(c.sticker).toEqual({
+      kind: "cashback-earned",
+      text: "€5,00 cashback earned",
+    })
     expect(c.outerClaimed).toBe(true)
   })
 

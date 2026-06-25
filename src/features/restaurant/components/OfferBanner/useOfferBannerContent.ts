@@ -17,13 +17,15 @@ export type OfferBannerDataLine = {
   text: string
   emphasis: "regular" | "accent"
   tone?: "primary" | "secondary" | "action-primary"
+  /** Overrides default compact typography for primary-tone lines. */
+  typography?: "compact-accent" | "compact-regular"
 }
 
 export type OfferBannerActionKind =
   | "claim-now"
   | "pre-book-now"
   | "claimed"
-  | "cashback-earned"
+  | "paid"
 
 export type OfferBannerAction = {
   kind: OfferBannerActionKind
@@ -44,8 +46,11 @@ export type OfferBannerSticker =
   | { kind: "expired"; text: string }
   | { kind: "locked"; text: string }
   | { kind: "dineout-upsell"; text: string }
+  | { kind: "cashback-earned"; text: string }
 
 export type OfferBannerImageVariant = "claimed" | "unclaimed"
+
+export type OfferBannerInnerSurface = "default" | "claimed" | "paid"
 
 /** Figma `17097:18617` — scarcity banners use neutral-primary shell + sticker row. */
 export type OfferBannerOuterShellTone = "neutral" | "limited"
@@ -55,6 +60,8 @@ export type OfferBannerContent = {
   /** Background for the outer shell when not claimed. */
   outerShellTone: OfferBannerOuterShellTone
   innerClaimed: boolean
+  /** Inner card fill — paid uses white base per Figma `17649:34551`. */
+  innerSurface?: OfferBannerInnerSurface
   headline: string
   dataLines: OfferBannerDataLine[]
   action: OfferBannerAction | null
@@ -156,16 +163,24 @@ export function formatOfferBannerHomeClaimedDetailLine(
 /** Figma `16626:52014` — card/cash paid banner secondary line. */
 export const OFFER_BANNER_PAID_CASH_SUBTITLE = "Paid with card or cash" as const
 
-export function formatOfferBannerPaidAmountLine(eur: number): string {
-  return `Paid: ${formatEurMajor(eur)}`
+export function formatOfferBannerTotalBillLine(eur: number): string {
+  return `Total bill: ${formatEurMajor(eur)}`
 }
 
-/** Figma `16568:37078` — e.g. `€5 cashback earned`. */
-export function formatOfferBannerCashbackEarnedLabel(eur: number): string {
+/** @deprecated Use {@link formatOfferBannerTotalBillLine}. */
+export function formatOfferBannerPaidAmountLine(eur: number): string {
+  return formatOfferBannerTotalBillLine(eur)
+}
+
+/** Figma `17649:34551` sticker — e.g. `€5,00 cashback earned`. */
+export function formatOfferBannerCashbackEarnedStickerLabel(eur: number): string {
   const formatted = formatEurMajor(round2(eur)).replace(" €", "")
-  const display =
-    formatted.endsWith(",00") ? formatted.slice(0, -3) : formatted
-  return `€${display} cashback earned`
+  return `€${formatted} cashback earned`
+}
+
+/** @deprecated Use {@link formatOfferBannerCashbackEarnedStickerLabel}. */
+export function formatOfferBannerCashbackEarnedLabel(eur: number): string {
+  return formatOfferBannerCashbackEarnedStickerLabel(eur)
 }
 
 export function formatOfferBannerDineOutUpsellSticker(
@@ -189,33 +204,41 @@ export function buildPaidOfferBannerContent({
   )
 
   if (paid.paymentMethod === "dineout") {
-    const paidLine =
+    const totalBillLine =
       paid.paidAmountEur != null ?
-        formatOfferBannerPaidAmountLine(paid.paidAmountEur)
+        formatOfferBannerTotalBillLine(paid.paidAmountEur)
       : ""
-    const cashbackLabel =
+    const cashbackSticker =
       paid.cashbackEarnedEur != null && paid.cashbackEarnedEur > 0 ?
-        formatOfferBannerCashbackEarnedLabel(paid.cashbackEarnedEur)
+        formatOfferBannerCashbackEarnedStickerLabel(paid.cashbackEarnedEur)
       : null
 
     return {
       outerClaimed: true,
       outerShellTone: "neutral",
       innerClaimed: true,
+      innerSurface: "paid",
       headline,
       dataLines:
-        paidLine ?
-          [{ text: paidLine, emphasis: "regular", tone: "primary" }]
+        totalBillLine ?
+          [
+            {
+              text: totalBillLine,
+              emphasis: "regular",
+              tone: "primary",
+              typography: "compact-regular",
+            },
+          ]
         : [],
-      action:
-        cashbackLabel ?
-          { kind: "cashback-earned", label: cashbackLabel, disabled: false }
+      action: { kind: "paid", label: "Paid", disabled: false },
+      sticker:
+        cashbackSticker ?
+          { kind: "cashback-earned", text: cashbackSticker }
         : null,
-      sticker: null,
       imageVariant: "claimed",
-      ariaLabel: cashbackLabel ?
-        `${headline}, ${paidLine}, ${cashbackLabel}`
-      : `${headline}, ${paidLine}`,
+      ariaLabel: cashbackSticker ?
+        `${headline}, ${totalBillLine}, ${cashbackSticker}`
+      : `${headline}, ${totalBillLine}, Paid`,
     }
   }
 

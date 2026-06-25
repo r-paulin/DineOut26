@@ -397,6 +397,7 @@ export const ClaimedOfferPage = forwardRef<
               <Button
                 fullWidth
                 variant="danger"
+                size="lg"
                 disabled={cancelPending}
                 onClick={() => void handleConfirmCancel()}
               >

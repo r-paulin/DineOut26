@@ -55,7 +55,7 @@ export function OfferBannerStickerRow({
     )
   }
 
-  if (sticker.kind === "dineout-upsell") {
+  if (sticker.kind === "dineout-upsell" || sticker.kind === "cashback-earned") {
     return (
       <div className={STICKER_ROW_CLASS}>
         <CashbackColoured
