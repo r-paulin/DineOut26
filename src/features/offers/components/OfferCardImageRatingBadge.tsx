@@ -1,13 +1,6 @@
 import { Typography } from "@bolteu/kalep-react"
 import { OfferCardListRatingStar } from "@/features/offers/components/OfferCardListRatingStar"
-
-/** e.g. `200+` → `(200+)`; catalog values already parenthesized pass through. */
-export function formatReviewCountForBadge(raw?: string): string | undefined {
-  const t = raw?.trim()
-  if (!t) return undefined
-  if (t.startsWith("(") && t.endsWith(")")) return t
-  return `(${t})`
-}
+import { formatReviewCountForBadge } from "@/features/offers/components/OfferCardImageRatingBadge.utils"
 
 export interface OfferCardImageRatingBadgeProps {
   rating: string
@@ -25,7 +18,7 @@ export interface OfferCardImageRatingBadgeProps {
   staticComfortable?: boolean
 }
 
-/** Figma `_Badge / Rating` (`16545:27772`). */
+/** Figma `_Badge / Rating` (`18900:72934`). */
 const RATING_BADGE_PILL_CLASS =
   "flex w-max shrink-0 flex-nowrap items-center justify-center gap-0.5 overflow-hidden rounded-[4px] bg-layer-floor-1 py-0.5 pl-0.5 pr-1"
 
@@ -33,14 +26,14 @@ const RATING_BADGE_COMFORTABLE_SHADOW =
   "shadow-[0_0.1rem_0.15rem_rgba(0,0,0,0.16)]"
 
 const RATING_BADGE_RATING_STYLE = {
-  letterSpacing: "-0.294px",
-  lineHeight: "1.125rem",
-  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'tnum' 1",
+  letterSpacing: "0px",
+  lineHeight: "16px",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
 } as const
 
 const RATING_BADGE_REVIEW_STYLE = {
-  letterSpacing: "-0.084px",
-  lineHeight: "1.125rem",
+  letterSpacing: "0px",
+  lineHeight: "16px",
   fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
 } as const
 
@@ -48,21 +41,32 @@ function RatingBadgePill({
   rating,
   formattedReviewCount,
   withShadow,
+  highlighted,
 }: {
   rating: string
   formattedReviewCount?: string
   withShadow?: boolean
+  highlighted?: boolean
 }) {
+  const backgroundStyle =
+    highlighted ?
+      {
+        backgroundImage:
+          "linear-gradient(90deg, rgba(255, 190, 0, 0.23) 0%, rgba(255, 190, 0, 0.23) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)",
+      }
+    : undefined
+
   return (
     <div
       className={[RATING_BADGE_PILL_CLASS, withShadow ? RATING_BADGE_COMFORTABLE_SHADOW : ""]
         .filter(Boolean)
         .join(" ")}
+      style={backgroundStyle}
     >
       <OfferCardListRatingStar />
       <Typography
         as="span"
-        variant="body-s-accent"
+        variant="body-xs-accent"
         color="primary"
         inlineStyle={RATING_BADGE_RATING_STYLE}
       >
@@ -71,7 +75,7 @@ function RatingBadgePill({
       {formattedReviewCount ?
         <Typography
           as="span"
-          variant="body-s-regular"
+          variant="body-xs-regular"
           color="secondary"
           inlineStyle={RATING_BADGE_REVIEW_STYLE}
         >
@@ -83,7 +87,7 @@ function RatingBadgePill({
 }
 
 /**
- * Figma `_Badge / Rating` (`16545:27772`): 16px star, Body S compact score + review count.
+ * Figma `_Badge / Rating` (`18900:72934`): 16px star, Body XS score + review count.
  */
 export function OfferCardImageRatingBadge({
   rating,
@@ -92,11 +96,14 @@ export function OfferCardImageRatingBadge({
   staticComfortable = false,
 }: OfferCardImageRatingBadgeProps) {
   const formattedReviewCount = formatReviewCountForBadge(reviewCount)
+  const ratingValue = Number.parseFloat(rating.replace(",", "."))
+  const highlighted = Number.isFinite(ratingValue) && ratingValue > 4.6
   const pill = (
     <RatingBadgePill
       rating={rating}
       formattedReviewCount={formattedReviewCount}
       withShadow={density === "comfortable"}
+      highlighted={highlighted}
     />
   )
 

@@ -5,11 +5,6 @@ import Decline from "@bolteu/kalep-react-icons/dist/Decline"
 import HelpCircle from "@bolteu/kalep-react-icons/dist/HelpCircle"
 import { DineOutPromoSheet } from "@/features/offers/components/DineOutPromoSheet"
 import { DINEOUT_PROMO_IMG_WRAP } from "@/features/offers/components/dineOutPromoFigmaAssets"
-import { DineOutCashbackBannerSlot } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
-import {
-  RESTAURANT_OFFERS_CASHBACK_BANNER_SECONDARY,
-} from "@/features/offers/constants/dineOutStackablePromo"
-import { useRestaurantOffersCashbackBanner } from "@/features/restaurant/hooks/useRestaurantOffersCashbackBanner"
 import { useOfferDateTabs } from "@/features/restaurant/hooks/useOfferDateTabs"
 import { useOfferPanelTransition } from "@/features/restaurant/hooks/useOfferPanelTransition"
 import { useOfferTabPanelViewportHeight } from "@/features/restaurant/hooks/useOfferTabPanelViewportHeight"
@@ -67,6 +62,8 @@ export interface RestaurantDetailOffersSectionProps {
   venueSlug: string
   tabs: RestaurantOfferDateTab[]
   offersByTabId: Record<string, RestaurantOfferCardModel[]>
+  /** Initial selected date tab id from Discover filters (e.g. `today` / `YYYY-MM-DD`). */
+  preferredTabId?: string
   userClaims: readonly UserClaim[]
   claimedOffersById: Readonly<Record<string, ClaimedOffer>>
   paidOffersById?: Readonly<Record<string, PaidOfferRecord>>
@@ -90,6 +87,7 @@ export function RestaurantDetailOffersSection({
   venueSlug,
   tabs,
   offersByTabId,
+  preferredTabId,
   userClaims,
   claimedOffersById,
   paidOffersById = {},
@@ -103,7 +101,7 @@ export function RestaurantDetailOffersSection({
     tablistRef,
     registerTabRef,
     onTabKeyDown,
-  } = useOfferDateTabs(tabs)
+  } = useOfferDateTabs(tabs, preferredTabId)
 
   const { viewportHeight, registerPanelRef } =
     useOfferTabPanelViewportHeight(activeTabId)
@@ -115,9 +113,6 @@ export function RestaurantDetailOffersSection({
     0,
     tabs.findIndex((t) => t.id === activeTabId),
   )
-
-  const { visible: cashbackBannerVisible, dismiss: dismissCashbackBanner } =
-    useRestaurantOffersCashbackBanner(venueSlug)
 
   const [howItWorksOpen, setHowItWorksOpen] = useState(false)
 
@@ -156,12 +151,6 @@ export function RestaurantDetailOffersSection({
           />
         </button>
       </div>
-      <DineOutCashbackBannerSlot
-        visible={cashbackBannerVisible}
-        className="px-6"
-        secondaryText={RESTAURANT_OFFERS_CASHBACK_BANNER_SECONDARY}
-        onDismiss={dismissCashbackBanner}
-      />
       <div
         ref={tablistRef}
         className="w-full overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"

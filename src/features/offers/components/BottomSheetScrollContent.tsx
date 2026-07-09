@@ -5,6 +5,7 @@ import type {
   OfferCardModel,
   SheetSnap,
 } from "@/features/offers/offers.types"
+import type { DateValue } from "@/features/search/filters.types"
 import { HomeClaimedOffersCarousel } from "@/features/discover/components/HomeClaimedOffersCarousel"
 import type { HomeClaimedOfferItem } from "@/features/discover/components/HomeClaimedOffersCarousel"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
@@ -35,6 +36,7 @@ export interface BottomSheetScrollContentProps {
   onHomeClaimedOfferPress?: (claim: ClaimedOffer) => void
   /** Prototype admin: open merged-catalog editor (localStorage). */
   onOpenAdminPlaces?: () => void
+  selectedDate?: DateValue
   liveNowFilter?: boolean
   showFilteredEmpty?: boolean
   onResetFilters?: () => void
@@ -62,6 +64,7 @@ export function BottomSheetScrollContent({
   claimedOffersById = {},
   onHomeClaimedOfferPress,
   onOpenAdminPlaces,
+  selectedDate = "today",
   liveNowFilter = false,
   showFilteredEmpty = false,
   onResetFilters,
@@ -163,6 +166,7 @@ export function BottomSheetScrollContent({
                   dimmed={
                     !!focusRestaurantId && offerSlug(o) !== focusRestaurantId
                   }
+                  selectedDate={selectedDate}
                   liveNowFilter={liveNowFilter}
                   onClick={() => {
                     const slug = offerSlug(o)
@@ -202,6 +206,7 @@ export function BottomSheetScrollContent({
                   dimmed={
                     !!focusRestaurantId && offerSlug(o) !== focusRestaurantId
                   }
+                  selectedDate={selectedDate}
                   liveNowFilter={liveNowFilter}
                   onClick={() => {
                     const slug = offerSlug(o)
@@ -234,6 +239,7 @@ export function BottomSheetScrollContent({
                   dimmed={
                     !!focusRestaurantId && offerSlug(o) !== focusRestaurantId
                   }
+                  selectedDate={selectedDate}
                   liveNowFilter={liveNowFilter}
                   onClick={() => {
                     const slug = offerSlug(o)

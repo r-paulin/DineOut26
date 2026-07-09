@@ -5,7 +5,7 @@ export type OfferCardCampaign = {
   discountLabel?: string
   /** Time window after " · ", rendered at 80% white on the dark pill. */
   timeWindow?: string
-  /** Second pill: "+1 offer", "+2 offers", "+3 offers", … (count of additional offers). */
+  /** Second pill: "+1 more offer", "+2 more offers", "+3 more offers", … (count of additional offers). */
   extraOffers?: number
 }
 

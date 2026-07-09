@@ -138,6 +138,7 @@ export function HomeScreen() {
     openSectionList,
     closeSectionList,
     restaurantDetailSlug,
+    restaurantDetailDate,
     openRestaurantDetail,
     closeRestaurantDetail,
     adminPlacesOpen,
@@ -444,9 +445,14 @@ export function HomeScreen() {
       setClaimedView(null)
       dismissClaimModalImmediate()
       dismissPostClaimSuccess()
-      openRestaurantDetail(slug)
+      openRestaurantDetail(slug, filterState.date)
     },
-    [dismissClaimModalImmediate, dismissPostClaimSuccess, openRestaurantDetail],
+    [
+      dismissClaimModalImmediate,
+      dismissPostClaimSuccess,
+      filterState.date,
+      openRestaurantDetail,
+    ],
   )
 
   const claimedOfferPageRestaurant = useMemo(() => {
@@ -911,6 +917,7 @@ export function HomeScreen() {
     onHomeClaimedOfferPress: handleHomeClaimedOfferPress,
     discoverLayoutEpoch,
     onOpenAdminPlaces: openAdminPlaces,
+    selectedDate: filterState.date,
     liveNowFilter,
     showFilteredEmpty,
     onResetFilters: resetAllFiltersWithSkeleton,
@@ -1061,6 +1068,7 @@ export function HomeScreen() {
         <RestaurantDetailScreen
           key={restaurantDetailSlug}
           model={restaurantDetailModel}
+          selectedOfferDate={restaurantDetailDate}
           userClaims={userClaims}
           claimedOffersById={claimedByOfferId}
           paidOffersById={paidByOfferId}

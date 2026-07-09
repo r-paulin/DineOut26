@@ -140,6 +140,8 @@ export interface RestaurantDetailModel {
 export interface RestaurantDetailScreenProps {
   model: RestaurantDetailModel
   onBack: () => void
+  /** Preferred date tab when opening from Discover filters. */
+  selectedOfferDate?: DateValue
   activeTab: string
   onTabChange: (id: string) => void
   /**

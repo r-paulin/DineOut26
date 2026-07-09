@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import type { MapMarkerData } from "@/features/map/map.types"
 import type { SheetSnap } from "@/features/offers/offers.types"
 import { useFilters } from "@/features/search/hooks/useFilters"
+import type { DateValue } from "@/features/search/filters.types"
 import { createLogger } from "@/shared/utils/logger"
 
 const log = createLogger("discover")
@@ -27,6 +28,7 @@ export function useDiscoverScreen() {
   const [restaurantDetailSlug, setRestaurantDetailSlug] = useState<
     string | null
   >(null)
+  const [restaurantDetailDate, setRestaurantDetailDate] = useState<DateValue>("today")
   const [adminPlacesOpen, setAdminPlacesOpen] = useState(false)
   /**
    * Monotonic counter that bumps each time the bottom sheet should jump back to
@@ -90,16 +92,18 @@ export function useDiscoverScreen() {
 
   const closeSectionList = useCallback(() => setSectionList(null), [])
 
-  const openRestaurantDetail = useCallback((slug: string) => {
+  const openRestaurantDetail = useCallback((slug: string, date?: DateValue) => {
     closeSheet()
     setSearchOpen(false)
     setSectionList(null)
     setAdminPlacesOpen(false)
+    setRestaurantDetailDate(date ?? "today")
     setRestaurantDetailSlug(slug)
   }, [closeSheet])
 
   const closeRestaurantDetail = useCallback(() => {
     setRestaurantDetailSlug(null)
+    setRestaurantDetailDate("today")
     setSheetSnap("peek")
   }, [])
 
@@ -133,6 +137,7 @@ export function useDiscoverScreen() {
     openSectionList,
     closeSectionList,
     restaurantDetailSlug,
+    restaurantDetailDate,
     openRestaurantDetail,
     closeRestaurantDetail,
     adminPlacesOpen,

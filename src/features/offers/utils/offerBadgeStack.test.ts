@@ -253,4 +253,20 @@ describe("buildTimedOfferBadgeModels", () => {
       ),
     ).toEqual([])
   })
+
+  it("prebook mode prioritizes best discount over currently-live offer", () => {
+    const rows = buildTimedOfferBadgeModels(
+      [
+        offer(15, { kind: "range", start: "11:00", end: "14:00" }), // live now
+        offer(25, { kind: "range", start: "18:00", end: "22:00" }), // higher %
+      ],
+      SAT_1230,
+      "prebook",
+    )
+    expect(rows[0]).toMatchObject({
+      kind: "offer",
+      discountLabel: "-25%",
+      timeWindow: "18:00–22:00",
+    })
+  })
 })

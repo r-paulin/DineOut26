@@ -28,11 +28,16 @@ export interface UseOfferDateTabsResult {
  */
 export function useOfferDateTabs(
   tabs: RestaurantOfferDateTab[],
+  preferredTabId?: string,
 ): UseOfferDateTabsResult {
   const defaultId = useMemo(
-    () =>
-      tabs.find((t) => t.state === "active")?.id ?? tabs[0]?.id ?? "",
-    [tabs],
+    () => {
+      if (preferredTabId && tabs.some((t) => t.id === preferredTabId)) {
+        return preferredTabId
+      }
+      return tabs.find((t) => t.state === "active")?.id ?? tabs[0]?.id ?? ""
+    },
+    [preferredTabId, tabs],
   )
 
   const [activeTabId, setActiveTabId] = useState(defaultId)

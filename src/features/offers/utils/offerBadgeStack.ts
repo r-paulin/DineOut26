@@ -9,6 +9,7 @@ import {
 } from "@/features/offers/utils/offerDisplayActive"
 
 export type BadgeStackMode = "default" | "liveNow"
+export type BadgeStackDisplayMode = BadgeStackMode | "prebook"
 
 /** Prototype cap: at most five timed offers per venue per day. */
 export const MAX_BADGE_OFFERS_PER_VENUE = 5
@@ -115,10 +116,15 @@ function compareOffersForBadgePriority(
 export function sortOffersForBadgeDisplay(
   offers: readonly RestaurantTimedOffer[],
   now: Date,
+  prioritizeLive = true,
 ): RestaurantTimedOffer[] {
   const eligible = offers
     .filter((o) => !isTimedOfferExpiredToday(o, now))
     .slice(0, MAX_BADGE_OFFERS_PER_VENUE)
+
+  if (!prioritizeLive) {
+    return [...eligible].sort(compareOffersForBadgePriority)
+  }
 
   const liveCandidates = eligible
     .filter((o) => isOfferLiveForBadge(o, now))
@@ -139,9 +145,10 @@ export function sortOffersForBadgeDisplay(
 export function buildTimedOfferBadgeModels(
   offers: readonly RestaurantTimedOffer[],
   now: Date = new Date(),
-  mode: BadgeStackMode = "default",
+  mode: BadgeStackDisplayMode = "default",
 ): TimedOfferBadgeRow[] {
-  let ordered = sortOffersForBadgeDisplay(offers, now)
+  const prioritizeLive = mode !== "prebook"
+  let ordered = sortOffersForBadgeDisplay(offers, now, prioritizeLive)
 
   if (mode === "liveNow") {
     ordered = ordered.filter((o) => isOfferLiveForBadge(o, now))
@@ -152,7 +159,9 @@ export function buildTimedOfferBadgeModels(
   const offerRow = (offer: RestaurantTimedOffer): TimedOfferBadgeRow => ({
     kind: "offer",
     discountLabel: `-${offer.discountPercent}%`,
-    timeWindow: formatBadgeTimeLabel(offer, now),
+    timeWindow:
+      mode === "prebook" ? formatTimeWindowLabel(offer.window)
+      : formatBadgeTimeLabel(offer, now),
     iconActive: isTimedOfferDisplayActive(offer, now),
   })
 

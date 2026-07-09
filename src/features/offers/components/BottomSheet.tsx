@@ -6,6 +6,7 @@ import type {
   OfferCardModel,
   SheetSnap,
 } from "@/features/offers/offers.types"
+import type { DateValue } from "@/features/search/filters.types"
 import { useBottomSheet } from "@/features/offers/hooks/useBottomSheet"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
 import type { HomeClaimedOfferItem } from "@/features/discover/components/HomeClaimedOffersCarousel"
@@ -42,6 +43,7 @@ export interface BottomSheetProps {
   docked?: boolean
   /** Bumps when discover search stack height is measured so sheet heights match layout. */
   discoverLayoutEpoch?: number
+  selectedDate?: DateValue
   liveNowFilter?: boolean
   showFilteredEmpty?: boolean
   onResetFilters?: () => void
@@ -74,6 +76,7 @@ export function BottomSheet({
   onOpenAdminPlaces,
   docked = false,
   discoverLayoutEpoch = 0,
+  selectedDate = "today",
   liveNowFilter = false,
   showFilteredEmpty = false,
   onResetFilters,
@@ -189,6 +192,7 @@ export function BottomSheet({
           claimedOffersById={claimedOffersById}
           onHomeClaimedOfferPress={onHomeClaimedOfferPress}
           onOpenAdminPlaces={onOpenAdminPlaces}
+          selectedDate={selectedDate}
           liveNowFilter={liveNowFilter}
           showFilteredEmpty={showFilteredEmpty}
           onResetFilters={onResetFilters}

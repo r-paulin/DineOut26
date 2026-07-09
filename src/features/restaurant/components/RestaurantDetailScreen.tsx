@@ -61,6 +61,7 @@ import { RestaurantReportProblemSheet } from "./RestaurantReportProblemSheet"
 export function RestaurantDetailScreen({
   model,
   onBack,
+  selectedOfferDate,
   onOpenHours,
   onOpenMenu,
   onOpenMaps,
@@ -395,6 +396,7 @@ export function RestaurantDetailScreen({
                 venueSlug={model.slug}
                 tabs={model.offerDateTabs}
                 offersByTabId={model.offersByTabId}
+                preferredTabId={selectedOfferDate}
                 userClaims={userClaims}
                 claimedOffersById={claimedOffersById}
                 paidOffersById={paidOffersById}

@@ -1,4 +1,5 @@
 import type { OfferCardCampaign } from "@/features/offers/offers.types"
+import type { DateValue } from "@/features/search/filters.types"
 import { Typography } from "@bolteu/kalep-react"
 import { OfferCardBadges } from "./OfferCardBadges"
 
@@ -8,6 +9,7 @@ export interface OfferCardListGalleryProps {
   campaign: OfferCardCampaign
   /** When set, hero badges use timed-offer stack (up to three rows). */
   restaurantSlug?: string
+  selectedDate?: DateValue
   liveNowFilter?: boolean
 }
 
@@ -41,6 +43,7 @@ export function OfferCardListGallery({
   photos,
   campaign,
   restaurantSlug,
+  selectedDate = "today",
   liveNowFilter,
 }: OfferCardListGalleryProps) {
   const list = photos.slice(0, MAX_PHOTOS)
@@ -78,6 +81,7 @@ export function OfferCardListGallery({
           <OfferCardBadges
             campaign={campaign}
             restaurantSlug={restaurantSlug}
+            selectedDate={selectedDate}
             liveNowFilter={liveNowFilter}
           />
         </div>

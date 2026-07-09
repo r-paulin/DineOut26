@@ -1,6 +1,10 @@
-import type { KeyboardEvent } from "react"
+import { useRef, useState, type KeyboardEvent } from "react"
 import { Typography } from "@bolteu/kalep-react"
+import Heart from "@bolteu/kalep-react-icons/dist/Heart"
+import HeartOutlined from "@bolteu/kalep-react-icons/dist/HeartOutlined"
 import type { OfferCardModel } from "@/features/offers/offers.types"
+import type { DateValue } from "@/features/search/filters.types"
+import { useSnackbar } from "@/shared/snackbar"
 import { OfferCardBadges } from "./OfferCardBadges"
 import { OfferCardImageRatingBadge } from "./OfferCardImageRatingBadge"
 import { OfferCardListGallery } from "./OfferCardListGallery"
@@ -10,14 +14,15 @@ export interface OfferCardProps {
   offer: OfferCardModel
   dimmed?: boolean
   onClick?: () => void
+  selectedDate?: DateValue
   liveNowFilter?: boolean
 }
 
-const R12 = "rounded-[12px]"
+const R8 = "rounded-[8px]"
 
-/** Figma `_Place / Card / XS` (15767:53166): 224px wide; image height keeps 188:158 aspect. */
+/** Figma `_Place / Card / List` (`18904:45034`): 224px wide, 158px hero. */
 const CAROUSEL_CARD_W_CLASS = "w-[224px]"
-const CAROUSEL_IMAGE_H_CLASS = "h-[188px]"
+const CAROUSEL_IMAGE_H_CLASS = "h-[158px]"
 
 const IMAGE_GRAD =
   "linear-gradient(180deg, rgba(0,0,0,0) 53.5%, rgba(0,0,0,0.5) 100%)"
@@ -30,6 +35,7 @@ export function OfferCard({
   offer,
   dimmed,
   onClick,
+  selectedDate = "today",
   liveNowFilter,
 }: OfferCardProps) {
   if (offer.layout === "list") {
@@ -38,6 +44,7 @@ export function OfferCard({
         offer={offer}
         dimmed={dimmed}
         onClick={onClick}
+        selectedDate={selectedDate}
         liveNowFilter={liveNowFilter}
       />
     )
@@ -47,6 +54,7 @@ export function OfferCard({
       offer={offer}
       dimmed={dimmed}
       onClick={onClick}
+      selectedDate={selectedDate}
       liveNowFilter={liveNowFilter}
     />
   )
@@ -69,13 +77,19 @@ function OfferCardCarousel({
   offer,
   dimmed,
   onClick,
+  selectedDate = "today",
   liveNowFilter,
 }: {
   offer: OfferCardModel
   dimmed?: boolean
   onClick?: () => void
+  selectedDate?: DateValue
   liveNowFilter?: boolean
 }) {
+  const snackbar = useSnackbar()
+  const [favorite, setFavorite] = useState(false)
+  const lastSnackbarIdRef = useRef<string | number | null>(null)
+
   return (
     <article
       className={`${CAROUSEL_CARD_W_CLASS} flex-none relative`}
@@ -84,7 +98,7 @@ function OfferCardCarousel({
       <button
         type="button"
         aria-label={offerCardCarouselAriaLabel(offer)}
-        className={`relative ${CAROUSEL_CARD_W_CLASS} ${CAROUSEL_IMAGE_H_CLASS} ${R12} overflow-hidden border-none p-0 cursor-pointer`}
+        className={`relative ${CAROUSEL_CARD_W_CLASS} ${CAROUSEL_IMAGE_H_CLASS} ${R8} overflow-hidden border-none p-0 cursor-pointer`}
         onClick={onClick}
       >
         <img
@@ -94,31 +108,61 @@ function OfferCardCarousel({
           className="w-full h-full object-cover block"
         />
         <div
-          className={`absolute inset-0 ${R12} pointer-events-none`}
+          className={`absolute inset-0 ${R8} pointer-events-none`}
           style={{ background: IMAGE_GRAD }}
         />
-        <div className="absolute left-0 top-0 flex flex-col items-start gap-1 p-3">
+        <div className="absolute left-2 top-2 z-[1] flex max-w-[calc(100%-2.5rem)] flex-col items-start gap-1">
           <OfferCardBadges
             campaign={offer.campaign}
             restaurantSlug={offer.restaurantSlug ?? offer.id}
+            density="hero-dark"
+            selectedDate={selectedDate}
             liveNowFilter={liveNowFilter}
           />
         </div>
+        <button
+          type="button"
+          className="absolute right-2 top-2 z-[2] inline-flex size-4 items-center justify-center border-none bg-transparent p-0 text-primary-inverted drop-shadow-[0_0.1rem_0.15rem_rgba(0,0,0,0.16)]"
+          aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+          onClick={(e) => {
+            e.stopPropagation()
+            setFavorite((prev) => {
+              const next = !prev
+              if (lastSnackbarIdRef.current != null) {
+                snackbar.remove(lastSnackbarIdRef.current)
+              }
+              const id = snackbar.add({
+                description: next ? "Added to favorites." : "Favorite removed",
+                timeout: 3000,
+              })
+              lastSnackbarIdRef.current = id
+              return next
+            })
+          }}
+        >
+          {favorite ?
+            <Heart size="sm" aria-hidden />
+          : <HeartOutlined size="sm" aria-hidden />}
+        </button>
         <OfferCardImageRatingBadge
           rating={offer.rating}
           reviewCount={offer.reviewCount}
         />
       </button>
-      <div className="mt-2 flex flex-col gap-0.5 w-full">
+      <div className="mt-2 flex w-full flex-col gap-0.5">
         <Typography
-          variant="body-s-accent"
+          variant="body-m-accent"
           color="primary"
           noWrap
-          inlineStyle={{ letterSpacing: "-0.00525rem" }}
+          inlineStyle={{
+            lineHeight: "20px",
+            letterSpacing: "-0.176px",
+            fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+          }}
         >
           {offer.name}
         </Typography>
-        <div className="ffeature flex gap-1 items-center text-xs leading-4">
+        <div className="ffeature flex items-center gap-1 text-xs leading-4">
           <Typography variant="body-xs-regular" color="primary" as="span">
             {offer.priceRange}
           </Typography>
@@ -151,11 +195,13 @@ function OfferCardList({
   offer,
   dimmed,
   onClick,
+  selectedDate = "today",
   liveNowFilter,
 }: {
   offer: OfferCardModel
   dimmed?: boolean
   onClick?: () => void
+  selectedDate?: DateValue
   liveNowFilter?: boolean
 }) {
   const slides =
@@ -191,6 +237,7 @@ function OfferCardList({
         photos={slides}
         campaign={offer.campaign}
         restaurantSlug={offer.restaurantSlug ?? offer.id}
+        selectedDate={selectedDate}
         liveNowFilter={liveNowFilter}
       />
       <div className="flex min-w-0 w-full flex-col gap-0.5">

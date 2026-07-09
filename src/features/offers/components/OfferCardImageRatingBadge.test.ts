@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatReviewCountForBadge } from "./OfferCardImageRatingBadge"
+import { formatReviewCountForBadge } from "./OfferCardImageRatingBadge.utils"
 
 describe("formatReviewCountForBadge", () => {
   it("wraps bare counts in parentheses", () => {
