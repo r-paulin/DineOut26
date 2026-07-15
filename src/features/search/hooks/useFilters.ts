@@ -8,15 +8,19 @@ import {
 } from "@/features/search/data/filterOptions"
 import {
   getDefaultFilterState,
+  type DateValue,
   type FilterKey,
   type FilterState,
   type OfferValue,
   type PriceValue,
+  type TimeSlotId,
 } from "@/features/search/filters.types"
 import {
-  formatDateChipLabel,
+  formatDateTimeChipLabel,
   getDateOptions,
+  normalizeFilterDate,
 } from "@/features/search/utils/dateOptions"
+import { getTimeSlotOption } from "@/features/search/utils/timeSlots"
 import { createLogger } from "@/shared/utils/logger"
 
 const log = createLogger("filters")
@@ -27,10 +31,17 @@ export interface UseFiltersReturn {
   dateOptionRows: ReturnType<typeof getDateOptions>
   openSheet: (key: Exclude<FilterKey, "openNow">) => void
   closeSheet: () => void
-  applySheetValue: (key: Exclude<FilterKey, "openNow">, value: string) => void
+  applySheetValue: (
+    key: Exclude<FilterKey, "openNow" | "date">,
+    value: string,
+  ) => void
+  /**
+   * Commits the combined date + time wheel (Figma `15863:12867`).
+   * @returns `true` when date/timeSlot actually changed (for skeleton/UX).
+   */
+  applyDateTimeFilter: (date: DateValue, timeSlot: TimeSlotId) => boolean
   toggleOpenNowToday: () => void
   clearOpenNowFilter: () => void
-  setOpenAtTime: (time: string | null) => void
   getChipLabel: (key: FilterKey) => string
   isChipActive: (key: FilterKey) => boolean
   /** A chip is "locked" when the current filter combination makes it non-interactive (e.g. offer = Pre-book when date ≠ Today). */
@@ -108,6 +119,19 @@ export function useFilters(): UseFiltersReturn {
     [todayAnchor],
   )
 
+  // After midnight / long background: collapse ISO "today" and drop stale dates.
+  useEffect(() => {
+    setState((prev) => {
+      const nextDate = normalizeFilterDate(prev.date, todayAnchor)
+      if (nextDate === prev.date) return prev
+      const next: FilterState = { ...prev, date: nextDate }
+      if (nextDate !== "today") {
+        next.openNow = false
+      }
+      return next
+    })
+  }, [todayAnchor])
+
   const closeSheet = useCallback(() => {
     setSheetKey(null)
   }, [])
@@ -116,25 +140,41 @@ export function useFilters(): UseFiltersReturn {
     setSheetKey(key)
   }, [])
 
-  const applySheetValue = useCallback(
-    (key: Exclude<FilterKey, "openNow">, value: string) => {
-      // Commit sheet dismissal + filter state in one synchronous flush so the
-      // controlled `open` and chip labels update immediately (Reset / Apply).
+  const applyDateTimeFilter = useCallback(
+    (date: DateValue, timeSlot: TimeSlotId): boolean => {
+      let changed = false
       flushSync(() => {
         setSheetKey(null)
         setState((prev) => {
-          if (key === "date") {
-            const next: FilterState = {
-              ...prev,
-              date: value as FilterState["date"],
-            }
-            if (value === "today") {
-              next.openAt = null
-            } else {
-              next.openNow = false
-            }
-            return next
+          const nextDate = normalizeFilterDate(date, todayAnchor)
+          if (prev.date === nextDate && prev.timeSlot === timeSlot) {
+            return prev
           }
+          changed = true
+          const next: FilterState = {
+            ...prev,
+            date: nextDate,
+            timeSlot,
+          }
+          if (nextDate !== "today") {
+            next.openNow = false
+          }
+          return next
+        })
+      })
+      if (changed) {
+        log.debug("filter apply: date+time", date, timeSlot)
+      }
+      return changed
+    },
+    [todayAnchor],
+  )
+
+  const applySheetValue = useCallback(
+    (key: Exclude<FilterKey, "openNow" | "date">, value: string) => {
+      flushSync(() => {
+        setSheetKey(null)
+        setState((prev) => {
           if (key === "offer") {
             return { ...prev, offer: value as OfferValue }
           }
@@ -166,16 +206,7 @@ export function useFilters(): UseFiltersReturn {
   }, [])
 
   const clearOpenNowFilter = useCallback(() => {
-    setState((prev) => {
-      if (prev.date === "today") {
-        return { ...prev, openNow: false }
-      }
-      return { ...prev, openAt: null }
-    })
-  }, [])
-
-  const setOpenAtTime = useCallback((time: string | null) => {
-    setState((prev) => ({ ...prev, openAt: time }))
+    setState((prev) => ({ ...prev, openNow: false }))
   }, [])
 
   const resetAllFilters = useCallback(() => {
@@ -188,20 +219,15 @@ export function useFilters(): UseFiltersReturn {
     (key: FilterKey): string => {
       switch (key) {
         case "date":
-          return state.date === "today"
-            ? "Today"
-            : formatDateChipLabel(state.date)
+          return formatDateTimeChipLabel(
+            state.date,
+            getTimeSlotOption(state.timeSlot).label,
+            dateOptionRows,
+          )
         case "offer":
           return findOfferLabel(getEffectiveOffer(state))
-        case "openNow": {
-          if (state.date === "today") {
-            return "Open now"
-          }
-          if (state.openAt) {
-            return `At ${state.openAt}`
-          }
-          return "Any time"
-        }
+        case "openNow":
+          return "Open now"
         case "price":
           return state.price ? PRICE_CHIP_LABEL[state.price] : "Price"
         case "cuisine":
@@ -212,7 +238,7 @@ export function useFilters(): UseFiltersReturn {
           return ""
       }
     },
-    [state],
+    [dateOptionRows, state],
   )
 
   const isChipActive = useCallback(
@@ -220,14 +246,14 @@ export function useFilters(): UseFiltersReturn {
       const defaults = getDefaultFilterState()
       switch (key) {
         case "date":
-          return state.date !== defaults.date
+          return (
+            state.date !== defaults.date ||
+            state.timeSlot !== defaults.timeSlot
+          )
         case "offer":
           return getEffectiveOffer(state) !== defaults.offer
         case "openNow":
-          if (state.date === "today") {
-            return state.openNow
-          }
-          return state.openAt !== null
+          return state.date === "today" && state.openNow
         case "price":
           return state.price !== defaults.price
         case "cuisine":
@@ -251,11 +277,8 @@ export function useFilters(): UseFiltersReturn {
   )
 
   const openNowTrailing = useMemo<"none" | "clear" | "chevron">(() => {
-    if (state.date === "today") {
-      if (state.openNow) return "clear"
-      return "none"
-    }
-    return "chevron"
+    if (state.date === "today" && state.openNow) return "clear"
+    return "none"
   }, [state.date, state.openNow])
 
   return {
@@ -265,9 +288,9 @@ export function useFilters(): UseFiltersReturn {
     openSheet,
     closeSheet,
     applySheetValue,
+    applyDateTimeFilter,
     toggleOpenNowToday,
     clearOpenNowFilter,
-    setOpenAtTime,
     resetAllFilters,
     getChipLabel,
     isChipActive,

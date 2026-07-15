@@ -117,7 +117,7 @@ export function RestaurantDetailOffersSection({
   const [howItWorksOpen, setHowItWorksOpen] = useState(false)
 
   return (
-    <section className="flex w-full flex-col gap-4 pb-3 pt-6" aria-label="Offers">
+    <section className="flex w-full flex-col gap-4 py-6" aria-label="Offers">
       <DineOutPromoSheet
         isVisible={howItWorksOpen}
         onDismiss={() => setHowItWorksOpen(false)}
@@ -239,6 +239,7 @@ export function RestaurantDetailOffersSection({
           const isActive = tab.id === activeTabId
           const tabCards = sortRestaurantOfferCardsByStartTime(
             offersByTabId[tab.id] ?? [],
+            { claimedOfferIds: claimedOffersById },
           )
           const offset = idx - activeIdx
           return (

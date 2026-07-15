@@ -15,7 +15,7 @@ export function formatClaimModalOfferAvailability(
   date: string,
   timeWindow: string,
 ): string {
-  const time = formatOfferBannerValidityTime(timeWindow).replace(/\s*-\s*/g, "–")
+  const time = formatOfferBannerValidityTime(timeWindow)
   return `${date} · ${time}`
 }
 

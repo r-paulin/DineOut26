@@ -1,15 +1,20 @@
+export type MapPinTailTone = "normal" | "selected" | "closed"
+
 export interface MapPinTailProps {
-  /** Selected map pin (Figma `16081:13158`) — tail matches red pill. */
-  selected?: boolean
+  /** Figma `19206:45778` — tail fill matches pill surface. */
+  tone?: MapPinTailTone
 }
 
 /** Small pointed tail under a map pin bubble. SVG kept inline (bespoke shape). */
-export function MapPinTail({ selected }: MapPinTailProps) {
+export function MapPinTail({ tone = "normal" }: MapPinTailProps) {
+  const colorClass =
+    tone === "selected" ? "text-neutral-primary"
+    : tone === "closed" ? "text-[#e5e8e7]"
+    : "text-[var(--layer-floor-1,#fff)]"
+
   return (
     <div
-      className={`relative z-[1] -mt-0.5 h-2 w-4 ${
-        selected ? "text-danger-primary" : "text-[var(--layer-floor-1)]"
-      }`}
+      className={`relative z-[1] h-2 w-4 ${colorClass}`}
       aria-hidden
     >
       <svg
@@ -21,8 +26,6 @@ export function MapPinTail({ selected }: MapPinTailProps) {
         <path
           d="M8 8C8 8 1.5 2.5 0 0H16C14.5 2.5 8 8 8 8Z"
           fill="currentColor"
-          stroke={selected ? "none" : "rgba(0,45,30,0.06)"}
-          strokeWidth={selected ? 0 : 0.5}
         />
       </svg>
     </div>

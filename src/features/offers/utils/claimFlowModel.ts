@@ -1,4 +1,5 @@
 import type { ClaimedOffer, ClaimOfferModalOffer } from "@/features/offers/offers.types"
+import { isClaimedOfferForToday } from "@/features/offers/utils/formatClaimedArrivalDate"
 import type { RestaurantDetailModel } from "@/features/restaurant/restaurantDetail.types"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 
@@ -13,14 +14,20 @@ export function findOfferCardById(
   return undefined
 }
 
-/** First claim for `restaurantSlug` whose offer still appears on the detail model. */
+/**
+ * First claim for `restaurantSlug` that is still on the detail model and
+ * scheduled for the device-local calendar day of `nowMs`.
+ * Future-day claims must not surface the restaurant “I'm at the venue” bar.
+ */
 export function findActiveClaimForRestaurant(
   restaurantSlug: string,
   model: RestaurantDetailModel,
   claimedByOfferId: Readonly<Record<string, ClaimedOffer>>,
+  nowMs: number = Date.now(),
 ): ClaimedOffer | undefined {
   for (const claim of Object.values(claimedByOfferId)) {
     if (claim.restaurantSlug !== restaurantSlug) continue
+    if (!isClaimedOfferForToday(claim, nowMs)) continue
     if (findOfferCardById(model, claim.offerId)) return claim
   }
   return undefined

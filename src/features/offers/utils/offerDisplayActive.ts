@@ -8,12 +8,29 @@ import type {
 /** Minutes before window start when the campaign PercentFlower turns red (Figma). */
 export const OFFER_ICON_PRE_START_GRACE_MINUTES = 15
 
-export type OfferCampaignSurface = "cardBadge" | "mapPin" | "mapPinSelected"
+/** Figma `19206:45778` Map pin / Discount — Normal / Selected / Closed. */
+export type OfferCampaignSurface =
+  | "cardBadge"
+  | "mapPin"
+  | "mapPinSelected"
+  | "mapPinClosed"
 
 const ICON_SHRINK = "shrink-0"
 
+const MAP_PIN_DISCOUNT_TEXT =
+  "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)]"
+
+/**
+ * Figma Closed / washed pin — opaque white base, then 13% wash on top.
+ * Do not use a lone translucent fill: the map would show through.
+ * (`bg-[gradient,#fff]` is unreliable in Tailwind; set color + image separately.)
+ */
+export const MAP_PIN_WASHED_PILL_CLASS =
+  "border-2 border-solid border-[var(--color-layer-floor-2,#fff)] bg-[var(--layer-floor-1,#fff)] [background-image:linear-gradient(90deg,rgba(0,31,24,0.13),rgba(0,31,24,0.13))]"
+
 export function getOfferCampaignPillClass(surface: OfferCampaignSurface): string {
-  if (surface === "mapPinSelected") return "bg-danger-primary"
+  if (surface === "mapPinSelected") return "bg-neutral-primary"
+  if (surface === "mapPinClosed") return MAP_PIN_WASHED_PILL_CLASS
   return "bg-layer-floor-1"
 }
 
@@ -31,7 +48,15 @@ export function getOfferCampaignIconClass(
   iconActive: boolean,
 ): string {
   if (surface === "mapPinSelected") {
-    return `${ICON_SHRINK} text-static-key-light`
+    return `${ICON_SHRINK} text-primary-inverted`
+  }
+  if (surface === "mapPinClosed") {
+    return `${ICON_SHRINK} text-tertiary`
+  }
+  if (surface === "mapPin") {
+    return iconActive ?
+        `${ICON_SHRINK} text-primary`
+      : `${ICON_SHRINK} text-tertiary`
   }
   if (!iconActive) {
     return `${ICON_SHRINK} text-tertiary`
@@ -43,10 +68,13 @@ export function getOfferCampaignDiscountTextClass(
   surface: OfferCampaignSurface,
 ): string {
   if (surface === "mapPinSelected") {
-    return "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-static-key-light"
+    return `${MAP_PIN_DISCOUNT_TEXT} text-primary-inverted`
+  }
+  if (surface === "mapPinClosed") {
+    return `${MAP_PIN_DISCOUNT_TEXT} text-tertiary`
   }
   if (surface === "mapPin") {
-    return "text-sm leading-5 -tracking-[0.00525rem] [font-variation-settings:'wght'_var(--font-weight-semibold)] text-primary"
+    return `${MAP_PIN_DISCOUNT_TEXT} text-primary`
   }
   return ""
 }

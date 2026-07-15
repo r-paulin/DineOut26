@@ -1,10 +1,10 @@
-import { useCallback, useRef } from "react"
+import { useCallback } from "react"
 import type { FilterKey, FilterState } from "@/features/search/filters.types"
 import { FilterChip } from "./FilterChip"
 
 export interface FilterChipRowProps {
   surface: "floating" | "flat"
-  filterState: Pick<FilterState, "date" | "openNow" | "openAt">
+  filterState: Pick<FilterState, "date" | "openNow">
   getChipLabel: (key: FilterKey) => string
   isChipActive: (key: FilterKey) => boolean
   isChipLocked: (key: FilterKey) => boolean
@@ -12,7 +12,6 @@ export interface FilterChipRowProps {
   openSheet: (key: Exclude<FilterKey, "openNow">) => void
   toggleOpenNowToday: () => void
   clearOpenNowFilter: () => void
-  setOpenAtTime: (time: string | null) => void
 }
 
 const ROW_ORDER: FilterKey[] = [
@@ -25,8 +24,8 @@ const ROW_ORDER: FilterKey[] = [
 ]
 
 /**
- * Horizontally scrolling filter chips for discover + search. Hosts a hidden
- * native `time` input when date ≠ Today so "Any time" / "At …" uses the OS picker.
+ * Horizontally scrolling filter chips for discover + search.
+ * Open now only appears when the date filter is Today.
  */
 export function FilterChipRow({
   surface,
@@ -38,94 +37,52 @@ export function FilterChipRow({
   openSheet,
   toggleOpenNowToday,
   clearOpenNowFilter,
-  setOpenAtTime,
 }: FilterChipRowProps) {
-  const timeInputRef = useRef<HTMLInputElement>(null)
-
-  const openNativeTimePicker = useCallback(() => {
-    const el = timeInputRef.current
-    if (!el) return
-    if (typeof el.showPicker === "function") {
-      void el.showPicker()
-    } else {
-      el.click()
-    }
-  }, [])
+  const dateIsToday = filterState.date === "today"
 
   const onOpenNowClick = useCallback(() => {
-    if (filterState.date === "today") {
-      if (openNowTrailing === "clear") {
-        clearOpenNowFilter()
-        return
-      }
-      toggleOpenNowToday()
+    if (!dateIsToday) return
+    if (openNowTrailing === "clear") {
+      clearOpenNowFilter()
       return
     }
-    openNativeTimePicker()
-  }, [
-    clearOpenNowFilter,
-    filterState.date,
-    openNativeTimePicker,
-    openNowTrailing,
-    toggleOpenNowToday,
-  ])
+    toggleOpenNowToday()
+  }, [clearOpenNowFilter, dateIsToday, openNowTrailing, toggleOpenNowToday])
 
   const trailingFor = useCallback(
     (key: FilterKey): "chevron" | "clear" | "none" => {
       if (isChipLocked(key)) return "none"
-      if (key === "openNow") {
-        if (filterState.date === "today") {
-          return openNowTrailing
-        }
-        return "chevron"
-      }
+      if (key === "openNow") return openNowTrailing
       return "chevron"
     },
-    [filterState.date, isChipLocked, openNowTrailing],
+    [isChipLocked, openNowTrailing],
   )
 
   return (
     <div className="contents">
-      <input
-        ref={timeInputRef}
-        type="time"
-        aria-hidden
-        tabIndex={-1}
-        className="fixed w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0"
-        value={filterState.openAt ?? ""}
-        onChange={(e) => {
-          const v = e.target.value
-          setOpenAtTime(v === "" ? null : v)
-        }}
-      />
       <div
         className="flex flex-row items-center gap-2 w-max min-h-9 me-6 flex-none"
         role="list"
       >
-        {ROW_ORDER.map((key) =>
-          key === "openNow" ? (
-            <div key={key} role="listitem">
-              <FilterChip
-                label={getChipLabel("openNow")}
-                surface={surface}
-                active={isChipActive("openNow")}
-                trailing={trailingFor("openNow")}
-                onClick={onOpenNowClick}
-                pressed={
-                  filterState.date === "today"
-                    ? filterState.openNow
-                    : undefined
-                }
-                aria-label={
-                  filterState.date !== "today"
-                    ? filterState.openAt
-                      ? `Arrival time ${filterState.openAt}, tap to change`
-                      : "Choose arrival time"
-                    : undefined
-                }
-              />
-            </div>
-          ) : (
+        {ROW_ORDER.map((key) => {
+          if (key === "openNow" && !dateIsToday) return null
+
+          if (key === "openNow") {
+            return (
+              <div key={key} role="listitem">
+                <FilterChip
+                  label={getChipLabel("openNow")}
+                  surface={surface}
+                  active={isChipActive("openNow")}
+                  trailing={trailingFor("openNow")}
+                  onClick={onOpenNowClick}
+                  pressed={filterState.openNow}
+                />
+              </div>
+            )
+          }
+
+          return (
             <div key={key} role="listitem">
               <FilterChip
                 label={getChipLabel(key)}
@@ -139,8 +96,8 @@ export function FilterChipRow({
                 }}
               />
             </div>
-          ),
-        )}
+          )
+        })}
       </div>
     </div>
   )

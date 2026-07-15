@@ -11,14 +11,32 @@ function offerStartMinutes(card: RestaurantOfferCardModel): number {
   return Number.MAX_SAFE_INTEGER
 }
 
+function hasClaim(
+  offerId: string,
+  claimedOfferIds?: ReadonlySet<string> | Readonly<Record<string, unknown>>,
+): boolean {
+  if (claimedOfferIds == null) return false
+  if (claimedOfferIds instanceof Set) return claimedOfferIds.has(offerId)
+  return Object.prototype.hasOwnProperty.call(claimedOfferIds, offerId)
+}
+
+export interface SortRestaurantOfferCardsOptions {
+  /** Offer ids the user has claimed — always sorted above unclaimed rows. */
+  claimedOfferIds?: ReadonlySet<string> | Readonly<Record<string, unknown>>
+}
+
 /**
- * Orders offer rows for the restaurant list by window start time (earliest first).
- * All-day offers are treated as starting at midnight.
+ * Orders offer rows for the restaurant list: claimed first, then by window
+ * start time (earliest first). All-day offers are treated as starting at midnight.
  */
 export function sortRestaurantOfferCardsByStartTime(
   cards: readonly RestaurantOfferCardModel[],
+  options?: SortRestaurantOfferCardsOptions,
 ): RestaurantOfferCardModel[] {
-  return [...cards].sort(
-    (a, b) => offerStartMinutes(a) - offerStartMinutes(b),
-  )
+  return [...cards].sort((a, b) => {
+    const aClaimed = hasClaim(a.id, options?.claimedOfferIds)
+    const bClaimed = hasClaim(b.id, options?.claimedOfferIds)
+    if (aClaimed !== bClaimed) return aClaimed ? -1 : 1
+    return offerStartMinutes(a) - offerStartMinutes(b)
+  })
 }

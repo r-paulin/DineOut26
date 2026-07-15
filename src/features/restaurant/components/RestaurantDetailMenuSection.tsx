@@ -26,7 +26,7 @@ export const RestaurantDetailMenuSection = forwardRef<
     <section
       ref={ref}
       id="restaurant-detail-menu"
-      className="flex w-full flex-col gap-3 bg-layer-floor-1 px-6 py-6"
+      className="flex w-full flex-col gap-3 px-6 py-6"
       aria-labelledby="restaurant-detail-menu-heading"
     >
       <header>

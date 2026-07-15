@@ -26,15 +26,26 @@ export function formatClaimedArrivalDate(
   return `${weekday}, ${dayMonth}`
 }
 
+function resolveClaimScheduleYmd(
+  claim: Pick<ClaimedOffer, "offerScheduleYmd" | "claimedAt">,
+): string {
+  return claim.offerScheduleYmd ?? toLocalYmd(new Date(claim.claimedAt))
+}
+
+/** True when the claim's offer day is the device-local calendar day of `nowMs`. */
+export function isClaimedOfferForToday(
+  claim: Pick<ClaimedOffer, "offerScheduleYmd" | "claimedAt">,
+  nowMs: number = Date.now(),
+): boolean {
+  return resolveClaimScheduleYmd(claim) === toLocalYmd(new Date(nowMs))
+}
+
 /** Display label for a claimed offer's calendar day (overrides stored copy when still today). */
 export function resolveClaimedOfferDateLabel(
   claim: Pick<ClaimedOffer, "arrivalDate" | "offerScheduleYmd" | "claimedAt">,
   nowMs: number = Date.now(),
 ): string {
-  const now = new Date(nowMs)
-  const scheduleYmd =
-    claim.offerScheduleYmd ?? toLocalYmd(new Date(claim.claimedAt))
-  if (scheduleYmd === toLocalYmd(now)) {
+  if (isClaimedOfferForToday(claim, nowMs)) {
     return "Today"
   }
   return claim.arrivalDate

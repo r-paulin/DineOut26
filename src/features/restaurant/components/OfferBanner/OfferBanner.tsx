@@ -15,6 +15,7 @@ import {
   getOfferBannerWindowPhase,
   hasOtherClaimAtVenue,
 } from "@/features/restaurant/utils/offerBannerWindowPhase"
+import { OFFER_BANNER_EXPIRED_SNACKBAR } from "@/features/restaurant/constants/restaurantOffersSectionCopy"
 import {
   getOfferBannerState,
   resolveEffectiveBannerState,
@@ -22,6 +23,7 @@ import {
   toOfferForBanner,
   type UserClaim,
 } from "@/features/restaurant/utils/offerState"
+import { useSnackbar } from "@/shared/snackbar"
 
 const OFFER_BANNER_CLOCK_TICK_MS = 30_000
 
@@ -195,6 +197,7 @@ function OfferBannerClaimable({
   onAvailablePress,
   onClaimedPress,
 }: OfferBannerInteractiveProps) {
+  const snackbar = useSnackbar()
   const nowMs = useOfferBannerNowMs(offer)
   const rawState = getOfferBannerState(
     toOfferForBanner(offer),
@@ -245,6 +248,13 @@ function OfferBannerClaimable({
 
   const onActivate = useCallback(() => {
     if (blocked) return
+    if (state === "expired") {
+      snackbar.add({
+        description: OFFER_BANNER_EXPIRED_SNACKBAR,
+        timeout: 4000,
+      })
+      return
+    }
     if (context === "home" && claim) {
       onClaimedPress?.()
       return
@@ -259,6 +269,8 @@ function OfferBannerClaimable({
     }
   }, [
     blocked,
+    state,
+    snackbar,
     claim,
     context,
     content.action?.kind,
@@ -266,7 +278,7 @@ function OfferBannerClaimable({
     onClaimedPress,
   ])
 
-  const isDisabled = state === "expired" || blocked
+  const isDisabled = blocked
 
   return (
     <button

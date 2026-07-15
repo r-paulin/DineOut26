@@ -10,8 +10,18 @@ export const MOTION_SHEET_DISMISS_S = 0.38
 /** In-page tab panel slide, venue bar, staggered blocks. */
 export const MOTION_IN_PAGE_S = 0.35
 
-/** Micro reveals, tab underline, snackbar. */
+/** Micro reveals, tab underline. */
 export const MOTION_MICRO_S = 0.2
+
+/**
+ * Snackbar / toast present — short transient banner (iOS HIG: fluid, decelerating enter).
+ */
+export const MOTION_SNACKBAR_ENTER_S = 0.28
+
+/**
+ * Snackbar dismiss — quicker than enter (iOS HIG: exits accelerate out of view).
+ */
+export const MOTION_SNACKBAR_EXIT_S = 0.2
 
 /** Standard dim behind bottom sheets. */
 export const MOTION_SCRIM_MAX = 0.28

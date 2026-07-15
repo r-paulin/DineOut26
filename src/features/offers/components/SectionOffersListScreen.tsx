@@ -27,7 +27,6 @@ export function SectionOffersListScreen({
   openSheet,
   toggleOpenNowToday,
   clearOpenNowFilter,
-  setOpenAtTime,
   onRestaurantPress,
 }: SectionOffersListScreenProps) {
   const onCloseRef = useRef(onClose)
@@ -88,7 +87,6 @@ export function SectionOffersListScreen({
             openSheet={openSheet}
             toggleOpenNowToday={toggleOpenNowToday}
             clearOpenNowFilter={clearOpenNowFilter}
-            setOpenAtTime={setOpenAtTime}
           />
           <div
             className="shrink-0 w-5 self-stretch pointer-events-none"

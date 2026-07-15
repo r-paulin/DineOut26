@@ -48,7 +48,6 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
     openSheet,
     toggleOpenNowToday,
     clearOpenNowFilter,
-    setOpenAtTime,
     onRestaurantPress,
   } = props
 
@@ -87,7 +86,6 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
             openSheet={openSheet}
             toggleOpenNowToday={toggleOpenNowToday}
             clearOpenNowFilter={clearOpenNowFilter}
-            setOpenAtTime={setOpenAtTime}
           />
           <div
             className="shrink-0 w-5 self-stretch pointer-events-none"

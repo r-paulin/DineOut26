@@ -6,6 +6,11 @@
  * so per-venue “closed” cannot be derived from that grid alone. `all-day` offers
  * count as always active. Swap to per-slug weekly hours later if the catalog grows
  * that field.
+ *
+ * **Calendar date** (`state.date`) is a *mode* switch, not a day-of-week catalog
+ * filter: `timedOffers` are time-of-day only. Non-today forces effective prebook and
+ * disables Open now / Live-vs-clock checks; `timeSlot` still overlaps those windows.
+ * Wire real per-day offer sets here when the catalog gains DOW/date ranges.
  */
 
 import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.data"
@@ -18,12 +23,14 @@ import type {
   FilterState,
   OfferValue,
   PriceValue,
+  TimeSlotId,
 } from "@/features/search/filters.types"
 import type {
   RestaurantTimedOffer,
   TimedOfferWindow,
 } from "@/features/offers/data/restaurantOffers.types"
 import { getMergedRestaurantCatalogEntry } from "@/features/restaurants/restaurantCatalogRuntime"
+import { getTimeSlotOption } from "@/features/search/utils/timeSlots"
 
 function hhmmToMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number)
@@ -91,8 +98,8 @@ export function restaurantTimedOfferActiveNow(slug: string, now: Date): boolean 
 }
 
 /**
- * Prototype: `hhmm` is `"HH:MM"` from the arrival-time chip; overlap uses the same
- * half-open rules as “now”. Calendar date does not yet narrow which offers apply.
+ * Point-in-time overlap for an `"HH:MM"` clock (half-open), e.g. arrival-time chips.
+ * Not used by the date+time wheel (see {@link restaurantTimedOfferOverlapsTimeSlot}).
  */
 export function restaurantTimedOfferActiveAtTime(
   slug: string,
@@ -103,6 +110,46 @@ export function restaurantTimedOfferActiveAtTime(
   if (offers.length === 0) return false
   const m = hhmmToMinutes(hhmm)
   return offersActiveAtMinutes(offers, m)
+}
+
+function rangesOverlapHalfOpen(
+  a0: number,
+  a1: number,
+  b0: number,
+  b1: number,
+): boolean {
+  return a0 < b1 && b0 < a1
+}
+
+function offerWindowOverlapsSlot(
+  window: TimedOfferWindow,
+  slotId: TimeSlotId,
+): boolean {
+  const slot = getTimeSlotOption(slotId)
+  if (slot.startMinutes == null || slot.endMinutes == null) return true
+  if (window.kind === "all-day") return true
+  const range = offerRangeMinutes(window)
+  if (!range) return false
+  return rangesOverlapHalfOpen(
+    range[0],
+    range[1],
+    slot.startMinutes,
+    slot.endMinutes,
+  )
+}
+
+/** True if any timed offer for `slug` overlaps the discover time-slot filter. */
+export function restaurantTimedOfferOverlapsTimeSlot(
+  slug: string,
+  slotId: TimeSlotId,
+): boolean {
+  if (slotId === "any") return true
+  const offers = getRestaurantOffers(slug)
+  if (offers.length === 0) return false
+  for (const o of offers) {
+    if (offerWindowOverlapsSlot(o.window, slotId)) return true
+  }
+  return false
 }
 
 /** Mirrors {@link useFilters} effective offer when date ≠ today → forced prebook. */
@@ -198,8 +245,10 @@ export function filterOfferCardsForDiscover(
       if (!restaurantTimedOfferActiveNow(slug, now)) return false
     }
 
-    if (state.date !== "today" && state.openAt) {
-      if (!restaurantTimedOfferActiveAtTime(slug, state.openAt, now)) return false
+    if (state.timeSlot !== "any") {
+      if (!restaurantTimedOfferOverlapsTimeSlot(slug, state.timeSlot)) {
+        return false
+      }
     }
 
     if (state.price) {

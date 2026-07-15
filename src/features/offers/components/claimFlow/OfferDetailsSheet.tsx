@@ -65,7 +65,6 @@ export function OfferDetailsSheet({
         <ClaimOfferFooterActions
           onClick={onContinue}
           buttonLabel={primaryActionLabel}
-          remainingCount={offer.remainingCount}
         />
       }
     >

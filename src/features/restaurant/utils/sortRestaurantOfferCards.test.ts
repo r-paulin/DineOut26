@@ -53,4 +53,40 @@ describe("sortRestaurantOfferCardsByStartTime", () => {
     const sorted = sortRestaurantOfferCardsByStartTime([unknown, timed])
     expect(sorted.map((x) => x.id)).toEqual(["timed", "unknown"])
   })
+
+  it("places claimed offers above unclaimed regardless of start time", () => {
+    const lunch = offerCard("lunch", {
+      offerStart: "12:00",
+      offerEnd: "17:00",
+    })
+    const lateClaimed = offerCard("late-claimed", {
+      offerStart: "22:15",
+      offerEnd: "23:59",
+    })
+    const sorted = sortRestaurantOfferCardsByStartTime([lunch, lateClaimed], {
+      claimedOfferIds: { "late-claimed": true },
+    })
+    expect(sorted.map((x) => x.id)).toEqual(["late-claimed", "lunch"])
+  })
+
+  it("keeps start-time order among multiple claimed offers", () => {
+    const dinnerClaimed = offerCard("dinner-claimed", {
+      offerStart: "19:00",
+      offerEnd: "23:00",
+    })
+    const lunchClaimed = offerCard("lunch-claimed", {
+      offerStart: "12:00",
+      offerEnd: "17:00",
+    })
+    const sorted = sortRestaurantOfferCardsByStartTime(
+      [dinnerClaimed, lunchClaimed],
+      {
+        claimedOfferIds: new Set(["dinner-claimed", "lunch-claimed"]),
+      },
+    )
+    expect(sorted.map((x) => x.id)).toEqual([
+      "lunch-claimed",
+      "dinner-claimed",
+    ])
+  })
 })

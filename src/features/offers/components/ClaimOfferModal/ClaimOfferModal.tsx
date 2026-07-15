@@ -213,10 +213,7 @@ export function ClaimOfferModal({
         surfaceClass="bg-layer-floor-2"
         footerClassName="bg-layer-floor-2 pt-4 pb-[max(2rem,var(--safe-area-bottom))]"
         footer={
-          <ClaimOfferFooterActions
-            onClick={handleClaim}
-            remainingCount={offer.remainingCount}
-          />
+          <ClaimOfferFooterActions onClick={handleClaim} />
         }
       >
         <div className="px-6 pb-3 pt-10">

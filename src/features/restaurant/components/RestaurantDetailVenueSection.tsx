@@ -66,7 +66,7 @@ export const RestaurantDetailVenueSection = forwardRef<
     <section
       ref={ref}
       id="restaurant-detail-venue"
-      className="flex w-full flex-col bg-layer-floor-1"
+      className="flex w-full flex-col"
       aria-labelledby="restaurant-detail-venue-heading"
     >
       <header className="px-6 pt-6">
@@ -156,7 +156,7 @@ export const RestaurantDetailVenueSection = forwardRef<
         </li>
       </ul>
       {onOpenReportProblem ?
-        <div className="flex flex-col gap-3 px-6 py-6">
+        <div className="flex flex-col gap-3 px-6 pb-0 pt-6">
           <Button
             type="button"
             variant="secondary"

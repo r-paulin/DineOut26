@@ -2,6 +2,7 @@ import { Typography } from "@bolteu/kalep-react"
 import { OfferCardListRatingStar } from "@/features/offers/components/OfferCardListRatingStar"
 import {
   SUMMARY_BAR_CLASS,
+  SUMMARY_BAR_ROW_CLASS,
   SUMMARY_COL_DIVIDER_ELM,
   SUMMARY_COL_STACK,
   SUMMARY_SUBLINE,
@@ -19,6 +20,11 @@ export interface RestaurantDetailStatsBarProps {
   onOpenPriceInfo?: () => void
   /** Opens the address bottom sheet (location column). */
   onOpenAddress?: () => void
+  /**
+   * When true, omit hero-overlap shell styles — parent white card owns radius,
+   * fill, and `-mt` pull (restaurant detail feed).
+   */
+  embedded?: boolean
 }
 
 /**
@@ -34,9 +40,14 @@ export function RestaurantDetailStatsBar({
   onOpenReviews,
   onOpenPriceInfo,
   onOpenAddress,
+  embedded = false,
 }: RestaurantDetailStatsBarProps) {
   return (
-    <div className={SUMMARY_BAR_CLASS} role="group" aria-label="Restaurant summary">
+    <div
+      className={embedded ? SUMMARY_BAR_ROW_CLASS : SUMMARY_BAR_CLASS}
+      role="group"
+      aria-label="Restaurant summary"
+    >
       <button
         type="button"
         className={`${SUMMARY_COL_STACK} cursor-pointer border-0`}

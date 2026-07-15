@@ -1,15 +1,15 @@
 import Cross from "@bolteu/kalep-react-icons/dist/Cross"
 import { IconButton, Typography } from "@bolteu/kalep-react"
+import { useMemo } from "react"
 import type { OfferCardModel } from "@/features/offers/offers.types"
 import { mapOfferToRestaurantCardView } from "@/features/offers/utils/mapPlaceCardView"
 import { useOfferDisplayNow } from "@/features/offers/utils/offerDisplayActive"
+import { getRestaurantDetailDemo } from "@/features/restaurant/data/restaurantDetailDemo"
+import { buildOpenHoursUiState } from "@/features/restaurant/utils/restaurantOpenHoursUi"
 import { OfferCardBadges } from "./OfferCardBadges"
 import { OfferCardImageRatingBadge } from "./OfferCardImageRatingBadge"
 
-const IMAGE_GRAD =
-  "linear-gradient(180deg, rgba(0,0,0,0) 53.5%, rgba(0,0,0,0.5) 100%)"
-
-/** Figma `15809:13965` / `15809:13961` — Body S regular/accent meta rows. */
+/** Figma `15809:14236` — Body S regular/accent meta rows. */
 const MAP_CARD_BODY_S_FONT = {
   fontFamily: 'var(--font-family, "Inter Variable")',
   fontSize: "var(--Body-S-font-size, 14px)",
@@ -34,8 +34,8 @@ export interface MapPlaceCardOpenedProps {
 }
 
 /**
- * Figma `_Place / Card / On Map - Opened` (15809:13976) — hero, campaign badges,
- * rating, close, name + meta. Floated above the map (not in the bottom sheet).
+ * Figma `_Place / Card / On Map - Opened` (`15809:14236`) — hero, dark campaign
+ * badges, rating, close, name + open status + cuisine/price. Floated above the map.
  */
 export function MapPlaceCardOpened({
   offer,
@@ -48,9 +48,24 @@ export function MapPlaceCardOpened({
   const view = mapOfferToRestaurantCardView(offer, now)
   const slug = offer.restaurantSlug ?? offer.id
   const cuisineLine =
-    view.cuisineTags.length > 0
-      ? view.cuisineTags.join(", ")
-      : offer.cuisine
+    view.cuisineTags.length > 0 ?
+      view.cuisineTags.join(", ")
+    : offer.cuisine
+
+  const hoursUi = useMemo(() => {
+    const detail = getRestaurantDetailDemo(slug)
+    return buildOpenHoursUiState(now, detail.weeklyOpenHours)
+  }, [now, slug])
+
+  const isOpen = hoursUi?.isOpenNow ?? view.isOpen
+  const statusSecondary =
+    hoursUi ?
+      hoursUi.venueHoursRowSubtitle
+    : isOpen && view.closesAt ?
+      `Closes ${view.closesAt}`
+    : isOpen ?
+      offer.area
+    : null
 
   const openDetail = () => {
     if (onRestaurantPress && slug) onRestaurantPress(slug)
@@ -67,42 +82,38 @@ export function MapPlaceCardOpened({
         onRestaurantPress && slug && !filterPending ? openDetail : undefined
       }
       onKeyDown={
-        onRestaurantPress && slug && !filterPending
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault()
-                openDetail()
-              }
+        onRestaurantPress && slug && !filterPending ?
+          (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              openDetail()
             }
-          : undefined
+          }
+        : undefined
       }
       aria-busy={filterPending || undefined}
       aria-label={
-        onRestaurantPress && slug
-          ? `Open ${view.name} restaurant details`
-          : undefined
+        onRestaurantPress && slug ?
+          `Open ${view.name} restaurant details`
+        : undefined
       }
     >
       <div className="relative w-full">
-        <div className="relative z-0 w-full overflow-hidden bg-layer-floor-1 aspect-[308/156]">
+        <div className="relative z-0 w-full overflow-hidden rounded-t-[8px] bg-layer-floor-1 aspect-[308/156]">
           <img
             src={offer.image}
             alt=""
             className="absolute inset-0 size-full object-cover"
           />
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{ background: IMAGE_GRAD }}
-          />
-          <div className="absolute left-3 top-3 z-[1] w-fit max-w-[calc(100%-3.5rem)]">
+          <div className="absolute left-2 top-2 z-[1] w-fit max-w-[calc(100%-3rem)]">
             <OfferCardBadges
               campaign={offer.campaign}
               restaurantSlug={slug}
-              density="comfortable"
+              density="hero-dark"
               liveNowFilter={liveNowFilter}
             />
           </div>
-          {filterPending ? (
+          {filterPending ?
             <div
               className="pointer-events-none absolute inset-0 z-[3] flex flex-col gap-2 bg-layer-floor-1 opacity-[0.97] p-3 animate-pulse"
               aria-hidden
@@ -113,20 +124,22 @@ export function MapPlaceCardOpened({
                 <div className="h-7 w-20 rounded-md bg-neutral-secondary" />
               </div>
             </div>
-          ) : null}
-        </div>
-        <div className="pointer-events-none absolute inset-0 z-[1] flex items-end justify-end pb-3 pe-3">
-          <div className="pointer-events-auto">
-            <OfferCardImageRatingBadge
-              rating={offer.rating}
-              reviewCount={view.reviewCount ? `(${view.reviewCount})` : undefined}
-              density="comfortable"
-              staticComfortable
-            />
+          : null}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] flex items-end justify-end p-2">
+            <div className="pointer-events-auto">
+              <OfferCardImageRatingBadge
+                rating={offer.rating}
+                reviewCount={
+                  view.reviewCount ? `(${view.reviewCount})` : undefined
+                }
+                density="comfortable"
+                staticComfortable
+              />
+            </div>
           </div>
         </div>
       </div>
-      <div className="pointer-events-none absolute right-3 top-3 z-[2]">
+      <div className="pointer-events-none absolute right-2 top-2 z-[2]">
         <IconButton
           variant="secondary"
           shape="round"
@@ -140,12 +153,9 @@ export function MapPlaceCardOpened({
           icon={<Cross size="md" className="text-primary" />}
         />
       </div>
-      <div className="relative flex flex-col gap-0.5 bg-layer-floor-1 px-4 pb-4 pt-2">
-        {filterPending ? (
-          <div
-            className="flex flex-col gap-2 animate-pulse"
-            aria-hidden
-          >
+      <div className="relative flex flex-col gap-0.5 rounded-b-[12px] bg-layer-floor-1 px-4 pb-4 pt-2">
+        {filterPending ?
+          <div className="flex flex-col gap-2 animate-pulse" aria-hidden>
             <div className="h-5 w-[72%] rounded-md bg-neutral-secondary" />
             <div className="h-4 w-[55%] rounded-md bg-neutral-secondary" />
             <div className="flex flex-wrap gap-2">
@@ -153,8 +163,7 @@ export function MapPlaceCardOpened({
               <div className="h-4 w-16 rounded-md bg-neutral-secondary" />
             </div>
           </div>
-        ) : (
-          <>
+        : <>
             <Typography
               as="h2"
               variant="heading-xs-accent"
@@ -165,7 +174,7 @@ export function MapPlaceCardOpened({
               {view.name}
             </Typography>
             <div className="flex min-w-0 items-baseline gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
-              {view.isOpen ? (
+              {isOpen ?
                 <>
                   <Typography
                     variant="body-s-accent"
@@ -175,44 +184,58 @@ export function MapPlaceCardOpened({
                   >
                     Open
                   </Typography>
+                  {statusSecondary ?
+                    <>
+                      <Typography
+                        variant="body-s-regular"
+                        color="secondary"
+                        as="span"
+                        inlineStyle={MAP_CARD_BODY_S_FONT}
+                      >
+                        {"\u00b7"}
+                      </Typography>
+                      <Typography
+                        variant="body-s-regular"
+                        color="primary"
+                        as="span"
+                        inlineStyle={MAP_CARD_BODY_S_FONT}
+                      >
+                        {statusSecondary}
+                      </Typography>
+                    </>
+                  : null}
+                </>
+              : <>
                   <Typography
-                    variant="body-s-regular"
-                    color="secondary"
+                    variant="body-s-accent"
+                    color="danger-primary"
                     as="span"
                     inlineStyle={MAP_CARD_BODY_S_FONT}
                   >
-                    {"\u00a0\u00b7\u00a0"}
+                    Closed
                   </Typography>
-                  {view.closesAt ? (
-                    <Typography
-                      variant="body-s-regular"
-                      color="primary"
-                      as="span"
-                      inlineStyle={MAP_CARD_BODY_S_FONT}
-                    >
-                      {`Closes ${view.closesAt}`}
-                    </Typography>
-                  ) : (
-                    <Typography
-                      variant="body-s-regular"
-                      color="primary"
-                      as="span"
-                      inlineStyle={MAP_CARD_BODY_S_FONT}
-                    >
-                      {offer.area}
-                    </Typography>
-                  )}
+                  {statusSecondary && statusSecondary !== "Closed" ?
+                    <>
+                      <Typography
+                        variant="body-s-regular"
+                        color="secondary"
+                        as="span"
+                        inlineStyle={MAP_CARD_BODY_S_FONT}
+                      >
+                        {"\u00b7"}
+                      </Typography>
+                      <Typography
+                        variant="body-s-regular"
+                        color="primary"
+                        as="span"
+                        inlineStyle={MAP_CARD_BODY_S_FONT}
+                      >
+                        {statusSecondary}
+                      </Typography>
+                    </>
+                  : null}
                 </>
-              ) : (
-                <Typography
-                  variant="body-s-accent"
-                  color="danger-primary"
-                  as="span"
-                  inlineStyle={MAP_CARD_BODY_S_FONT}
-                >
-                  Closed
-                </Typography>
-              )}
+              }
             </div>
             <div className="flex min-w-0 flex-wrap items-baseline gap-1">
               <Typography
@@ -241,7 +264,7 @@ export function MapPlaceCardOpened({
               </Typography>
             </div>
           </>
-        )}
+        }
       </div>
     </div>
   )

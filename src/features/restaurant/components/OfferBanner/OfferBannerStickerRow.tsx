@@ -4,7 +4,10 @@ import Lock from "@bolteu/kalep-react-icons/dist/Lock"
 import Time from "@bolteu/kalep-react-icons/dist/Time"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { useOfferCountdown } from "@/features/offers/components/ClaimedOfferPage/useOfferCountdown"
-import type { OfferBannerSticker } from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
+import {
+  formatOfferBannerCountdownStickerText,
+  type OfferBannerSticker,
+} from "@/features/restaurant/components/OfferBanner/useOfferBannerContent"
 
 /** Figma `17097:18617` Offer / Sticker — 8px gap, 12px horizontal padding. */
 const STICKER_ROW_CLASS =
@@ -101,8 +104,10 @@ function OfferBannerCountdownSticker({
   iconClass: string
 }) {
   const { expired, countdownHms } = useOfferCountdown(claim.offerWindowCloses)
-  const text =
-    expired ? "Offer ended" : `Check in within ${countdownHms}`
+  const text = formatOfferBannerCountdownStickerText(claim, {
+    expired,
+    countdownHms,
+  })
 
   return (
     <div className={STICKER_ROW_CLASS}>

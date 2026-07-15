@@ -28,7 +28,10 @@ import type { ClaimedOffer, PaymentMethod } from "@/features/offers/offers.types
 import gsap from "gsap"
 import { createClaimedOfferCheckInSnackbar } from "@/features/offers/constants/claimedOfferCheckInSnackbar"
 import { cancelOffer } from "@/features/offers/utils/claimOffer"
-import { resolveClaimedOfferDateLabel } from "@/features/offers/utils/formatClaimedArrivalDate"
+import {
+  isClaimedOfferForToday,
+  resolveClaimedOfferDateLabel,
+} from "@/features/offers/utils/formatClaimedArrivalDate"
 import { Z_CLAIMED_OFFER_PAGE } from "@/features/restaurant/constants/screenLayers"
 import { AnimatedCollapse } from "@/shared/components/AnimatedCollapse"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
@@ -104,6 +107,7 @@ export const ClaimedOfferPage = forwardRef<
     null,
   )
   const checkedIn = isClaimCheckedIn(claim)
+  const claimIsForToday = isClaimedOfferForToday(claim)
   const expired = useOfferExpired(claim.offerWindowCloses)
   const showCardCashUpsell = claim.paymentMethod === "card_or_cash"
   const offerTitle =
@@ -347,12 +351,13 @@ export const ClaimedOfferPage = forwardRef<
             onPay={handlePay}
             onConfirmBill={handleConfirmBill}
           />
-        : <ClaimedOfferCheckInFooter
+        : claimIsForToday ?
+          <ClaimedOfferCheckInFooter
             anchorRef={snackbarAnchorRef}
             expired={expired}
             onCheckIn={handleCheckIn}
           />
-        }
+        : null}
       </div>
 
       <ClaimedOfferHowItWorksSheet

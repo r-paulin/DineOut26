@@ -12,8 +12,8 @@ export interface RestaurantDetailAtVenueBarProps {
   onPress?: () => void
   /** When false, skip entrance animation (e.g. About overlay open). */
   animateIn?: boolean
-  /** Parent calls this before the detail panel exit tween. */
-  onExitAnimationRef?: (runExit: (() => void) | null) => void
+  /** Parent awaits this before the detail panel exit tween. */
+  onExitAnimationRef?: (runExit: (() => Promise<void>) | null) => void
 }
 
 /**

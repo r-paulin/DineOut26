@@ -132,18 +132,29 @@ describe("offer campaign visual classes", () => {
     expect(getOfferCampaignIconClass("cardBadge", false)).toContain("text-tertiary")
   })
 
-  it("mapPin uses white pill; selected uses danger primary", () => {
+  it("mapPin uses white / dark / closed pills (Figma 19206:45778)", () => {
     expect(getOfferCampaignPillClass("mapPin")).toBe("bg-layer-floor-1")
-    expect(getOfferCampaignPillClass("mapPinSelected")).toBe("bg-danger-primary")
-    expect(getOfferCampaignIconClass("mapPin", true)).toContain(
-      "text-danger-primary",
+    expect(getOfferCampaignPillClass("mapPinSelected")).toBe("bg-neutral-primary")
+    expect(getOfferCampaignPillClass("mapPinClosed")).toContain("border-2")
+    expect(getOfferCampaignPillClass("mapPinClosed")).toContain(
+      "bg-[var(--layer-floor-1,#fff)]",
     )
+    expect(getOfferCampaignPillClass("mapPinClosed")).toContain(
+      "[background-image:linear-gradient",
+    )
+    expect(getOfferCampaignIconClass("mapPin", true)).toContain("text-primary")
     expect(getOfferCampaignIconClass("mapPin", false)).toContain("text-tertiary")
     expect(getOfferCampaignIconClass("mapPinSelected", true)).toContain(
-      "text-static-key-light",
+      "text-primary-inverted",
+    )
+    expect(getOfferCampaignIconClass("mapPinClosed", false)).toContain(
+      "text-tertiary",
     )
     expect(getOfferCampaignDiscountTextClass("mapPinSelected")).toContain(
-      "text-static-key-light",
+      "text-primary-inverted",
+    )
+    expect(getOfferCampaignDiscountTextClass("mapPinClosed")).toContain(
+      "text-tertiary",
     )
   })
 

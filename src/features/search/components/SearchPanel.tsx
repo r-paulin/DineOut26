@@ -27,7 +27,6 @@ export const SearchPanel = forwardRef<HTMLDivElement, SearchPanelProps>(
       openSheet,
       toggleOpenNowToday,
       clearOpenNowFilter,
-      setOpenAtTime,
       filterState,
     },
     ref,
@@ -62,7 +61,6 @@ export const SearchPanel = forwardRef<HTMLDivElement, SearchPanelProps>(
             openSheet={openSheet}
             toggleOpenNowToday={toggleOpenNowToday}
             clearOpenNowFilter={clearOpenNowFilter}
-            setOpenAtTime={setOpenAtTime}
             filterState={filterState}
           />
           <div

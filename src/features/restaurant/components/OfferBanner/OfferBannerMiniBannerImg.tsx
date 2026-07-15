@@ -10,6 +10,7 @@ export interface OfferBannerMiniBannerImgProps {
   variant: OfferBannerImageVariant
 }
 
+/** Figma `[Dine-out] Mini-banner-Img` — 56×56, bottom-right. */
 export function OfferBannerMiniBannerImg({
   variant,
 }: OfferBannerMiniBannerImgProps) {
@@ -26,7 +27,7 @@ export function OfferBannerMiniBannerImg({
   }
 
   return (
-    <MiniBannerShell>
+    <MiniBannerShell greyscale={variant === "expired"}>
       <img
         src={OFFER_BANNER_MINI_UNCLAIMED_BASE_SRC}
         alt=""
@@ -43,10 +44,16 @@ export function OfferBannerMiniBannerImg({
   )
 }
 
-function MiniBannerShell({ children }: { children: ReactNode }) {
+function MiniBannerShell({
+  children,
+  greyscale = false,
+}: {
+  children: ReactNode
+  greyscale?: boolean
+}) {
   return (
     <div
-      className="pointer-events-none absolute bottom-[-1px] right-[-1px] size-14 overflow-hidden"
+      className={`pointer-events-none absolute bottom-0 right-0 size-14 overflow-hidden${greyscale ? " grayscale" : ""}`}
       aria-hidden
     >
       <div className="absolute inset-0">{children}</div>

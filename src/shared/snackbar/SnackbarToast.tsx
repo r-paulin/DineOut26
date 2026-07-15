@@ -6,12 +6,16 @@ import { toast } from "sonner"
 import { resolveSnackbarDismiss } from "@/shared/snackbar/resolveSnackbarDismiss"
 import type { SnackbarContent } from "@/shared/snackbar/snackbar.types"
 import {
-  EASE_SHEET_DISMISS,
-  EASE_STANDARD_OUT,
-  MOTION_IN_PAGE_S,
-  MOTION_SHEET_DISMISS_S,
+  EASE_EMPHASIZED_ENTER,
+  EASE_EMPHASIZED_EXIT,
+  MOTION_SNACKBAR_ENTER_S,
+  MOTION_SNACKBAR_EXIT_S,
 } from "@/shared/motion"
 import { motionReduced } from "@/shared/motion/motionHelpers"
+
+/** Slide distance — toast rises from below / settles downward on dismiss. */
+const SNACKBAR_ENTER_Y_PX = 20
+const SNACKBAR_EXIT_Y_PX = 12
 
 export interface SnackbarToastProps {
   id: string | number
@@ -38,8 +42,9 @@ function CloseControl({ onDismiss }: { onDismiss: () => void }) {
 }
 
 /**
- * Toast body: matches Kalep Snackbar visuals; entry/exit motion is GSAP-driven
- * (Sonner list-item transitions are neutralized in CSS for this toaster).
+ * Toast body: Kalep Snackbar visuals; GSAP enter/exit follows iOS HIG motion
+ * (emphasized decelerating present, faster accelerating dismiss; Sonner host
+ * transitions are neutralized in CSS).
  */
 const TITLE_COMPACT_LINE = {
   lineHeight: "var(--body-m-compact-line-height, 20px)",
@@ -68,10 +73,10 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
     gsap.killTweensOf(el)
     gsap.to(el, {
       autoAlpha: 0,
-      y: 10,
-      scale: 0.98,
-      duration: MOTION_SHEET_DISMISS_S,
-      ease: EASE_SHEET_DISMISS,
+      y: SNACKBAR_EXIT_Y_PX,
+      duration: MOTION_SNACKBAR_EXIT_S,
+      ease: EASE_EMPHASIZED_EXIT,
+      overwrite: true,
       onComplete: () => {
         toast.dismiss(id)
       },
@@ -82,25 +87,25 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
     const el = panelRef.current
     if (!el) return
     if (motionReduced()) {
-      gsap.set(el, { autoAlpha: 1, y: 0, scale: 1 })
+      gsap.set(el, { autoAlpha: 1, y: 0 })
       enteredRef.current = true
       return
     }
     if (enteredRef.current) {
-      gsap.set(el, { autoAlpha: 1, y: 0, scale: 1 })
+      gsap.set(el, { autoAlpha: 1, y: 0 })
       return
     }
     enteredRef.current = true
     const ctx = gsap.context(() => {
       gsap.fromTo(
         el,
-        { autoAlpha: 0, y: 14, scale: 0.97 },
+        { autoAlpha: 0, y: SNACKBAR_ENTER_Y_PX },
         {
           autoAlpha: 1,
           y: 0,
-          scale: 1,
-          duration: MOTION_IN_PAGE_S,
-          ease: EASE_STANDARD_OUT,
+          duration: MOTION_SNACKBAR_ENTER_S,
+          ease: EASE_EMPHASIZED_ENTER,
+          overwrite: true,
         },
       )
     }, el)
@@ -108,7 +113,7 @@ export function SnackbarToast({ id, content }: SnackbarToastProps) {
     // and revert would flash the panel back to hidden mid-animation.
     return () => {
       ctx.kill()
-      gsap.set(el, { autoAlpha: 1, y: 0, scale: 1 })
+      gsap.set(el, { autoAlpha: 1, y: 0 })
     }
     // One-shot entry per toast mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- panel ref only

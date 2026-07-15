@@ -7,8 +7,7 @@ import type { RestaurantAboutProps } from "./restaurantAbout.types"
 import {
   CardDivider,
   CARD_DIVIDER_GROOVE_BG_CLASS,
-  CARD_DIVIDER_SECTION_ABOVE_CLASS,
-  CARD_DIVIDER_SECTION_BELOW_CLASS,
+  CARD_DIVIDER_SECTION_MIDDLE_CLASS,
 } from "@/shared/components/CardDivider"
 import { useRestaurantAbout } from "./useRestaurantAbout"
 import { VenueInfoRows } from "./VenueInfoRow"
@@ -107,7 +106,7 @@ export function RestaurantAbout({
 
   return (
     <section className={`flex w-full flex-col ${CARD_DIVIDER_GROOVE_BG_CLASS}`}>
-      <div className={CARD_DIVIDER_SECTION_ABOVE_CLASS}>
+      <div className={CARD_DIVIDER_SECTION_MIDDLE_CLASS}>
         <div className="flex w-full min-w-0 flex-col gap-0.5 px-6 py-3">
           <div className="min-w-0 max-w-full" title={restaurant.name}>
             <Typography
@@ -152,7 +151,7 @@ export function RestaurantAbout({
 
       <CardDivider />
 
-      <div className={CARD_DIVIDER_SECTION_BELOW_CLASS}>
+      <div className={CARD_DIVIDER_SECTION_MIDDLE_CLASS}>
         <div className="px-6 pt-6 pb-4">
         <Typography
           variant="heading-xs-accent"

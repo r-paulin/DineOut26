@@ -11,6 +11,7 @@ import {
   isTimedOfferWindowLiveAt,
   restaurantTimedOfferActiveAtTime,
   restaurantTimedOfferActiveNow,
+  restaurantTimedOfferOverlapsTimeSlot,
 } from "./filterDiscoverOffers"
 
 beforeEach(() => {
@@ -131,6 +132,28 @@ describe("getEffectiveOfferForDiscover", () => {
   })
 })
 
+describe("filterOfferCardsForDiscover date mode", () => {
+  it("does not drop rows for non-today when live is selected (effective prebook)", () => {
+    vi.spyOn(restaurantOffersData, "getRestaurantOffers").mockReturnValue([
+      {
+        discountPercent: 15,
+        window: { kind: "range", start: "12:00", end: "15:00" },
+        remainingSpots: 1,
+      },
+    ])
+    const state = {
+      ...getDefaultFilterState(),
+      date: "2026-07-16",
+      offer: "live" as const,
+    }
+    // Outside the lunch window — would fail if still treating as live-at-now.
+    const now = new Date(2026, 6, 15, 20, 0)
+    expect(
+      filterOfferCardsForDiscover([stubCard("x")], state, now),
+    ).toHaveLength(1)
+  })
+})
+
 describe("isTimedOfferWindowLiveAt", () => {
   it("uses half-open range without pre-start grace", () => {
     const window = { kind: "range" as const, start: "12:00", end: "15:00" }
@@ -182,6 +205,21 @@ describe("isDiscoverEmptyTriggerFilter", () => {
   })
 })
 
+describe("restaurantTimedOfferOverlapsTimeSlot", () => {
+  it("matches offer windows that overlap the slot", () => {
+    vi.spyOn(restaurantOffersData, "getRestaurantOffers").mockReturnValue([
+      {
+        discountPercent: 15,
+        window: { kind: "range", start: "12:00", end: "15:00" },
+        remainingSpots: 1,
+      },
+    ])
+    expect(restaurantTimedOfferOverlapsTimeSlot("x", "any")).toBe(true)
+    expect(restaurantTimedOfferOverlapsTimeSlot("x", "lunch")).toBe(true)
+    expect(restaurantTimedOfferOverlapsTimeSlot("x", "evening")).toBe(false)
+  })
+})
+
 describe("filterOfferCardsForDiscover", () => {
   it("drops rows when live is effective and no window contains now", () => {
     vi.spyOn(restaurantOffersData, "getRestaurantOffers").mockReturnValue([
@@ -198,6 +236,31 @@ describe("filterOfferCardsForDiscover", () => {
     )
     expect(
       filterOfferCardsForDiscover([stubCard("x")], state, new Date(2026, 0, 7, 13, 0)),
+    ).toHaveLength(1)
+  })
+
+  it("applies time-slot overlap when slot is not Anytime", () => {
+    vi.spyOn(restaurantOffersData, "getRestaurantOffers").mockReturnValue([
+      {
+        discountPercent: 15,
+        window: { kind: "range", start: "18:00", end: "22:00" },
+        remainingSpots: 1,
+      },
+    ])
+    const lunch = {
+      ...getDefaultFilterState(),
+      timeSlot: "lunch" as const,
+    }
+    const evening = {
+      ...getDefaultFilterState(),
+      timeSlot: "evening" as const,
+    }
+    const now = new Date(2026, 0, 7, 12, 0)
+    expect(filterOfferCardsForDiscover([stubCard("x")], lunch, now)).toHaveLength(
+      0,
+    )
+    expect(
+      filterOfferCardsForDiscover([stubCard("x")], evening, now),
     ).toHaveLength(1)
   })
 })

@@ -4,7 +4,7 @@ export type PinVariant =
   | "discount_gray"
   | "discount_dark"
   | "bolt_green"
-  /** Discovery map — Offer icon + discount pill (Figma). */
+  /** Discovery map — discount pin (Figma `19206:45778`). */
   | "map_pin"
 
 export type MapMarkerData = {

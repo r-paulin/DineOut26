@@ -32,10 +32,10 @@ import { RestaurantDetailQuickActions } from "./RestaurantDetailQuickActions"
 import {
   CardDivider,
   CARD_DIVIDER_GROOVE_BG_CLASS,
-  CARD_DIVIDER_SECTION_ABOVE_CLASS,
-  CARD_DIVIDER_SECTION_BELOW_CLASS,
+  CARD_DIVIDER_SECTION_LAST_CLASS,
   CARD_DIVIDER_SECTION_MIDDLE_CLASS,
 } from "@/shared/components/CardDivider"
+import { RESTAURANT_DETAIL_FEED_TOP_CARD_CLASS } from "./restaurantDetailSummaryTokens"
 import { RestaurantDetailStatsBar } from "./RestaurantDetailStatsBar"
 import { RestaurantAbout } from "./RestaurantAbout"
 import { RestaurantDetailMenuSection } from "./RestaurantDetailMenuSection"
@@ -88,7 +88,7 @@ export function RestaurantDetailScreen({
   const aboutStackRef = useRef<HTMLDivElement>(null)
   const onBackRef = useRef(onBack)
   const aboutExitingRef = useRef(false)
-  const venueBarExitRef = useRef<(() => void) | null>(null)
+  const venueBarExitRef = useRef<(() => Promise<void>) | null>(null)
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
     { scrimOpacity: MOTION_DETAIL_SCRIM },
     onBackRef,
@@ -135,12 +135,18 @@ export function RestaurantDetailScreen({
   }, [onBack])
 
   const handleAnimatedBack = useCallback(() => {
-    venueBarExitRef.current?.()
-    runExit()
+    const runVenueBarExit = venueBarExitRef.current
+    if (!runVenueBarExit) {
+      runExit()
+      return
+    }
+    void runVenueBarExit().then(() => {
+      runExit()
+    })
   }, [runExit])
 
   const registerVenueBarExit = useCallback(
-    (runVenueBarExit: (() => void) | null) => {
+    (runVenueBarExit: (() => Promise<void>) | null) => {
       venueBarExitRef.current = runVenueBarExit
     },
     [],
@@ -340,12 +346,6 @@ export function RestaurantDetailScreen({
             ref={scrollRef}
             className={`min-h-0 flex-1 overflow-y-auto overflow-x-hidden ${CARD_DIVIDER_GROOVE_BG_CLASS}`}
             onScroll={handleScroll}
-            style={{
-              paddingBottom:
-                showAtVenueBar ?
-                  "calc(env(safe-area-inset-bottom, 0px) + 10rem)"
-                : "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
-            }}
             aria-hidden={aboutOpen}
             {...(aboutOpen ? { inert: true } : {})}
           >
@@ -361,17 +361,23 @@ export function RestaurantDetailScreen({
               onShare={handleShare}
               onOpenHours={onOpenHours === null ? undefined : handleOpenHours}
             />
-            <RestaurantDetailStatsBar
-              ratingValue={model.ratingValue}
-              reviewsLine={model.reviewsLine}
-              priceRange={model.priceRange}
-              areaLabel={model.areaLabel}
-              address={model.address}
-              onOpenReviews={handleOpenReviews}
-              onOpenPriceInfo={onOpenPriceInfo ?? undefined}
-              onOpenAddress={handleOpenAddress}
-            />
-            <div className={`${CARD_DIVIDER_SECTION_ABOVE_CLASS} px-0 pb-0`}>
+            {/*
+              Figma `19390:63198`: light-grey page (`floor-0-grouped`); each
+              feed block is a white card with 16px radius. 8px CardDivider gaps
+              let the grey show through at the rounded corners.
+            */}
+            <div className={RESTAURANT_DETAIL_FEED_TOP_CARD_CLASS}>
+              <RestaurantDetailStatsBar
+                embedded
+                ratingValue={model.ratingValue}
+                reviewsLine={model.reviewsLine}
+                priceRange={model.priceRange}
+                areaLabel={model.areaLabel}
+                address={model.address}
+                onOpenReviews={handleOpenReviews}
+                onOpenPriceInfo={onOpenPriceInfo ?? undefined}
+                onOpenAddress={handleOpenAddress}
+              />
               <RestaurantDetailQuickActions
                 onOpenMenu={
                   onOpenMenu === null ? undefined : scrollToMenuSection
@@ -391,7 +397,9 @@ export function RestaurantDetailScreen({
                 }
                 onOpenDetails={scrollToVenueSection}
               />
-              <CardDivider />
+            </div>
+            <CardDivider />
+            <div className={CARD_DIVIDER_SECTION_MIDDLE_CLASS}>
               <RestaurantDetailOffersSection
                 venueSlug={model.slug}
                 tabs={model.offerDateTabs}
@@ -405,32 +413,44 @@ export function RestaurantDetailScreen({
                 onPaidOfferPress={onPaidOfferPress}
               />
             </div>
+            {model.menuGalleryImages.length > 0 ?
+              <>
+                <CardDivider />
+                <div className={CARD_DIVIDER_SECTION_MIDDLE_CLASS}>
+                  <RestaurantDetailMenuSection
+                    ref={menuSectionRef}
+                    imageUrls={model.menuGalleryImages}
+                    onOpenGallery={openMenuGalleryAt}
+                  />
+                </div>
+              </>
+            : null}
             <CardDivider />
-            <div className={CARD_DIVIDER_SECTION_MIDDLE_CLASS}>
-              <RestaurantDetailMenuSection
-                ref={menuSectionRef}
-                imageUrls={model.menuGalleryImages}
-                onOpenGallery={openMenuGalleryAt}
-              />
-            </div>
-            <CardDivider />
-            <div className={CARD_DIVIDER_SECTION_BELOW_CLASS}>
-              <RestaurantDetailVenueSection
-              ref={venueSectionRef}
-              name={model.name}
-              cuisineTags={model.cuisineTags}
-              venueGalleryCycles={model.venueGalleryCycles}
-              venueHoursRowSubtitle={hoursUi.venueHoursRowSubtitle}
-              isOpen={hoursUi.isOpenNow}
-              address={model.address}
-              phone={model.phone}
-              onOpenHours={handleOpenHours}
-              onOpenAddress={handleOpenAddress}
-              onCall={onCall}
-              onOpenAbout={openAbout}
-              onOpenReportProblem={() => {
-                setReportProblemOpen(true)
+            <div
+              className={CARD_DIVIDER_SECTION_LAST_CLASS}
+              style={{
+                paddingBottom:
+                  showAtVenueBar ?
+                    "calc(env(safe-area-inset-bottom, 0px) + 10rem)"
+                  : "calc(env(safe-area-inset-bottom, 0px) + 40px)",
               }}
+            >
+              <RestaurantDetailVenueSection
+                ref={venueSectionRef}
+                name={model.name}
+                cuisineTags={model.cuisineTags}
+                venueGalleryCycles={model.venueGalleryCycles}
+                venueHoursRowSubtitle={hoursUi.venueHoursRowSubtitle}
+                isOpen={hoursUi.isOpenNow}
+                address={model.address}
+                phone={model.phone}
+                onOpenHours={handleOpenHours}
+                onOpenAddress={handleOpenAddress}
+                onCall={onCall}
+                onOpenAbout={openAbout}
+                onOpenReportProblem={() => {
+                  setReportProblemOpen(true)
+                }}
               />
             </div>
           </div>

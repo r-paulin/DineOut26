@@ -9,12 +9,15 @@ import {
   PRICE_OPTIONS,
 } from "@/features/search/data/filterOptions"
 import type {
+  DateValue,
   FilterKey,
   FilterState,
+  TimeSlotId,
 } from "@/features/search/filters.types"
 import type { DateOptionRow } from "@/features/search/utils/dateOptions"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
 import { VAUL_SHEET_OVERLAY_CLASS } from "@/shared/utils/vaulAppSheetShell"
+import { DateTimeFilterPanel } from "./DateTimeFilterPanel"
 import { RadioFilterList } from "./RadioFilterList"
 
 /** Above {@link SearchFullscreen} (`z-[120]`); below promo overlay peaks (`z-[125]`). */
@@ -26,11 +29,12 @@ export interface FilterSheetProps {
   filterState: FilterState
   dateOptionRows: DateOptionRow[]
   onClose: () => void
-  onApply: (key: Exclude<FilterKey, "openNow">, value: string) => void
+  onApply: (key: Exclude<FilterKey, "openNow" | "date">, value: string) => void
+  onApplyDateTime: (date: DateValue, timeSlot: TimeSlotId) => void
 }
 
 const SHEET_TITLE: Record<Exclude<FilterKey, "openNow">, string> = {
-  date: "Date",
+  date: "Date and time",
   offer: "Offers",
   price: "Price",
   cuisine: "Cuisine",
@@ -38,12 +42,10 @@ const SHEET_TITLE: Record<Exclude<FilterKey, "openNow">, string> = {
 }
 
 function committedDraftString(
-  key: Exclude<FilterKey, "openNow">,
+  key: Exclude<FilterKey, "openNow" | "date">,
   state: FilterState,
 ): string {
   switch (key) {
-    case "date":
-      return state.date
     case "offer":
       return state.offer
     case "price":
@@ -58,12 +60,11 @@ function committedDraftString(
 }
 
 interface FilterSheetPanelProps {
-  activeKey: Exclude<FilterKey, "openNow">
+  activeKey: Exclude<FilterKey, "openNow" | "date">
   filterState: FilterState
-  dateOptionRows: DateOptionRow[]
   titleId: string
   onClose: () => void
-  onApply: (key: Exclude<FilterKey, "openNow">, value: string) => void
+  onApply: (key: Exclude<FilterKey, "openNow" | "date">, value: string) => void
 }
 
 /**
@@ -72,7 +73,6 @@ interface FilterSheetPanelProps {
 function FilterSheetPanel({
   activeKey,
   filterState,
-  dateOptionRows,
   titleId,
   onClose,
   onApply,
@@ -84,23 +84,19 @@ function FilterSheetPanel({
   const title = SHEET_TITLE[activeKey]
 
   const options = useMemo(() => {
-    if (activeKey === "date") {
-      return dateOptionRows.map((r) => ({ id: r.id, label: r.label }))
-    }
     if (activeKey === "offer") return OFFER_OPTIONS
     if (activeKey === "price") return PRICE_OPTIONS
     if (activeKey === "cuisine") return CUISINE_OPTIONS
     return AMENITY_OPTIONS
-  }, [activeKey, dateOptionRows])
+  }, [activeKey])
 
   const applyDisabled =
     draft === committedDraftString(activeKey, filterState)
 
-  /** Default value string for the active filter (same as legacy draft reset). */
-  function committedResetValue(key: Exclude<FilterKey, "openNow">): string {
+  function committedResetValue(
+    key: Exclude<FilterKey, "openNow" | "date">,
+  ): string {
     switch (key) {
-      case "date":
-        return "today"
       case "offer":
         return "all"
       case "price":
@@ -193,10 +189,8 @@ function FilterSheetPanel({
 }
 
 /**
- * Modal bottom sheet for a single filter dimension: radio list, Reset, Apply.
- * Uses Vaul `Drawer` (not Kalep `BottomSheet`) so `Drawer.Title` / `Drawer.Description`
- * sit directly under `Drawer.Content`, satisfying Radix dialog a11y and avoiding
- * console warnings from Kalep’s BottomSheet shell.
+ * Modal bottom sheet for a single filter dimension.
+ * Date uses the dual-axis wheel ({@link DateTimeFilterPanel}); others use radio lists.
  */
 export function FilterSheet({
   sheetKey,
@@ -204,6 +198,7 @@ export function FilterSheet({
   dateOptionRows,
   onClose,
   onApply,
+  onApplyDateTime,
 }: FilterSheetProps) {
   const titleId = useId()
   const { portalRoot } = useDeviceShell()
@@ -214,6 +209,8 @@ export function FilterSheet({
       : null
 
   const isOpen = activeKey !== null
+  /** Date wheel uses touch preventDefault; drag-dismiss fights scrolling on iOS. */
+  const sheetDismissible = activeKey !== "date"
 
   return (
     <Drawer.Root
@@ -221,7 +218,7 @@ export function FilterSheet({
       onOpenChange={(open) => {
         if (!open) onClose()
       }}
-      dismissible
+      dismissible={sheetDismissible}
       repositionInputs={false}
       snapPoints={[]}
       container={portalRoot ?? undefined}
@@ -245,18 +242,30 @@ export function FilterSheet({
                 Filter: {SHEET_TITLE[activeKey]}
               </Drawer.Title>
               <Drawer.Description className="sr-only">
-                Choose one option for this filter. Reset restores defaults and closes
-                the sheet. Apply saves your choice and closes the sheet.
+                {activeKey === "date"
+                  ? "Choose a date and time range. Reset restores Today and Anytime. Apply saves your choice."
+                  : "Choose one option for this filter. Reset restores defaults and closes the sheet. Apply saves your choice and closes the sheet."}
               </Drawer.Description>
-              <FilterSheetPanel
-                key={activeKey}
-                activeKey={activeKey}
-                filterState={filterState}
-                dateOptionRows={dateOptionRows}
-                titleId={titleId}
-                onClose={onClose}
-                onApply={onApply}
-              />
+              {activeKey === "date" ? (
+                <DateTimeFilterPanel
+                  key="date"
+                  filterDate={filterState.date}
+                  filterTimeSlot={filterState.timeSlot}
+                  dateOptionRows={dateOptionRows}
+                  titleId={titleId}
+                  onClose={onClose}
+                  onApply={onApplyDateTime}
+                />
+              ) : (
+                <FilterSheetPanel
+                  key={activeKey}
+                  activeKey={activeKey}
+                  filterState={filterState}
+                  titleId={titleId}
+                  onClose={onClose}
+                  onApply={onApply}
+                />
+              )}
             </>
           ) : null}
         </Drawer.Content>

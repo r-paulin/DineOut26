@@ -2,8 +2,17 @@
  * Shared layout + typography for the restaurant summary strip (detail stats bar
  * and About overlap card) — Figma `16123:18008` Feed / Data.
  */
+/** Inner row only — use when the parent white card owns radius / overlap / fill. */
+export const SUMMARY_BAR_ROW_CLASS =
+  "box-border flex min-h-[72px] w-full items-center gap-1 px-2 pt-[20px] pb-[12px]"
+
+/** Standalone strip: overlaps hero with top radius (when not inside a feed card shell). */
 export const SUMMARY_BAR_CLASS =
-  "relative z-[2] -mt-4 mx-0 box-border flex min-h-[72px] w-full items-center gap-1 rounded-t-[16px] bg-layer-floor-1 px-2 pt-[20px] pb-[12px] shadow-[0_-0.25rem_0.75rem_rgba(0,0,0,0.08)]"
+  `relative z-[2] -mt-4 mx-0 ${SUMMARY_BAR_ROW_CLASS} rounded-t-[16px] bg-layer-floor-1 shadow-[0_-0.25rem_0.75rem_rgba(0,0,0,0.08)]`
+
+/** First feed card under the hero — full 16px radius on grey page backdrop. */
+export const RESTAURANT_DETAIL_FEED_TOP_CARD_CLASS =
+  "relative z-[2] -mt-4 overflow-hidden rounded-[16px] bg-layer-floor-1 shadow-[0_-0.25rem_0.75rem_rgba(0,0,0,0.08)]"
 
 /** Figma `dimension/100` — horizontal inset inside each data column. */
 export const SUMMARY_COL_PAD = "px-1 py-0"

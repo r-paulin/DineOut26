@@ -10,31 +10,52 @@ import { motionReduced } from "@/shared/motion/motionHelpers"
 
 /**
  * Fade/slide the full “I'm at the venue” footer shell after detail panel enter.
+ * Exit resolves only after the bar (promo + CTA) has fully left.
  */
 export function useRestaurantAtVenueBarEntrance(
   shellRef: RefObject<HTMLElement | null>,
   enabled: boolean,
-): { runExit: () => void } {
+): { runExit: () => Promise<void> } {
   const exitingRef = useRef(false)
 
-  const runExit = useCallback(() => {
+  const runExit = useCallback((): Promise<void> => {
     const el = shellRef.current
-    if (!el || exitingRef.current) return
+    if (!el) return Promise.resolve()
+    if (exitingRef.current) {
+      return new Promise((resolve) => {
+        const tween = gsap.getTweensOf(el)[0]
+        if (tween) {
+          tween.eventCallback("onComplete", () => resolve())
+          tween.eventCallback("onInterrupt", () => resolve())
+        } else {
+          resolve()
+        }
+      })
+    }
     exitingRef.current = true
 
     gsap.killTweensOf(el)
 
     if (motionReduced()) {
       gsap.set(el, { autoAlpha: 0, visibility: "hidden" })
-      return
+      return Promise.resolve()
     }
 
-    gsap.to(el, {
-      autoAlpha: 0,
-      y: 12,
-      duration: MOTION_SHEET_DISMISS_S,
-      ease: EASE_STANDARD_OUT,
-      force3D: true,
+    const slideY = Math.max(el.offsetHeight, 48)
+
+    return new Promise((resolve) => {
+      gsap.to(el, {
+        autoAlpha: 0,
+        y: slideY,
+        duration: MOTION_SHEET_DISMISS_S,
+        ease: EASE_STANDARD_OUT,
+        force3D: true,
+        onComplete: () => {
+          gsap.set(el, { visibility: "hidden" })
+          resolve()
+        },
+        onInterrupt: () => resolve(),
+      })
     })
   }, [shellRef])
 

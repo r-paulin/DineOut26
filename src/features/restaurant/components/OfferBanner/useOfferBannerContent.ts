@@ -1,11 +1,15 @@
+import { clampRemainingSpotsForDisplay } from "@/features/offers/data/selectPrimaryTimedOffer"
+import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
 import { resolveClaimedOfferDateLabel } from "@/features/offers/utils/formatClaimedArrivalDate"
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
-import type { ClaimedOffer, PaidOfferRecord } from "@/features/offers/offers.types"
-import { clampRemainingSpotsForDisplay } from "@/features/offers/data/selectPrimaryTimedOffer"
+import {
+  compareYmd,
+  toLocalYmd,
+} from "@/features/offers/utils/offerScheduleLocal"
 import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
-import { formatEurMajor } from "@/features/payBill/utils/formatEur"
-import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
 import { round2 } from "@/features/payBill/utils/discountCalc"
+import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
+import { formatEurMajor } from "@/features/payBill/utils/formatEur"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { formatOfferBannerValidityTime } from "@/features/restaurant/utils/formatOfferBannerValidityTime"
 import type { OfferBannerWindowPhase } from "@/features/restaurant/utils/offerBannerWindowPhase"
@@ -48,11 +52,17 @@ export type OfferBannerSticker =
   | { kind: "dineout-upsell"; text: string }
   | { kind: "cashback-earned"; text: string }
 
-export type OfferBannerImageVariant = "claimed" | "unclaimed"
+/** Figma `_OfferCards` in-card status badge — always top of card. */
+export type OfferBannerBadge =
+  | { kind: "scarcity"; text: string }
+  | { kind: "expired"; text: string }
+  | { kind: "locked"; text: string }
+
+export type OfferBannerImageVariant = "claimed" | "unclaimed" | "expired"
 
 export type OfferBannerInnerSurface = "default" | "claimed" | "paid"
 
-/** Figma `17097:18617` — scarcity banners use neutral-primary shell + sticker row. */
+/** Outer shell tone — `limited` kept for locked/legacy dark footers. */
 export type OfferBannerOuterShellTone = "neutral" | "limited"
 
 export type OfferBannerContent = {
@@ -65,6 +75,8 @@ export type OfferBannerContent = {
   headline: string
   dataLines: OfferBannerDataLine[]
   action: OfferBannerAction | null
+  /** In-card top badge (scarcity / expired / locked) — Figma `16005:12046`. */
+  badge: OfferBannerBadge | null
   sticker: OfferBannerSticker | null
   imageVariant: OfferBannerImageVariant
   ariaLabel: string
@@ -163,6 +175,28 @@ export function formatOfferBannerHomeClaimedDetailLine(
 /** Figma `16626:52014` — card/cash paid banner secondary line. */
 export const OFFER_BANNER_PAID_CASH_SUBTITLE = "Paid with card or cash" as const
 
+/** Claimed banner sticker when the offer day is still in the future. */
+export const OFFER_BANNER_FUTURE_CHECK_IN_STICKER =
+  "Check in when you arrive at the venue" as const
+
+/**
+ * Claimed countdown sticker copy — live timer on the offer day; static copy before then.
+ */
+export function formatOfferBannerCountdownStickerText(
+  claim: Pick<ClaimedOffer, "offerScheduleYmd" | "claimedAt">,
+  args: { expired: boolean; countdownHms: string; nowMs?: number },
+): string {
+  const nowMs = args.nowMs ?? Date.now()
+  const scheduleYmd =
+    claim.offerScheduleYmd ?? toLocalYmd(new Date(claim.claimedAt))
+  const todayYmd = toLocalYmd(new Date(nowMs))
+  if (compareYmd(scheduleYmd, todayYmd) > 0) {
+    return OFFER_BANNER_FUTURE_CHECK_IN_STICKER
+  }
+  if (args.expired) return "Offer ended"
+  return `Check in within ${args.countdownHms}`
+}
+
 export function formatOfferBannerTotalBillLine(eur: number): string {
   return `Total bill: ${formatEurMajor(eur)}`
 }
@@ -231,6 +265,7 @@ export function buildPaidOfferBannerContent({
           ]
         : [],
       action: { kind: "paid", label: "Paid", disabled: false },
+      badge: null,
       sticker:
         cashbackSticker ?
           { kind: "cashback-earned", text: cashbackSticker }
@@ -255,6 +290,7 @@ export function buildPaidOfferBannerContent({
       },
     ],
     action: null,
+    badge: null,
     sticker: {
       kind: "dineout-upsell",
       text: formatOfferBannerDineOutUpsellSticker(),
@@ -288,14 +324,15 @@ function buildAvailableDataLines(
         offerEnd: offer.offerEnd,
       }),
       emphasis: "regular",
-      tone: "primary",
+      tone: "secondary",
+      typography: "compact-regular",
     },
   ]
 }
 
-function buildAvailabilitySticker(
+function buildAvailabilityBadge(
   offer: RestaurantOfferCardModel,
-): OfferBannerSticker | null {
+): OfferBannerBadge | null {
   const remainingCount = clampRemainingSpotsForDisplay(offer.remainingCount)
   if (remainingCount == null) return null
   return {
@@ -310,20 +347,20 @@ function buildAvailableOfferBannerFields(
   windowPhase: OfferBannerWindowPhase,
 ): Pick<
   OfferBannerContent,
-  "headline" | "dataLines" | "sticker" | "outerShellTone" | "ariaLabel"
+  "headline" | "dataLines" | "badge" | "outerShellTone" | "ariaLabel"
 > {
   const headline = formatOfferBannerTitle(
     displayDiscount,
     Boolean(offer.isAllDay),
   )
   const dataLines = buildAvailableDataLines(offer, windowPhase)
-  const sticker = buildAvailabilitySticker(offer)
+  const badge = buildAvailabilityBadge(offer)
   return {
     headline,
     dataLines,
-    sticker,
-    outerShellTone: sticker ? "limited" : "neutral",
-    ariaLabel: headline,
+    badge,
+    outerShellTone: "neutral",
+    ariaLabel: badge ? `${badge.text}, ${headline}` : headline,
   }
 }
 
@@ -337,34 +374,16 @@ export function buildOfferBannerContent({
   hasOtherClaimAtVenue,
 }: BuildOfferBannerContentArgs): OfferBannerContent {
   if (state === "claimed" && claim) {
-    if (context === "home") {
-      const headline =
-        offer.restaurantName?.trim() || "Restaurant"
-      const detailLine =
-        claim.offerDetailLabel?.trim() ||
-        formatOfferBannerClaimedDiscountLine(displayDiscount)
-      const arrivalLine = formatOfferBannerArrivalLine(claim)
-      return {
-        outerClaimed: true,
-        outerShellTone: "neutral",
-        innerClaimed: true,
-        headline,
-        dataLines: [
-          { text: arrivalLine, emphasis: "accent" },
-          {
-            text: detailLine,
-            emphasis: "regular",
-            tone: "secondary",
-          },
-        ],
-        action: { kind: "claimed", label: "Claimed", disabled: false },
-        sticker: { kind: "countdown" },
-        imageVariant: "claimed",
-        ariaLabel: `${headline}, ${arrivalLine}, ${detailLine}`,
-      }
-    }
-    const headline = formatOfferBannerClaimedDiscountLine(displayDiscount)
+    // Figma `_OfferCards` Claimed (`17113:17624` / `16084:49908`) — same on home + restaurant.
+    const headline = formatOfferBannerTitle(
+      displayDiscount,
+      Boolean(offer.isAllDay),
+    )
     const scheduleLine = formatOfferBannerArrivalLine(claim)
+    const restaurantLabel =
+      context === "home" ?
+        offer.restaurantName?.trim() || "Restaurant"
+      : null
     return {
       outerClaimed: true,
       outerShellTone: "neutral",
@@ -375,6 +394,7 @@ export function buildOfferBannerContent({
           text: scheduleLine,
           emphasis: "regular",
           tone: "primary",
+          typography: "compact-accent",
         },
       ],
       action: {
@@ -382,9 +402,13 @@ export function buildOfferBannerContent({
         label: "Active",
         disabled: false,
       },
+      badge: null,
       sticker: { kind: "countdown" },
       imageVariant: "claimed",
-      ariaLabel: `${headline}, ${scheduleLine}`,
+      ariaLabel:
+        restaurantLabel ?
+          `${restaurantLabel}, ${headline}, ${scheduleLine}`
+        : `${headline}, ${scheduleLine}`,
     }
   }
 
@@ -394,6 +418,10 @@ export function buildOfferBannerContent({
       Boolean(offer.isAllDay),
     )
     const dataLines = buildAvailableDataLines(offer, windowPhase)
+    const badge: OfferBannerBadge = {
+      kind: "expired",
+      text: "Offer has expired",
+    }
     return {
       outerClaimed: false,
       outerShellTone: "neutral",
@@ -401,9 +429,10 @@ export function buildOfferBannerContent({
       headline,
       dataLines,
       action: { kind: "claim-now", label: "Claim offer", disabled: true },
-      sticker: { kind: "expired", text: "Offer has expired" },
-      imageVariant: "unclaimed",
-      ariaLabel: headline,
+      badge,
+      sticker: null,
+      imageVariant: "expired",
+      ariaLabel: `${badge.text}, ${headline}`,
     }
   }
 
@@ -413,6 +442,10 @@ export function buildOfferBannerContent({
       Boolean(offer.isAllDay),
     )
     const dataLines = buildAvailableDataLines(offer, windowPhase)
+    const badge: OfferBannerBadge = {
+      kind: "locked",
+      text: LOCKED_STICKER_COPY,
+    }
     return {
       outerClaimed: false,
       outerShellTone: "neutral",
@@ -420,9 +453,10 @@ export function buildOfferBannerContent({
       headline,
       dataLines,
       action: { kind: "claim-now", label: "Claim offer", disabled: true },
-      sticker: { kind: "locked", text: LOCKED_STICKER_COPY },
-      imageVariant: "unclaimed",
-      ariaLabel: headline,
+      badge,
+      sticker: null,
+      imageVariant: "expired",
+      ariaLabel: `${badge.text}, ${headline}`,
     }
   }
 
@@ -439,7 +473,8 @@ export function buildOfferBannerContent({
     headline: availableFields.headline,
     dataLines: availableFields.dataLines,
     action: { kind: "claim-now", label: "Claim offer", disabled: false },
-    sticker: availableFields.sticker,
+    badge: availableFields.badge,
+    sticker: null,
     imageVariant: "unclaimed",
     ariaLabel: availableFields.ariaLabel,
   }
@@ -461,9 +496,17 @@ export function buildStaticOfferBannerContent({
     headline: title,
     dataLines:
       subtitle.trim().length > 0 ?
-        [{ text: subtitle, emphasis: "regular", tone: "secondary" }]
+        [
+          {
+            text: subtitle,
+            emphasis: "regular",
+            tone: "secondary",
+            typography: "compact-regular",
+          },
+        ]
       : [],
     action: null,
+    badge: null,
     sticker: null,
     imageVariant: "unclaimed",
     ariaLabel: title,

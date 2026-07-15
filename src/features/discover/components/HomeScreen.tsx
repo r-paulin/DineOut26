@@ -113,9 +113,9 @@ export function HomeScreen() {
     openSheet,
     closeSheet,
     applySheetValue,
+    applyDateTimeFilter,
     toggleOpenNowToday,
     clearOpenNowFilter,
-    setOpenAtTime,
     resetAllFilters,
     getChipLabel,
     isChipActive,
@@ -229,6 +229,27 @@ export function HomeScreen() {
     [applySheetValue, runWithMapPlaceCardFilterSkeleton],
   )
 
+  const applyDateTimeFilterWithSkeleton = useCallback(
+    (
+      date: Parameters<typeof applyDateTimeFilter>[0],
+      timeSlot: Parameters<typeof applyDateTimeFilter>[1],
+    ) => {
+      if (filterState.date === date && filterState.timeSlot === timeSlot) {
+        applyDateTimeFilter(date, timeSlot)
+        return
+      }
+      runWithMapPlaceCardFilterSkeleton(() => {
+        applyDateTimeFilter(date, timeSlot)
+      })
+    },
+    [
+      applyDateTimeFilter,
+      filterState.date,
+      filterState.timeSlot,
+      runWithMapPlaceCardFilterSkeleton,
+    ],
+  )
+
   const toggleOpenNowTodayWithSkeleton = useCallback(() => {
     runWithMapPlaceCardFilterSkeleton(() => toggleOpenNowToday())
   }, [runWithMapPlaceCardFilterSkeleton, toggleOpenNowToday])
@@ -236,13 +257,6 @@ export function HomeScreen() {
   const clearOpenNowFilterWithSkeleton = useCallback(() => {
     runWithMapPlaceCardFilterSkeleton(() => clearOpenNowFilter())
   }, [clearOpenNowFilter, runWithMapPlaceCardFilterSkeleton])
-
-  const setOpenAtTimeWithSkeleton = useCallback(
-    (time: Parameters<typeof setOpenAtTime>[0]) => {
-      runWithMapPlaceCardFilterSkeleton(() => setOpenAtTime(time))
-    },
-    [runWithMapPlaceCardFilterSkeleton, setOpenAtTime],
-  )
 
   const resetAllFiltersWithSkeleton = useCallback(() => {
     runWithMapPlaceCardFilterSkeleton(() => resetAllFilters())
@@ -879,7 +893,6 @@ export function HomeScreen() {
     openSheet,
     toggleOpenNowToday: toggleOpenNowTodayWithSkeleton,
     clearOpenNowFilter: clearOpenNowFilterWithSkeleton,
-    setOpenAtTime: setOpenAtTimeWithSkeleton,
     filterState,
   }
 
@@ -1196,6 +1209,7 @@ export function HomeScreen() {
         dateOptionRows={dateOptionRows}
         onClose={closeSheet}
         onApply={applySheetValueWithSkeleton}
+        onApplyDateTime={applyDateTimeFilterWithSkeleton}
       />
     </div>
   )

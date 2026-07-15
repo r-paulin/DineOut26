@@ -29,6 +29,7 @@ export type {
   FilterState,
   OfferValue,
   PriceValue,
+  TimeSlotId,
 } from "./filters.types"
 export { getDefaultFilterState } from "./filters.types"
 export { useFilters } from "./hooks/useFilters"
