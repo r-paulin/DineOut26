@@ -1,6 +1,7 @@
-import { restaurantTimedOfferDisplayActiveNow } from "@/features/offers/utils/offerDisplayActive"
+import { restaurantTimedOfferOverlapsTimeSlot } from "@/features/discover/utils/filterDiscoverOffers"
 import type { OfferCardModel } from "@/features/offers/offers.types"
 import { hasCampaignBadges } from "@/features/offers/utils/mapPlaceCardView"
+import type { TimeSlotId } from "@/features/search/filters.types"
 import type { MapMarkerData } from "./map.types"
 import { ringLatLng } from "./restaurantMapPosition"
 
@@ -14,12 +15,18 @@ function dedupeRestaurants(offers: OfferCardModel[]): OfferCardModel[] {
 }
 
 /**
- * One map marker per unique restaurant from the given offer rows (pre-filtered).
+ * One map marker per unique restaurant from the given offer rows.
+ *
+ * Pin enabled vs grey follows the discover **time-slot** filter (not the device
+ * clock): `any` / Anytime → all enabled; a ranged slot → overlap = enabled,
+ * non-overlap stays on the map in grey/closed style.
  */
-export function buildMapMarkersFromOffers(offers: OfferCardModel[]): MapMarkerData[] {
+export function buildMapMarkersFromOffers(
+  offers: OfferCardModel[],
+  timeSlot: TimeSlotId = "any",
+): MapMarkerData[] {
   const unique = dedupeRestaurants(offers)
   const n = unique.length
-  const now = new Date()
   return unique.map((o, index) => {
     const restaurantKey = o.restaurantSlug ?? o.id
     const { lat, lng } = ringLatLng(index, n, restaurantKey)
@@ -32,7 +39,10 @@ export function buildMapMarkersFromOffers(offers: OfferCardModel[]): MapMarkerDa
       label: o.name,
       discountText: hasCampaignBadges(c) ? c.discountLabel : undefined,
       restaurantId: restaurantKey,
-      timedOfferActiveNow: restaurantTimedOfferDisplayActiveNow(restaurantKey, now),
+      timedOfferActiveNow: restaurantTimedOfferOverlapsTimeSlot(
+        restaurantKey,
+        timeSlot,
+      ),
     } satisfies MapMarkerData
   })
 }

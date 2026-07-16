@@ -24,7 +24,10 @@ export type RestaurantCatalogEntry = {
   rating: string
   reviewSuffix: string
   primaryGrad?: boolean
-  /** Short meta line (cards / search “cuisine” slot). */
+  /**
+   * Short meta line for cards / map / search — Cuisine filter labels only
+   * (`CUISINE_OPTIONS`), joined with ` · `.
+   */
   tags: string
   tagDescription: string
   /** Ranged windows only — no `{ kind: "all-day" }` in catalog data. */
@@ -52,9 +55,9 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     rating: "4.8",
     reviewSuffix: "(150+)",
     primaryGrad: true,
-    tags: "Open Kitchen · Tasting Menu · Latvian Chefs",
+    tags: "Local / European",
     tagDescription:
-      "Its defining features — the visible kitchen and chef-driven tasting format",
+      "Open kitchen · tasting menu · Latvian chefs — chef-driven contemporary format",
     timedOffers: [
       {
         discountPercent: 25,
@@ -109,8 +112,9 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     rating: "4.7",
     reviewSuffix: "(200+)",
     primaryGrad: true,
-    tags: "Michelin Listed · Wine Pairing · Seasonal Menu",
-    tagDescription: "Credibility markers that drive bookings",
+    tags: "Mediterranean · Seafood",
+    tagDescription:
+      "Michelin Listed · wine pairing · seasonal menu — credibility markers that drive bookings",
     timedOffers: [
       {
         discountPercent: 20,
@@ -165,9 +169,9 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     rating: "4.6",
     reviewSuffix: "(300+)",
     primaryGrad: true,
-    tags: "Modern Latvian · Farm to Table",
+    tags: "Local / European · Café / Brunch",
     tagDescription:
-      "Captures its core identity — local sourcing with a contemporary twist",
+      "Modern Latvian · farm to table — local sourcing with a contemporary twist",
     timedOffers: [
       {
         discountPercent: 30,
@@ -221,8 +225,9 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     rating: "4.7",
     reviewSuffix: "(180+)",
     primaryGrad: true,
-    tags: "Park Terrace · City Views · Fine Dining",
-    tagDescription: "The setting is its biggest differentiator",
+    tags: "Local / European",
+    tagDescription:
+      "Park terrace · city views · fine dining — the setting is its biggest differentiator",
     timedOffers: [
       {
         discountPercent: 20,
@@ -277,9 +282,9 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     rating: "4.9",
     reviewSuffix: "(80+)",
     primaryGrad: true,
-    tags: "Set Menu Only · Chef's Table · Industrial Space",
+    tags: "Local / European",
     tagDescription:
-      "Unique format + unusual location — exactly what sets it apart",
+      "Set menu only · chef's table · industrial space — unique format and location",
     timedOffers: [
       {
         discountPercent: 30,
@@ -329,8 +334,9 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
     rating: "4.5",
     reviewSuffix: "(400+)",
     primaryGrad: true,
-    tags: "Medieval Vault · Historic · Traditional",
-    tagDescription: "The 1293 vault is the whole experience",
+    tags: "Local / European",
+    tagDescription:
+      "Medieval vault · historic · traditional — the 1293 vault is the whole experience",
     timedOffers: [
       {
         discountPercent: 10,

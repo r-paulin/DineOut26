@@ -17,8 +17,9 @@ export type MapMarkerData = {
   discountText?: string
   restaurantId?: string
   /**
-   * Discovery pins: any timed-offer window is display-active (15m pre-start grace).
-   * Omitted on non-`map_pin` markers — treat as active for icon color.
+   * Discovery pins: matches the discover time-slot filter (`any` → enabled).
+   * `false` → grey/closed style; pin stays visible. Omitted on non-`map_pin`
+   * markers — treat as active for icon color.
    */
   timedOfferActiveNow?: boolean
 }

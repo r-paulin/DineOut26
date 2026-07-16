@@ -1,16 +1,19 @@
 import type { OfferCardCampaign, OfferCardModel, RestaurantCardView } from "../offers.types"
 import { getRestaurantOffers } from "@/features/offers/data/restaurantOffers.data"
 import { restaurantTimedOfferActiveNow } from "@/features/discover/utils/filterDiscoverOffers"
+import {
+  filterTagsToCuisineLabels,
+  parseTagLine,
+} from "@/features/search/utils/cuisineTags"
 
 /** True when the map-opened / pin UI should show campaign pills (has a primary line). */
 export function hasCampaignBadges(c: OfferCardCampaign): boolean {
   return Boolean(c.discountLabel || c.timeWindow)
 }
 
+/** Map card meta — Cuisine filter labels only (not marketing tags). */
 function cuisineTagsFromOffer(offer: OfferCardModel): string[] {
-  const raw = offer.cuisine.trim()
-  if (!raw) return []
-  return raw.split(/\s*·\s*/).map((s) => s.trim()).filter(Boolean)
+  return filterTagsToCuisineLabels(parseTagLine(offer.cuisine))
 }
 
 function reviewCountDisplay(offer: OfferCardModel): string {

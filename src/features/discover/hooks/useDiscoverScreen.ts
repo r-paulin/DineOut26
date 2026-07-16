@@ -79,10 +79,24 @@ export function useDiscoverScreen() {
   }, [])
 
   const onViewMapFab = useCallback(() => {
+    // Clear pin focus without restoring snap (onClearFocus would overwrite).
+    setFocusRestaurantId(null)
+    setSelectedMarkerId(null)
     setSheetSnap("peek")
     setScrollToTopSignal((s) => s + 1)
-    onClearFocus()
-  }, [onClearFocus])
+  }, [])
+
+  /**
+   * Filtered-results “View map”: caller closes the list; land on home map with
+   * the sheet minimized (Figma map-first state) while filters stay applied.
+   * Do not use onClearFocus — it restores the pre-card snap and undoes minimized.
+   */
+  const onViewFilteredMap = useCallback(() => {
+    setFocusRestaurantId(null)
+    setSelectedMarkerId(null)
+    setSheetSnap("minimized")
+    setScrollToTopSignal((s) => s + 1)
+  }, [])
 
   const openSectionList = useCallback((payload: DiscoverSectionListState) => {
     setSearchOpen(false)
@@ -132,6 +146,7 @@ export function useDiscoverScreen() {
     searchOpen,
     setSearchOpen,
     onViewMapFab,
+    onViewFilteredMap,
     scrollToTopSignal,
     sectionList,
     openSectionList,

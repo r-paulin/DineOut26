@@ -28,4 +28,4 @@ export const SUMMARY_VALUE_LINE = {
 } as const
 
 export const SUMMARY_SUBLINE =
-  "block w-full min-w-0 max-w-full text-center text-[length:var(--body-s-font-size,0.875rem)] leading-[var(--body-s-line-height,1.25rem)] text-secondary [font-variation-settings:'wght'_var(--font-weight-regular)] line-clamp-2 break-words"
+  "block w-full min-w-0 max-w-full truncate text-center text-[length:var(--body-s-font-size,0.875rem)] leading-[var(--body-s-line-height,1.25rem)] text-secondary [font-variation-settings:'wght'_var(--font-weight-regular)]"

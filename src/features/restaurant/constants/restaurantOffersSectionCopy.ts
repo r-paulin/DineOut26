@@ -2,6 +2,10 @@
 export const RESTAURANT_OFFERS_HOW_IT_WORKS_LINK =
   "How DineOut offers work" as const
 
+/** Figma `19444:53627` — empty-state ghost CTA. */
+export const RESTAURANT_OFFERS_EMPTY_BROWSE_CTA =
+  "Browse nearby offers" as const
+
 /** Dismiss CTA when the promo sheet is opened from restaurant detail (not discover). */
 export const RESTAURANT_OFFERS_HOW_IT_WORKS_CTA = "OK" as const
 

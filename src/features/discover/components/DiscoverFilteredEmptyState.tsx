@@ -1,11 +1,11 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 
-/** Figma `16164:22950` — toast illustration (`public/images/discover-filtered-empty.png`). */
+/** Figma `19444:56050` — paper-bag empty illustration. */
 const EMPTY_ILLUSTRATION_SRC = "/images/discover-filtered-empty.png"
 
 /**
- * Discover bottom sheet when Live now, Open now, or Price filters match nothing.
- * Figma `16164:22950`.
+ * Filtered results empty state (fullscreen + discover sheet).
+ * Figma `19444:56050`. Side inset is always 24px (`px-6`) on this block.
  */
 export function DiscoverFilteredEmptyState({
   onResetFilters,
@@ -14,8 +14,8 @@ export function DiscoverFilteredEmptyState({
 }) {
   return (
     <section
-      className="flex w-full flex-col items-center gap-6 px-2 pb-4 pt-6 text-center"
-      aria-label="No matching restaurants"
+      className="box-border flex w-full max-w-full flex-col items-center justify-center px-6 text-center"
+      aria-label="No matching venues"
     >
       <img
         src={EMPTY_ILLUSTRATION_SRC}
@@ -26,31 +26,39 @@ export function DiscoverFilteredEmptyState({
         loading="lazy"
         decoding="async"
       />
-      <div className="flex max-w-[18rem] flex-col gap-2">
+      <div className="flex w-full flex-col items-center gap-2 pb-4">
         <Typography
-          variant="body-l-compact-accent"
+          variant="heading-s-accent"
           color="primary"
           as="p"
+          align="center"
           inlineStyle={{
-            fontWeight: 600,
-            fontVariationSettings: '"opsz" 18, "wght" 600',
+            letterSpacing: "-0.48px",
+            fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
           }}
         >
-          No places match your filters
+          No offers available right now
         </Typography>
-        <Typography variant="body-s-regular" color="secondary" as="p">
-          Try changing your filters or reset them to see all restaurants with
-          offers.
+        <Typography
+          variant="body-m-regular"
+          color="primary"
+          as="p"
+          align="center"
+        >
+          Refine your filters to explore other dining options.
         </Typography>
       </div>
-      <Button
-        type="button"
-        variant="secondary"
-        size="lg"
-        onClick={onResetFilters}
-      >
-        Reset filters
-      </Button>
+      <div className="w-full max-w-[10rem]">
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          onClick={onResetFilters}
+          fullWidth
+        >
+          Clear filters
+        </Button>
+      </div>
     </section>
   )
 }

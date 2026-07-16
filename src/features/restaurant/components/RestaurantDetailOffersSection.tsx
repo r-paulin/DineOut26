@@ -70,6 +70,8 @@ export interface RestaurantDetailOffersSectionProps {
   onOfferAvailablePress?: (offerId: string) => void
   onOfferClaimedPress?: (offerId: string) => void
   onPaidOfferPress?: (offerId: string) => void
+  /** Empty-state CTA — Figma `19444:53627` “Browse nearby offers”. */
+  onBrowseNearbyOffers?: () => void
 }
 
 /**
@@ -94,6 +96,7 @@ export function RestaurantDetailOffersSection({
   onOfferAvailablePress,
   onOfferClaimedPress,
   onPaidOfferPress,
+  onBrowseNearbyOffers,
 }: RestaurantDetailOffersSectionProps) {
   const {
     activeTabId,
@@ -257,7 +260,9 @@ export function RestaurantDetailOffersSection({
               }}
             >
               {tabCards.length === 0 ? (
-                <RestaurantDetailOffersEmptyState />
+                <RestaurantDetailOffersEmptyState
+                  onBrowseNearbyOffers={onBrowseNearbyOffers}
+                />
               ) : (
                 <div className="flex flex-col gap-3">
                   {tabCards.map((card, cardIdx) => (

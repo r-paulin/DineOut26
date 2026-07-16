@@ -83,10 +83,7 @@ export function SearchInput({
         className={`flex-1 min-w-0 w-full h-12 flex items-center gap-[0.625rem] px-[0.875rem] pe-3 rounded-[var(--radius-search-field)] border transition-[background-color,border-color,box-shadow] duration-150 ${pillSurface}`}
       >
         {skeleton ? (
-          <div
-            className="absolute inset-0 [animation:shimmer_1.2s_ease-in-out_infinite] [background:linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.55)_45%,transparent_90%)]"
-            aria-hidden
-          />
+          <div className="skeleton-bone absolute inset-0 rounded-[inherit]" aria-hidden />
         ) : (
           <>
             <Search size="lg" className="shrink-0 text-primary" />

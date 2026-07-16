@@ -411,6 +411,7 @@ export function RestaurantDetailScreen({
                 onOfferAvailablePress={onOfferAvailablePress}
                 onOfferClaimedPress={onOfferClaimedPress}
                 onPaidOfferPress={onPaidOfferPress}
+                onBrowseNearbyOffers={handleAnimatedBack}
               />
             </div>
             {model.menuGalleryImages.length > 0 ?

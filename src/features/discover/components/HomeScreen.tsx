@@ -45,6 +45,9 @@ import {
   getEffectiveOfferForDiscover,
   isDiscoverEmptyTriggerFilter,
 } from "@/features/discover/utils/filterDiscoverOffers"
+import { FilteredOffersFullscreen } from "@/features/discover/components/FilteredOffersFullscreen"
+import { ensureOfferCardListGallery } from "@/features/offers/utils/ensureOfferCardListGallery"
+import { hasActiveDiscoverFilters } from "@/features/search/utils/hasActiveDiscoverFilters"
 import { ActiveOfferConflictSheet } from "@/features/offers/components/claimFlow/ActiveOfferConflictSheet"
 import { removeClaimedOfferById } from "@/features/offers/utils/claimedOfferState"
 import type { HomeClaimedOfferItem } from "@/features/discover/components/HomeClaimedOffersCarousel"
@@ -105,6 +108,12 @@ const MapLayer = lazy(() =>
   })),
 )
 
+/**
+ * Intentional filtered-list skeleton hold (iOS anti-flicker): long enough for a
+ * soft shimmer pass without a sub-300ms flash. Synthetic filter apply only.
+ */
+const FILTERED_LIST_SKELETON_MS = 700
+
 export function HomeScreen() {
   const {
     state: filterState,
@@ -133,6 +142,7 @@ export function HomeScreen() {
     searchOpen,
     setSearchOpen,
     onViewMapFab,
+    onViewFilteredMap,
     scrollToTopSignal,
     sectionList,
     openSectionList,
@@ -197,22 +207,109 @@ export function HomeScreen() {
     ],
     [offersToday, offersDinner, offersNearYou, offersAllRestaurants],
   )
+  /**
+   * Map pins keep venues that miss the selected time slot (shown grey). Other
+   * filters still apply; time-slot matching only drives enabled vs closed style.
+   */
+  const mapDiscoverOffers = useMemo(() => {
+    const stateForMap = { ...filterState, timeSlot: "any" as const }
+    return [
+      ...filterOfferCardsForDiscover(
+        filterOffersByTimePreset(getOffersToday(), "any"),
+        stateForMap,
+        discoverNow,
+      ),
+      ...filterOfferCardsForDiscover(
+        filterOffersByTimePreset(getOffersDinner(), "any"),
+        stateForMap,
+        discoverNow,
+      ),
+      ...filterOfferCardsForDiscover(
+        filterOffersByTimePreset(getOffersNearYou(), "any"),
+        stateForMap,
+        discoverNow,
+      ),
+      ...filterOfferCardsForDiscover(
+        filterOffersByTimePreset(getOffersAllRestaurants(), "any"),
+        stateForMap,
+        discoverNow,
+      ),
+    ]
+  }, [catalogSnapshot, filterState, discoverNow])
+  /**
+   * Deduped list rows for the filtered fullscreen. Prefer “All restaurants”
+   * XL cards (multi-image galleries) over single-image carousel rows.
+   */
+  const filteredListOffers = useMemo(() => {
+    const ordered = [
+      ...offersAllRestaurants,
+      ...offersToday,
+      ...offersDinner,
+      ...offersNearYou,
+    ]
+    const seen = new Set<string>()
+    const rows: ReturnType<typeof ensureOfferCardListGallery>[] = []
+    for (const o of ordered) {
+      const slug = o.restaurantSlug ?? o.id
+      if (seen.has(slug)) continue
+      seen.add(slug)
+      rows.push(ensureOfferCardListGallery(o))
+    }
+    return rows
+  }, [offersAllRestaurants, offersToday, offersDinner, offersNearYou])
   const liveNowFilter =
     getEffectiveOfferForDiscover(filterState) === "live"
   const showFilteredEmpty =
     mergedDiscoverOffers.length === 0 &&
     isDiscoverEmptyTriggerFilter(filterState)
   const mapMarkers = useMemo(
-    () => buildMapMarkersFromOffers(mergedDiscoverOffers),
-    [mergedDiscoverOffers],
+    () =>
+      buildMapMarkersFromOffers(mapDiscoverOffers, filterState.timeSlot),
+    [mapDiscoverOffers, filterState.timeSlot],
   )
   const focusedOffer = useMemo(
-    () => findOfferByRestaurantId(mergedDiscoverOffers, focusRestaurantId),
-    [mergedDiscoverOffers, focusRestaurantId],
+    () => findOfferByRestaurantId(mapDiscoverOffers, focusRestaurantId),
+    [mapDiscoverOffers, focusRestaurantId],
   )
   const mapPlaceOpen = Boolean(focusRestaurantId && focusedOffer)
   const [mapPlaceCardFilterPending, setMapPlaceCardFilterPending] =
     useState(false)
+  const [filteredListOpen, setFilteredListOpen] = useState(false)
+  const [filteredListLoading, setFilteredListLoading] = useState(false)
+  const [filterApplyEpoch, setFilterApplyEpoch] = useState(0)
+  const filteredLoadTimerRef = useRef<number | null>(null)
+
+  const bumpFilteredListLoading = useCallback(() => {
+    setFilteredListLoading(true)
+    if (filteredLoadTimerRef.current != null) {
+      window.clearTimeout(filteredLoadTimerRef.current)
+    }
+    filteredLoadTimerRef.current = window.setTimeout(() => {
+      setFilteredListLoading(false)
+      filteredLoadTimerRef.current = null
+    }, FILTERED_LIST_SKELETON_MS)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (filteredLoadTimerRef.current != null) {
+        window.clearTimeout(filteredLoadTimerRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (filterApplyEpoch === 0) return
+    // Open + skeleton on apply when filters are active. Clear/Reset keeps the
+    // expanded list open (exit via View map / search / venue).
+    if (hasActiveDiscoverFilters(filterState)) {
+      setFilteredListOpen(true)
+      bumpFilteredListLoading()
+    } else if (filteredListOpen) {
+      bumpFilteredListLoading()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- epoch gates; filterState from that commit
+  }, [bumpFilteredListLoading, filterApplyEpoch])
 
   const runWithMapPlaceCardFilterSkeleton = useCallback((work: () => void) => {
     setMapPlaceCardFilterPending(true)
@@ -222,11 +319,18 @@ export function HomeScreen() {
     })
   }, [])
 
+  const markFilterApplied = useCallback(() => {
+    setFilterApplyEpoch((n) => n + 1)
+  }, [])
+
   const applySheetValueWithSkeleton = useCallback(
     (...args: Parameters<typeof applySheetValue>) => {
-      runWithMapPlaceCardFilterSkeleton(() => applySheetValue(...args))
+      runWithMapPlaceCardFilterSkeleton(() => {
+        applySheetValue(...args)
+        markFilterApplied()
+      })
     },
-    [applySheetValue, runWithMapPlaceCardFilterSkeleton],
+    [applySheetValue, markFilterApplied, runWithMapPlaceCardFilterSkeleton],
   )
 
   const applyDateTimeFilterWithSkeleton = useCallback(
@@ -240,34 +344,62 @@ export function HomeScreen() {
       }
       runWithMapPlaceCardFilterSkeleton(() => {
         applyDateTimeFilter(date, timeSlot)
+        markFilterApplied()
       })
     },
     [
       applyDateTimeFilter,
       filterState.date,
       filterState.timeSlot,
+      markFilterApplied,
       runWithMapPlaceCardFilterSkeleton,
     ],
   )
 
   const toggleOpenNowTodayWithSkeleton = useCallback(() => {
-    runWithMapPlaceCardFilterSkeleton(() => toggleOpenNowToday())
-  }, [runWithMapPlaceCardFilterSkeleton, toggleOpenNowToday])
+    runWithMapPlaceCardFilterSkeleton(() => {
+      toggleOpenNowToday()
+      markFilterApplied()
+    })
+  }, [
+    markFilterApplied,
+    runWithMapPlaceCardFilterSkeleton,
+    toggleOpenNowToday,
+  ])
 
   const clearOpenNowFilterWithSkeleton = useCallback(() => {
-    runWithMapPlaceCardFilterSkeleton(() => clearOpenNowFilter())
-  }, [clearOpenNowFilter, runWithMapPlaceCardFilterSkeleton])
+    runWithMapPlaceCardFilterSkeleton(() => {
+      clearOpenNowFilter()
+      markFilterApplied()
+    })
+  }, [
+    clearOpenNowFilter,
+    markFilterApplied,
+    runWithMapPlaceCardFilterSkeleton,
+  ])
 
   const resetAllFiltersWithSkeleton = useCallback(() => {
-    runWithMapPlaceCardFilterSkeleton(() => resetAllFilters())
-  }, [resetAllFilters, runWithMapPlaceCardFilterSkeleton])
+    runWithMapPlaceCardFilterSkeleton(() => {
+      resetAllFilters()
+      markFilterApplied()
+    })
+  }, [
+    markFilterApplied,
+    resetAllFilters,
+    runWithMapPlaceCardFilterSkeleton,
+  ])
+
+  const closeFilteredList = useCallback(() => {
+    setFilteredListOpen(false)
+    setFilteredListLoading(false)
+  }, [])
 
   useEffect(() => {
     if (!focusRestaurantId) return
-    if (!findOfferByRestaurantId(mergedDiscoverOffers, focusRestaurantId)) {
+    if (!findOfferByRestaurantId(mapDiscoverOffers, focusRestaurantId)) {
       onClearFocus()
     }
-  }, [focusRestaurantId, mergedDiscoverOffers, onClearFocus])
+  }, [focusRestaurantId, mapDiscoverOffers, onClearFocus])
 
   const mapCardOverlayRef = useRef<HTMLDivElement>(null)
   const [measuredMapFloatingOverlayPx, setMeasuredMapFloatingOverlayPx] =
@@ -898,9 +1030,16 @@ export function HomeScreen() {
 
   const mapSurface = sheetSnap === "full" ? "flat" : "floating"
   const showBottomNav =
-    !searchOpen && !sectionList && !restaurantDetailSlug && !adminPlacesOpen
+    !searchOpen &&
+    !sectionList &&
+    !filteredListOpen &&
+    !restaurantDetailSlug &&
+    !adminPlacesOpen
   const showBottomSheet =
-    !mapPlaceOpen && !restaurantDetailSlug && !adminPlacesOpen
+    !mapPlaceOpen &&
+    !filteredListOpen &&
+    !restaurantDetailSlug &&
+    !adminPlacesOpen
   const discoverDockActive = showBottomNav && showBottomSheet
 
   const { discoverLayoutEpoch, discoverDockBottomInsetPx } = useDiscoverDockLayout({
@@ -1045,6 +1184,7 @@ export function HomeScreen() {
       {sheetSnap === "full" &&
       !searchOpen &&
       !sectionList &&
+      !filteredListOpen &&
       !restaurantDetailSlug &&
       !adminPlacesOpen ? (
         <MapViewFab onClick={onViewMapFab} />
@@ -1071,6 +1211,27 @@ export function HomeScreen() {
           onTabChange={onTabChange}
           surface="flat"
           onRestaurantPress={handleDiscoverRestaurantPress}
+          {...filterBarProps}
+        />
+      ) : null}
+      {filteredListOpen ? (
+        <FilteredOffersFullscreen
+          offers={filteredListOffers}
+          loading={filteredListLoading}
+          selectedDate={filterState.date}
+          liveNowFilter={liveNowFilter}
+          onClose={closeFilteredList}
+          onOpenSearch={() => {
+            closeFilteredList()
+            setSearchOpen(true)
+          }}
+          onViewMap={onViewFilteredMap}
+          onResetFilters={resetAllFiltersWithSkeleton}
+          onRestaurantPress={(slug) => {
+            closeFilteredList()
+            handleDiscoverRestaurantPress(slug)
+          }}
+          surface="flat"
           {...filterBarProps}
         />
       ) : null}

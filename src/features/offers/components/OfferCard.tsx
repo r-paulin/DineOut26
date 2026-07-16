@@ -2,6 +2,11 @@ import { useRef, useState, type KeyboardEvent } from "react"
 import { Typography } from "@bolteu/kalep-react"
 import Heart from "@bolteu/kalep-react-icons/dist/Heart"
 import HeartOutlined from "@bolteu/kalep-react-icons/dist/HeartOutlined"
+import Walk from "@bolteu/kalep-react-icons/dist/Walk"
+import {
+  formatWalkMinutesLabel,
+  walkMinutesForRestaurantSlug,
+} from "@/features/map/walkMinutesForRestaurant"
 import type { OfferCardModel } from "@/features/offers/offers.types"
 import type { DateValue } from "@/features/search/filters.types"
 import { useSnackbar } from "@/shared/snackbar"
@@ -209,6 +214,9 @@ function OfferCardList({
       ? offer.galleryImages
       : [offer.image]
 
+  const slug = offer.restaurantSlug ?? offer.id
+  const walkLabel = formatWalkMinutesLabel(walkMinutesForRestaurantSlug(slug))
+
   const keyHandler = (e: KeyboardEvent) => {
     if (!onClick) return
     if (e.key === "Enter" || e.key === " ") {
@@ -229,14 +237,13 @@ function OfferCardList({
       onKeyDown={onClick ? keyHandler : undefined}
     >
       {/*
-        XL gallery uses the same horizontal scroll row as sheet carousels
-        (`BottomSheetScrollContent`). Figma `_Place / Card / XL` (15735:22235):
-        8px gap gallery→copy; 24px pb.
+        XL gallery — Figma `19444:56039` / `_Place / Card / XL`:
+        8px gap gallery→copy; dark hero badges; 24px pb.
       */}
       <OfferCardListGallery
         photos={slides}
         campaign={offer.campaign}
-        restaurantSlug={offer.restaurantSlug ?? offer.id}
+        restaurantSlug={slug}
         selectedDate={selectedDate}
         liveNowFilter={liveNowFilter}
       />
@@ -245,11 +252,15 @@ function OfferCardList({
           variant="heading-s-accent"
           color="primary"
           noWrap
-          inlineStyle={{ letterSpacing: "-0.03rem" }}
+          inlineStyle={{
+            letterSpacing: "-0.03rem",
+            lineHeight: "30px",
+            fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+          }}
         >
           {offer.name}
         </Typography>
-        <div className="flex flex-wrap items-center gap-1 text-sm leading-5">
+        <div className="flex flex-wrap items-center gap-1 py-1 text-sm leading-5">
           <OfferCardListRatingStar />
           <Typography variant="body-s-accent" color="primary" as="span">
             {offer.rating}
@@ -268,15 +279,19 @@ function OfferCardList({
           <Typography variant="body-s-regular" color="tertiary" as="span">
             ·
           </Typography>
-          <Typography variant="body-s-regular" color="primary" as="span">
-            {offer.area}
-          </Typography>
+          <span className="inline-flex items-center gap-1 text-secondary">
+            <Walk
+              size="xs"
+              className="shrink-0 text-secondary"
+              aria-hidden
+            />
+            <Typography variant="body-s-regular" color="secondary" as="span">
+              {walkLabel}
+            </Typography>
+          </span>
         </div>
-        <span
-          className="min-w-0"
-          title={offer.tagDescription}
-        >
-          <Typography variant="body-xs-regular" color="secondary">
+        <span className="min-w-0" title={offer.tagDescription}>
+          <Typography variant="body-s-regular" color="secondary">
             {offer.cuisine}
           </Typography>
         </span>

@@ -81,6 +81,7 @@ export function OfferCardListGallery({
           <OfferCardBadges
             campaign={campaign}
             restaurantSlug={restaurantSlug}
+            density="hero-dark"
             selectedDate={selectedDate}
             liveNowFilter={liveNowFilter}
           />

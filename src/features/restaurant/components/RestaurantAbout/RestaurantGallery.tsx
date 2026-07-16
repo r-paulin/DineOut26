@@ -3,16 +3,11 @@ import { Typography } from "@bolteu/kalep-react"
 const R12 = "rounded-[12px]"
 const IMAGE_GRAD =
   "linear-gradient(180deg, rgba(0,0,0,0) 53.5%, rgba(0,0,0,0.5) 100%)"
+
+/** Figma `19444:49649` About / Images — Place / Gallery. */
 const GALLERY_H = 271
-/** Figma About / Venue side column width. */
-const SIDE_COL_W = 130
-
-/** Same bleed pattern as {@link OfferCardListGallery}: no `w-full` so `-mx-6` widens the row. */
-const SCROLL_ROW =
-  "flex flex-row gap-3 overflow-x-auto overflow-y-hidden pb-0 -mx-6 [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden touch-pan-x [overscroll-behavior-x:contain]"
-
-/** Scrolls away on swipe so the mosaic can go edge-to-edge after the first snap. */
-const LEADING_INSET = "1.5rem"
+const W_HERO = 271
+const W_COL = 158
 
 export interface RestaurantGalleryProps {
   images: readonly string[]
@@ -44,8 +39,8 @@ function StackImage({
 }
 
 /**
- * Horizontal snap mosaic: full-width hero + stack (first screen), tail column (peek).
- * Expects at least four image URLs (indices 0–3 shown; “More…” opens full gallery).
+ * About header gallery — Figma `19444:48939`:
+ * 271×271 hero + 158px stack, gap 12, horizontal scroll + More…
  */
 export function RestaurantGallery({
   images,
@@ -56,10 +51,10 @@ export function RestaurantGallery({
   const b = images[1]
   const c = images[2]
   const d = images[3]
-  if (!a || !b || !c || !d) {
+  if (!a || !b || !c) {
     return (
       <div
-        className="flex w-full shrink-0 items-center justify-center rounded-[12px] bg-neutral-secondary px-6"
+        className="flex w-full shrink-0 items-center justify-center rounded-[12px] bg-neutral-secondary"
         style={{ height: `${GALLERY_H}px` }}
         role="status"
         aria-label="Photo gallery unavailable"
@@ -72,65 +67,85 @@ export function RestaurantGallery({
   }
 
   return (
-    <div className={SCROLL_ROW} style={{ height: `${GALLERY_H}px` }}>
-      <div className="w-6 shrink-0 snap-none" aria-hidden />
-      <div
-        className="flex shrink-0 snap-start snap-always gap-3"
-        style={{
-          height: GALLERY_H,
-          width: `calc(100% - ${LEADING_INSET})`,
-          minWidth: `calc(100% - ${LEADING_INSET})`,
+    <div
+      className="flex gap-3 overflow-x-auto overflow-y-hidden pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden touch-pan-x [overscroll-behavior-x:contain]"
+      style={{ height: `${GALLERY_H}px` }}
+    >
+      <button
+        type="button"
+        className={`relative shrink-0 overflow-hidden ${R12} cursor-pointer border-none bg-neutral-secondary p-0`}
+        style={{ width: W_HERO, height: GALLERY_H }}
+        onClick={() => {
+          onSelectIndex(0)
         }}
       >
-        <button
-          type="button"
-          className={`relative min-h-0 min-w-0 flex-1 overflow-hidden ${R12} cursor-pointer border-none bg-neutral-secondary p-0`}
-          style={{ height: GALLERY_H }}
-          onClick={() => {
-            onSelectIndex(0)
-          }}
-        >
-          <img
-            src={a}
-            alt=""
-            loading="lazy"
-            className={`absolute inset-0 size-full object-cover ${R12}`}
-          />
-          <div
-            className={`pointer-events-none absolute inset-0 ${R12}`}
-            style={{ background: IMAGE_GRAD }}
-          />
-        </button>
-
+        <img
+          src={a}
+          alt=""
+          loading="lazy"
+          className={`absolute inset-0 size-full object-cover ${R12}`}
+        />
         <div
-          className="flex shrink-0 flex-col gap-3"
-          style={{ width: SIDE_COL_W, height: GALLERY_H }}
-        >
-          <StackImage src={b} onPress={() => onSelectIndex(1)} />
-          <StackImage src={c} onPress={() => onSelectIndex(2)} />
-        </div>
-      </div>
+          className={`pointer-events-none absolute inset-0 ${R12}`}
+          style={{ background: IMAGE_GRAD }}
+          aria-hidden
+        />
+      </button>
 
       <div
-        className="flex shrink-0 snap-start snap-always flex-col gap-3"
-        style={{ width: SIDE_COL_W, height: GALLERY_H }}
+        className="flex shrink-0 flex-col gap-3"
+        style={{ width: W_COL, height: GALLERY_H }}
       >
-        <StackImage src={d} onPress={() => onSelectIndex(3)} />
-        <button
-          type="button"
-          className={`flex min-h-0 flex-1 cursor-pointer flex-col items-center justify-center border-none ${R12} bg-neutral-secondary px-4 py-4`}
-          onClick={onMorePress}
-        >
-          <Typography
-            variant="body-s-accent"
-            color="primary"
-            align="center"
-            as="span"
-          >
-            More...
-          </Typography>
-        </button>
+        <StackImage src={b} onPress={() => onSelectIndex(1)} />
+        <StackImage src={c} onPress={() => onSelectIndex(2)} />
       </div>
+
+      {d ?
+        <>
+          <div
+            className={`relative shrink-0 overflow-hidden ${R12}`}
+            style={{ width: W_HERO, height: GALLERY_H }}
+          >
+            <button
+              type="button"
+              className="absolute inset-0 cursor-pointer border-none bg-transparent p-0"
+              onClick={() => {
+                onSelectIndex(3)
+              }}
+              aria-label="Photo 4"
+            >
+              <img
+                src={d}
+                alt=""
+                loading="lazy"
+                className={`absolute inset-0 size-full object-cover ${R12}`}
+              />
+            </button>
+          </div>
+          <div
+            className="flex shrink-0 flex-col gap-3"
+            style={{ width: W_COL, height: GALLERY_H }}
+          >
+            {images[4] ?
+              <StackImage src={images[4]} onPress={() => onSelectIndex(4)} />
+            : null}
+            <button
+              type="button"
+              className={`flex min-h-0 flex-1 cursor-pointer flex-col items-center justify-center border-none ${R12} bg-neutral-secondary px-4 py-4`}
+              onClick={onMorePress}
+            >
+              <Typography
+                variant="body-s-accent"
+                color="primary"
+                align="center"
+                as="span"
+              >
+                More…
+              </Typography>
+            </button>
+          </div>
+        </>
+      : null}
     </div>
   )
 }

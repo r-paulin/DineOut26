@@ -213,12 +213,79 @@ img.iconChip {
   }
 }
 
+/**
+ * iOS-style skeleton shimmer (HIG / UIKit redacted pattern):
+ * linear L→R sweep ~1.5s, low-contrast highlight, no bounce.
+ * Disabled when `prefers-reduced-motion: reduce`.
+ */
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
   }
   100% {
     transform: translateX(100%);
+  }
+}
+
+@keyframes skeleton-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes content-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.skeleton-bone {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-neutral-secondary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton-bone::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.18) 42%,
+      rgba(255, 255, 255, 0.28) 50%,
+      rgba(255, 255, 255, 0.18) 58%,
+      transparent 100%
+    );
+    animation: shimmer 1.5s linear infinite;
+    will-change: transform;
+  }
+
+  .skeleton-enter {
+    animation: skeleton-enter 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  .content-reveal {
+    animation: content-reveal 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bone::after {
+    content: none;
+    animation: none;
+  }
+
+  .skeleton-enter,
+  .content-reveal {
+    animation: none;
   }
 }
 

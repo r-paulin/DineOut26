@@ -137,7 +137,9 @@ export function BottomSheetScrollContent({
         : null}
 
         {showFilteredEmpty && onResetFilters ?
-          <DiscoverFilteredEmptyState onResetFilters={onResetFilters} />
+          <div className="-mx-6">
+            <DiscoverFilteredEmptyState onResetFilters={onResetFilters} />
+          </div>
         : null}
 
         {!showFilteredEmpty && offersToday.length > 0 ?

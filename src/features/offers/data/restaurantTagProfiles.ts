@@ -9,7 +9,7 @@ import type { OfferCardModel } from "../offers.types"
 import type { RestaurantSlug } from "./restaurantOffers.types"
 
 export type RestaurantTagProfile = {
-  /** Single line under price / area, e.g. `Open Kitchen · Tasting Menu · …`. */
+  /** Cuisine-filter labels for cards / map, e.g. `Mediterranean · Seafood`. */
   tags: string
   /** Richer pitch for tooltips, detail screens, marketing reuse. */
   tagDescription: string

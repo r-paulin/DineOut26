@@ -14,9 +14,9 @@ export interface FilterChipRowProps {
   clearOpenNowFilter: () => void
 }
 
+/** Chip order — `offer` (All offers / Pre-book) is intentionally omitted. */
 const ROW_ORDER: FilterKey[] = [
   "date",
-  "offer",
   "openNow",
   "cuisine",
   "amenity",
@@ -25,7 +25,7 @@ const ROW_ORDER: FilterKey[] = [
 
 /**
  * Horizontally scrolling filter chips for discover + search.
- * Open now only appears when the date filter is Today.
+ * All offers / Pre-book is not in the row; Open now only when date is Today.
  */
 export function FilterChipRow({
   surface,

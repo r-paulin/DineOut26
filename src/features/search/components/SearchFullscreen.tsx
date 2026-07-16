@@ -129,7 +129,7 @@ export function SearchFullscreen(props: SearchFullscreenProps) {
                   key={i}
                   className="w-full min-h-[3.25rem] py-3 border-b border-separator last:border-b-0 flex items-center"
                 >
-                  <div className="relative w-full h-4 rounded-lg bg-neutral-secondary overflow-hidden after:content-[''] after:absolute after:inset-0 after:[animation:shimmer_1.2s_ease-in-out_infinite] after:[background:linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.55)_45%,transparent_90%)]" />
+                  <div className="skeleton-bone h-4 w-full rounded-lg" />
                 </div>
               ))}
             </section>
