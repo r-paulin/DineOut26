@@ -15,28 +15,30 @@ export function ClaimModalOfferDetails({ offer }: { offer: ClaimOfferModalOffer 
   const rows = formatClaimModalOfferDetailRows(offer)
 
   return (
-    <div className="flex flex-col">
+    <>
       <CardDivider />
-      <div className={`px-6 pb-1 pt-6 ${CARD_DIVIDER_SECTION_BELOW_CLASS}`}>
-        <h2 className={OFFER_DETAILS_HEADING_CLASS}>Offer details</h2>
-      </div>
-      <div className="flex flex-col px-6 py-3 pb-3">
-        {rows.map((row) => (
-          <div
-            key={row.label}
-            className="flex items-start justify-between gap-3 py-1"
-          >
-            <Typography variant="body-s-regular" color="secondary" as="span">
-              {row.label}
-            </Typography>
-            <span className="text-right">
-              <Typography variant="body-s-regular" color="primary" as="span">
-                {row.value}
+      <div className={`flex flex-col ${CARD_DIVIDER_SECTION_BELOW_CLASS}`}>
+        <div className="px-6 pb-1 pt-6">
+          <h2 className={OFFER_DETAILS_HEADING_CLASS}>Offer details</h2>
+        </div>
+        <div className="flex flex-col px-6 py-3 pb-3">
+          {rows.map((row) => (
+            <div
+              key={row.label}
+              className="flex items-start justify-between gap-3 py-1"
+            >
+              <Typography variant="body-s-regular" color="secondary" as="span">
+                {row.label}
               </Typography>
-            </span>
-          </div>
-        ))}
+              <span className="text-right">
+                <Typography variant="body-s-regular" color="primary" as="span">
+                  {row.value}
+                </Typography>
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

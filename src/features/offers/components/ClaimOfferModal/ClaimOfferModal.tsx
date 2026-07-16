@@ -33,6 +33,11 @@ import {
 } from "@/features/offers/constants/paymentMethodSheetCopy"
 import { PaymentSelector } from "./PaymentSelector"
 import { TimeSlotSheet } from "./TimeSlotSheet"
+import {
+  CARD_DIVIDER_GROOVE_BG_CLASS,
+  CARD_DIVIDER_SECTION_ABOVE_CLASS,
+  CARD_DIVIDER_SECTION_SURFACE_CLASS,
+} from "@/shared/components/CardDivider"
 
 const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
@@ -295,21 +300,31 @@ export function ClaimOfferModal({
           </div>
         </div>
 
-        {/* Figma `16142:22260` — no divider between payment radios (unlike picker rows above). */}
-        <PaymentSelector
-          value={paymentMethod}
-          onChange={setPaymentMethod}
-          showSectionSeparator={false}
-          sectionTitle={CLAIM_PAYMENT_SECTION_TITLE}
-          sectionIntro={CLAIM_PAYMENT_SECTION_INTRO}
-          optionLabels={{
-            dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
-            cardOrCash: CLAIM_PAYMENT_VENUE_OPTION_LABEL,
-          }}
-        />
+        {/*
+          Figma `16144:19972` — Card divider groove before Offer details (same as
+          restaurant feed / Pay bill summary blocks).
+        */}
+        <div className={`flex flex-col ${CARD_DIVIDER_GROOVE_BG_CLASS}`}>
+          <div className={CARD_DIVIDER_SECTION_ABOVE_CLASS}>
+            {/* Figma `16142:22260` — no divider between payment radios (unlike picker rows above). */}
+            <PaymentSelector
+              value={paymentMethod}
+              onChange={setPaymentMethod}
+              showSectionSeparator={false}
+              sectionTitle={CLAIM_PAYMENT_SECTION_TITLE}
+              sectionIntro={CLAIM_PAYMENT_SECTION_INTRO}
+              optionLabels={{
+                dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
+                cardOrCash: CLAIM_PAYMENT_VENUE_OPTION_LABEL,
+              }}
+            />
+          </div>
 
-        <ClaimModalOfferDetails offer={offer} />
-        <ClaimModalDisclaimer />
+          <ClaimModalOfferDetails offer={offer} />
+          <div className={CARD_DIVIDER_SECTION_SURFACE_CLASS}>
+            <ClaimModalDisclaimer />
+          </div>
+        </div>
       </ClaimPromoSheetShell>
 
       <TimeSlotSheet
