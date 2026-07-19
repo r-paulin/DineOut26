@@ -16,6 +16,11 @@ export function formatClaimedArrivalDate(
     return "Today"
   }
 
+  return formatClaimedArrivalWeekdayDate(date)
+}
+
+/** Always weekday + day + month (never “Today”) — success screen subtitle. */
+export function formatClaimedArrivalWeekdayDate(date: Date): string {
   const weekday = new Intl.DateTimeFormat(CLAIMED_ARRIVAL_DATE_LOCALE, {
     weekday: "long",
   }).format(date)
@@ -30,6 +35,37 @@ function resolveClaimScheduleYmd(
   claim: Pick<ClaimedOffer, "offerScheduleYmd" | "claimedAt">,
 ): string {
   return claim.offerScheduleYmd ?? toLocalYmd(new Date(claim.claimedAt))
+}
+
+function parseLocalYmdToDate(ymd: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd)
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2]) - 1
+  const d = Number(m[3])
+  const date = new Date(y, mo, d, 12, 0, 0, 0)
+  return Number.isFinite(date.getTime()) ? date : null
+}
+
+function resolveClaimCalendarDate(
+  claim: Pick<ClaimedOffer, "offerScheduleYmd" | "claimedAt">,
+): Date {
+  const ymd = resolveClaimScheduleYmd(claim)
+  return parseLocalYmdToDate(ymd) ?? new Date(claim.claimedAt)
+}
+
+/**
+ * Figma `17421:31561` — e.g. `Monday, 17 May at 19:00`.
+ * Uses weekday format even when the offer day is today.
+ */
+export function formatClaimOfferSuccessArrivalSubtitle(
+  claim: Pick<
+    ClaimedOffer,
+    "arrivalTime" | "offerScheduleYmd" | "claimedAt"
+  >,
+): string {
+  const dateLabel = formatClaimedArrivalWeekdayDate(resolveClaimCalendarDate(claim))
+  return `${dateLabel} at ${claim.arrivalTime}`
 }
 
 /** True when the claim's offer day is the device-local calendar day of `nowMs`. */

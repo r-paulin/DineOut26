@@ -17,7 +17,6 @@ export function findOfferCardById(
 /**
  * First claim for `restaurantSlug` that is still on the detail model and
  * scheduled for the device-local calendar day of `nowMs`.
- * Future-day claims must not surface the restaurant “I'm at the venue” bar.
  */
 export function findActiveClaimForRestaurant(
   restaurantSlug: string,

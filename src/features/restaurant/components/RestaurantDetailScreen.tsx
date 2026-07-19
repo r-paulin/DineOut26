@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from "react"
-import { findActiveClaimForRestaurant } from "@/features/offers/utils/claimFlowModel"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
 import {
@@ -25,7 +24,6 @@ import { useRestaurantOpenHoursUi } from "@/features/restaurant/hooks/useRestaur
 import type { RestaurantDetailScreenProps } from "@/features/restaurant/restaurantDetail.types"
 import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { toTelHref } from "@/shared/utils/telHref"
-import { RestaurantDetailAtVenueBar } from "./RestaurantDetailAtVenueBar"
 import { RestaurantDetailHeader } from "./RestaurantDetailHeader"
 import { RestaurantDetailOffersSection } from "./RestaurantDetailOffersSection"
 import { RestaurantDetailQuickActions } from "./RestaurantDetailQuickActions"
@@ -68,7 +66,6 @@ export function RestaurantDetailScreen({
   onCall,
   onOpenReviews,
   onOpenPriceInfo,
-  onPayBill,
   onMoreAboutVenue,
   onShare,
   onOfferAvailablePress,
@@ -88,7 +85,6 @@ export function RestaurantDetailScreen({
   const aboutStackRef = useRef<HTMLDivElement>(null)
   const onBackRef = useRef(onBack)
   const aboutExitingRef = useRef(false)
-  const venueBarExitRef = useRef<(() => Promise<void>) | null>(null)
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
     { scrimOpacity: MOTION_DETAIL_SCRIM },
     onBackRef,
@@ -121,36 +117,13 @@ export function RestaurantDetailScreen({
   const mapsHref = googleMapsSearchUrl(model.address)
   const telHref = toTelHref(model.phone)
 
-  const hasActiveVenueClaim = useMemo(
-    () =>
-      findActiveClaimForRestaurant(model.slug, model, claimedOffersById) !=
-      null,
-    [claimedOffersById, model],
-  )
-
-  const showAtVenueBar = hasActiveVenueClaim && !aboutOpen
-
   useEffect(() => {
     onBackRef.current = onBack
   }, [onBack])
 
   const handleAnimatedBack = useCallback(() => {
-    const runVenueBarExit = venueBarExitRef.current
-    if (!runVenueBarExit) {
-      runExit()
-      return
-    }
-    void runVenueBarExit().then(() => {
-      runExit()
-    })
+    runExit()
   }, [runExit])
-
-  const registerVenueBarExit = useCallback(
-    (runVenueBarExit: (() => Promise<void>) | null) => {
-      venueBarExitRef.current = runVenueBarExit
-    },
-    [],
-  )
 
   /**
    * About opens as an in-stack page (same shell as detail): horizontal slide
@@ -431,9 +404,7 @@ export function RestaurantDetailScreen({
               className={CARD_DIVIDER_SECTION_LAST_CLASS}
               style={{
                 paddingBottom:
-                  showAtVenueBar ?
-                    "calc(env(safe-area-inset-bottom, 0px) + 10rem)"
-                  : "calc(env(safe-area-inset-bottom, 0px) + 40px)",
+                  "calc(env(safe-area-inset-bottom, 0px) + 40px)",
               }}
             >
               <RestaurantDetailVenueSection
@@ -492,13 +463,6 @@ export function RestaurantDetailScreen({
               </div>
             </div>
           ) : null}
-          {showAtVenueBar ?
-            <RestaurantDetailAtVenueBar
-              onPress={onPayBill}
-              animateIn
-              onExitAnimationRef={registerVenueBarExit}
-            />
-          : null}
         </div>
       </div>
       <RestaurantRatingSheet

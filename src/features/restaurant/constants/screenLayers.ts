@@ -17,5 +17,11 @@ export const Z_CLAIM_MODAL_CONTENT = 1601
 export const Z_CLAIM_NESTED_SHEET_OVERLAY = 1700
 export const Z_CLAIM_NESTED_SHEET_CONTENT = 1701
 
-/** Pay bill flow + paid confirmation revisit (above filter 122 and snackbar 130). */
+/**
+ * App snackbar toaster (`.dineout-snackbar-toaster` in `index.css`).
+ * Above claim/claimed overlays so check-in / cancel toasts stay visible.
+ */
+export const Z_SNACKBAR_TOASTER = 1800
+
+/** Pay bill flow + paid confirmation revisit (above filter 122). */
 export const Z_PAY_BILL_FLOW = 135

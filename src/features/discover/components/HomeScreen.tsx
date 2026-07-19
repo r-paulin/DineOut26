@@ -25,7 +25,6 @@ import {
   MapPlaceCardOpened,
   SectionOffersListScreen,
   claimOffer,
-  findActiveClaimForRestaurant,
   findOfferCardById,
   getOffersAllRestaurants,
   getOffersDinner,
@@ -57,7 +56,6 @@ import {
   isPaidOfferPaymentDetailsAvailable,
   paidOfferRecordToClaimStub,
 } from "@/features/offers/utils/buildPaidOfferRecord"
-import { updateClaimedOfferPaymentMethod } from "@/features/offers/utils/updateClaimedOfferPaymentMethod"
 import { checkInClaimOffer } from "@/features/offers/utils/claimOffer"
 import { formatClaimedArrivalDate } from "@/features/offers/utils/formatClaimedArrivalDate"
 import {
@@ -79,10 +77,8 @@ import { PaymentConfirmationScreen } from "@/features/payBill/components/Payment
 import { createPostPaymentHomeSnackbar } from "@/features/payBill/constants/postPaymentHomeSnackbar"
 import type { PayBillCompletionSnapshot, PayBillFlowEntry } from "@/features/payBill/payBill.types"
 import {
-  AtVenueNoClaimedOffersSheet,
   getRestaurantDetailDemo,
   RestaurantDetailScreen,
-  VenueClosedSheet,
 } from "@/features/restaurant"
 import type { RestaurantOfferCardModel } from "@/features/restaurant/restaurantDetail.types"
 import { Z_PAY_BILL_FLOW } from "@/features/restaurant/constants/screenLayers"
@@ -92,7 +88,6 @@ import type {
   ClaimedOffer,
   ClaimOfferModalOffer,
   PaidOfferRecord,
-  PaymentMethod,
 } from "@/features/offers/offers.types"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
 import { useModalOverlayLock } from "@/shared/hooks/useModalOverlayLock"
@@ -418,6 +413,7 @@ export function HomeScreen() {
   const [postClaimSuccess, setPostClaimSuccess] = useState<ClaimedOffer | null>(
     null,
   )
+  const [postClaimSuccessOpen, setPostClaimSuccessOpen] = useState(false)
   const postClaimSuccessTimerRef = useRef<number | null>(null)
   const clearScheduledPostClaimSuccess = useCallback(() => {
     if (postClaimSuccessTimerRef.current != null) {
@@ -428,7 +424,7 @@ export function HomeScreen() {
 
   const dismissPostClaimSuccess = useCallback(() => {
     clearScheduledPostClaimSuccess()
-    setPostClaimSuccess(null)
+    setPostClaimSuccessOpen(false)
   }, [clearScheduledPostClaimSuccess])
 
   /** iOS-style sequential sheets: animate claim modal out, then present success. */
@@ -456,6 +452,8 @@ export function HomeScreen() {
     if (claimed) {
       pendingPostClaimSuccessRef.current = null
       setPendingClaimOffer(null)
+      // Cover restaurant immediately so the gap before success never flashes detail.
+      setClaimedView(claimed)
       const delayMs = Math.round(
         (motionReduced() ? MOTION_REDUCED_S : MOTION_SHEET_SEQUENTIAL_GAP_S) *
           1000,
@@ -463,12 +461,13 @@ export function HomeScreen() {
       postClaimSuccessTimerRef.current = window.setTimeout(() => {
         postClaimSuccessTimerRef.current = null
         setPostClaimSuccess(claimed)
+        setPostClaimSuccessOpen(true)
       }, delayMs)
       return
     }
 
     setPendingClaimOffer(null)
-  }, [clearScheduledPostClaimSuccess])
+  }, [])
 
   useEffect(() => {
     if (claimModalOpen) claimModalExitHandledRef.current = false
@@ -492,11 +491,6 @@ export function HomeScreen() {
   >(null)
   const [claimedView, setClaimedView] = useState<ClaimedOffer | null>(null)
   const [payBillEntry, setPayBillEntry] = useState<PayBillFlowEntry | null>(null)
-  const [atVenueNoClaimPayInfoOpen, setAtVenueNoClaimPayInfoOpen] = useState(false)
-  const [venueClosedSheetOpen, setVenueClosedSheetOpen] = useState(false)
-  const [pendingAtVenuePayBillEntry, setPendingAtVenuePayBillEntry] =
-    useState<PayBillFlowEntry | null>(null)
-  const continueAtVenuePayAfterCloseRef = useRef(false)
   const pendingPayBillEntryFromClaimRef = useRef<PayBillFlowEntry | null>(null)
   const claimedOfferPageRef = useRef<ClaimedOfferPageHandle>(null)
   const { portalRoot } = useDeviceShell()
@@ -561,10 +555,11 @@ export function HomeScreen() {
       closeSectionList()
       setSearchOpen(false)
       dismissClaimModalImmediate()
-      dismissPostClaimSuccess()
+      setPostClaimSuccessOpen(false)
+      setPostClaimSuccess(null)
       setClaimedView(claim)
     },
-    [closeSectionList, dismissClaimModalImmediate, dismissPostClaimSuccess, setSearchOpen],
+    [closeSectionList, dismissClaimModalImmediate, setSearchOpen],
   )
 
   /** Claimed offer over an open or newly opened restaurant detail (chip, pay bill, etc.). */
@@ -578,12 +573,16 @@ export function HomeScreen() {
 
   const handleHomeClaimedOfferPress = useCallback(
     (claim: ClaimedOffer) => {
-      setClaimedView(null)
       dismissClaimModalImmediate()
       dismissPostClaimSuccess()
-      openRestaurantDetail(claim.restaurantSlug)
+      // Claimed offer on top; restaurant staged underneath so close lands on detail.
+      openClaimedOfferDetails(claim)
     },
-    [dismissClaimModalImmediate, dismissPostClaimSuccess, openRestaurantDetail],
+    [
+      dismissClaimModalImmediate,
+      dismissPostClaimSuccess,
+      openClaimedOfferDetails,
+    ],
   )
 
   const handleDiscoverRestaurantPress = useCallback(
@@ -604,7 +603,7 @@ export function HomeScreen() {
   const claimedOfferPageRestaurant = useMemo(() => {
     if (!claimedView) return null
     const d = getRestaurantDetailDemo(claimedView.restaurantSlug)
-    return { name: d.name }
+    return { name: d.name, address: d.address }
   }, [claimedView, catalogSnapshot])
 
   useLayoutEffect(() => {
@@ -775,9 +774,20 @@ export function HomeScreen() {
     completeClaim(pendingClaimData, card)
   }, [activeOfferConflict, baseRestaurantDetail, completeClaim, snackbar])
 
+  /** Got it — claimed offer is already mounted behind success; only dismiss success. */
   const handlePostClaimSuccessDone = useCallback(() => {
-    dismissPostClaimSuccess()
-  }, [dismissPostClaimSuccess])
+    setPostClaimSuccessOpen(false)
+  }, [])
+
+  /** X — restaurant only; drop claimed page that was staged under success. */
+  const handlePostClaimSuccessDismiss = useCallback(() => {
+    setClaimedView(null)
+    setPostClaimSuccessOpen(false)
+  }, [])
+
+  const handlePostClaimSuccessExitComplete = useCallback(() => {
+    setPostClaimSuccess(null)
+  }, [])
 
   const handleClaimedOfferClose = useCallback(() => {
     setClaimedView(null)
@@ -844,51 +854,6 @@ export function HomeScreen() {
     pendingPayBillEntryFromClaimRef.current = null
     setClaimedView(null)
     if (entry) setPayBillEntry(entry)
-  }, [])
-
-  const handleOpenPayBill = useCallback(() => {
-    if (!restaurantDetailSlug || !baseRestaurantDetail) return
-    if (!baseRestaurantDetail.isOpen) {
-      setVenueClosedSheetOpen(true)
-      return
-    }
-    const claim = findActiveClaimForRestaurant(
-      restaurantDetailSlug,
-      baseRestaurantDetail,
-      claimedByOfferId,
-    )
-    if (claim) {
-      openClaimedOfferDetails(claim)
-      return
-    }
-    setPendingAtVenuePayBillEntry({
-      restaurantName: baseRestaurantDetail.name,
-      restaurantSlug: restaurantDetailSlug,
-      offer: null,
-    })
-    setAtVenueNoClaimPayInfoOpen(true)
-  }, [baseRestaurantDetail, claimedByOfferId, openClaimedOfferDetails, restaurantDetailSlug])
-
-  const handleAtVenueNoClaimPayInfoContinue = useCallback(() => {
-    if (!pendingAtVenuePayBillEntry) return
-    continueAtVenuePayAfterCloseRef.current = true
-    setAtVenueNoClaimPayInfoOpen(false)
-  }, [pendingAtVenuePayBillEntry])
-
-  const handleAtVenueSheetAfterClose = useCallback(() => {
-    if (!continueAtVenuePayAfterCloseRef.current) return
-    continueAtVenuePayAfterCloseRef.current = false
-    const entry = pendingAtVenuePayBillEntry
-    if (!entry) return
-    setPayBillEntry(entry)
-    setPendingAtVenuePayBillEntry(null)
-  }, [pendingAtVenuePayBillEntry])
-
-  const handleAtVenueNoClaimPayInfoOpenChange = useCallback((open: boolean) => {
-    setAtVenueNoClaimPayInfoOpen(open)
-    if (!open && !continueAtVenuePayAfterCloseRef.current) {
-      setPendingAtVenuePayBillEntry(null)
-    }
   }, [])
 
   /** Back from bill amount / early dismiss — keep restaurant detail open. */
@@ -999,24 +964,6 @@ export function HomeScreen() {
     onEscape: handlePaidConfirmationDismiss,
   })
 
-  const handleClaimedOfferPaymentMethodChange = useCallback(
-    (paymentMethod: PaymentMethod) => {
-      const offerId = claimedView?.offerId
-      if (!offerId || !claimedView) return
-      const updated = updateClaimedOfferPaymentMethod(claimedView, paymentMethod)
-      setClaimedView(updated)
-      setClaimedByOfferId((prev) => {
-        const current = prev[offerId]
-        if (!current) return prev
-        return {
-          ...prev,
-          [offerId]: updateClaimedOfferPaymentMethod(current, paymentMethod),
-        }
-      })
-    },
-    [claimedView],
-  )
-
   const filterBarProps = {
     getChipLabel,
     isChipActive,
@@ -1095,11 +1042,10 @@ export function HomeScreen() {
         onPayWithBoltDineOut={handlePayFromClaimedOfferPrepare}
         onPayWithBoltDineOutComplete={handlePayFromClaimedOfferComplete}
         onConfirmBillComplete={handleConfirmBillClaimedComplete}
-        onPaymentMethodChange={handleClaimedOfferPaymentMethodChange}
+        interactionLocked={postClaimSuccessOpen}
       />
     : null
 
-  /** Keep discover inert under full-screen overlays so focus cannot sit beneath them. */
   const discoverUnderClaimSheetsInert =
     pendingClaimOffer != null ||
     activeOfferConflict != null ||
@@ -1256,15 +1202,12 @@ export function HomeScreen() {
             }
             closeRestaurantDetail()
           }}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
           onOfferAvailablePress={handleOfferAvailablePress}
           onOfferClaimedPress={(id) => {
             const c = claimedByOfferId[id]
             if (c) openClaimedOfferDetails(c)
           }}
           onPaidOfferPress={handlePaidOfferPress}
-          onPayBill={handleOpenPayBill}
         />
       ) : null}
       {paidConfirmationRecord && portalRoot ?
@@ -1340,30 +1283,16 @@ export function HomeScreen() {
       {postClaimSuccess ?
         <ClaimOfferSuccessSheet
           key={postClaimSuccess.offerId}
-          isOpen
-          paymentMethod={postClaimSuccess.paymentMethod}
+          isOpen={postClaimSuccessOpen}
+          claim={postClaimSuccess}
           onOpenChange={(open) => {
-            if (!open) dismissPostClaimSuccess()
+            if (!open) handlePostClaimSuccessDismiss()
           }}
           onDone={handlePostClaimSuccessDone}
+          onExitComplete={handlePostClaimSuccessExitComplete}
           container={portalRoot}
         />
       : null}
-      <VenueClosedSheet
-        isOpen={venueClosedSheetOpen}
-        onOpenChange={setVenueClosedSheetOpen}
-        container={portalRoot}
-      />
-      {pendingAtVenuePayBillEntry && baseRestaurantDetail ? (
-        <AtVenueNoClaimedOffersSheet
-          isOpen={atVenueNoClaimPayInfoOpen}
-          onOpenChange={handleAtVenueNoClaimPayInfoOpenChange}
-          restaurantName={baseRestaurantDetail.name}
-          container={portalRoot}
-          onContinue={handleAtVenueNoClaimPayInfoContinue}
-          onAfterClose={handleAtVenueSheetAfterClose}
-        />
-      ) : null}
       <FilterSheet
         sheetKey={sheetKey}
         filterState={filterState}

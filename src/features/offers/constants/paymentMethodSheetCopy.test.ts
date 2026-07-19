@@ -50,7 +50,7 @@ describe("paymentMethodSheetCopy", () => {
 
   it("formats cashback banner headline copy", () => {
     expect(formatDineOutClaimCashbackBannerHeadline()).toBe(
-      `Get ${formatDiscountPercent(DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT)}% cashback on your total bill when you pay in the app`,
+      `Get ${formatDiscountPercent(DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT)}% cashback on your total bill when you pay in the app (up to 100€)`,
     )
   })
 

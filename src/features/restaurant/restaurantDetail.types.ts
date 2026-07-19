@@ -142,8 +142,6 @@ export interface RestaurantDetailScreenProps {
   onBack: () => void
   /** Preferred date tab when opening from Discover filters. */
   selectedOfferDate?: DateValue
-  activeTab: string
-  onTabChange: (id: string) => void
   /**
    * Dev / future: deep-link handlers. Pass `null` to disable the paired in-app
    * UI (sheet/modal) from opening; `undefined` keeps prototype behavior (sheet opens).
@@ -154,7 +152,6 @@ export interface RestaurantDetailScreenProps {
   onCall?: () => void
   onOpenReviews?: (() => void) | null
   onOpenPriceInfo?: (() => void) | null
-  onPayBill?: () => void
   onMoreAboutVenue?: () => void
   /** Fires after the user submits a venue problem report (prototype + future telemetry). */
   onReportProblem?: (reasonIds: readonly string[]) => void

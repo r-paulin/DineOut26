@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { ClaimOfferModalOffer } from "@/features/offers/offers.types"
 import {
+  formatClaimModalDisclaimerValidityLine,
   formatClaimModalOfferAvailability,
   formatClaimModalOfferDetailRows,
 } from "@/features/offers/utils/formatClaimModalOfferDetailRows"
@@ -46,5 +47,16 @@ describe("formatClaimModalOfferAvailability", () => {
 
   it("passes through already-formatted time without extra changes", () => {
     expect(formatClaimModalOfferAvailability("Today", "All day")).toBe("Today · All day")
+  })
+})
+
+describe("formatClaimModalDisclaimerValidityLine", () => {
+  it("formats Figma disclaimer lead with Valid on … from …", () => {
+    expect(
+      formatClaimModalDisclaimerValidityLine(
+        "17 May",
+        "Arrive between 15:00 - 16:00",
+      ),
+    ).toBe("Offer applies to the total bill. Valid on 17 May from 15:00–16:00.")
   })
 })

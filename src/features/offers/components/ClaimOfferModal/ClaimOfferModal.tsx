@@ -1,18 +1,24 @@
 import { Typography } from "@bolteu/kalep-react"
 import { useSnackbar } from "@/shared/snackbar"
 import ChevronDown from "@bolteu/kalep-react-icons/dist/ChevronDown"
-import { useCallback, useMemo, useRef, useState, type AnimationEvent } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type AnimationEvent,
+} from "react"
 import { ClaimModalDisclaimer } from "@/features/offers/components/ClaimOfferModal/ClaimModalDisclaimer"
-import { ClaimModalOfferDetails } from "@/features/offers/components/ClaimOfferModal/ClaimModalOfferDetails"
 import { ClaimOfferFooterActions } from "@/features/offers/components/ClaimOfferModal/ClaimOfferFooterActions"
 import { formatPeopleCountLabel } from "@/features/offers/components/ClaimOfferModal/formatPeopleCountLabel"
 import { ClaimPromoSheetShell } from "@/features/offers/components/claimFlow/ClaimPromoSheetShell"
 import { formatOfferDiscountTitle } from "@/features/offers/utils/formatOfferDiscountTitle"
+import { DineOutCashbackBanner } from "@/features/offers/components/DineOutCashbackBanner"
 import type {
   ClaimData,
   ClaimedOffer,
   ClaimOfferModalOffer,
-  PaymentMethod,
 } from "@/features/offers/offers.types"
 import { findOverlappingActiveClaim } from "@/features/offers/utils/claimConflict"
 import type {
@@ -24,31 +30,41 @@ import {
   Z_CLAIM_MODAL_CONTENT,
   Z_CLAIM_MODAL_OVERLAY,
 } from "@/features/restaurant/constants/screenLayers"
+import {
+  MOTION_REDUCED_S,
+  MOTION_SHEET_SEQUENTIAL_GAP_S,
+  motionReduced,
+} from "@/shared/motion"
 import { GuestPickerSheet } from "./GuestPickerSheet"
-import {
-  CLAIM_PAYMENT_SECTION_INTRO,
-  CLAIM_PAYMENT_SECTION_TITLE,
-  CLAIM_PAYMENT_VENUE_OPTION_LABEL,
-  PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
-} from "@/features/offers/constants/paymentMethodSheetCopy"
-import { PaymentSelector } from "./PaymentSelector"
 import { TimeSlotSheet } from "./TimeSlotSheet"
-import {
-  CARD_DIVIDER_GROOVE_BG_CLASS,
-  CARD_DIVIDER_SECTION_ABOVE_CLASS,
-  CARD_DIVIDER_SECTION_SURFACE_CLASS,
-} from "@/shared/components/CardDivider"
+
+/** Claim flow always uses Bolt Food / DineOut (Figma `16142:22260`). */
+const CLAIM_PAYMENT_METHOD = "dineout" as const
 
 const SEMIBOLD = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
 } as const
 
-/** Figma Heading M / M Accent (`16144:19979`). */
+const BODY_M_COMPACT = {
+  ...SEMIBOLD,
+  lineHeight: "var(--body-m-compact-line-height, 20px)",
+} as const
+
+/** Figma Heading M / M Accent (`16142:22268`). */
 const CLAIM_MODAL_TITLE_CLASS =
   "m-0 p-0 text-primary text-[1.75rem] font-semibold leading-[2.25rem] tracking-[-0.616px] [font-feature-settings:'cv03'_on,'cv04'_on] [font-variant-numeric:lining-nums_proportional-nums] [font-variation-settings:'wght'_var(--font-weight-semibold)]"
 
+/** Figma List Item row — 12px vertical padding, no separators (`17902:35009`). */
 const PICKER_ROW_CLASS =
-  "flex w-full flex-row items-center justify-between gap-3 rounded-[8px] border-0 bg-transparent px-6 pb-[13px] pt-[14px] text-left transition-colors hover:bg-active-neutral-secondary active:bg-active-neutral-secondary"
+  "flex w-full flex-row items-center justify-between gap-3 border-0 bg-transparent px-6 py-3 text-left transition-colors hover:bg-active-neutral-secondary active:bg-active-neutral-secondary"
+
+/**
+ * Figma Main Button S in list end-slot — pill, 36px min height, body-s accent.
+ */
+const PICKER_VALUE_PILL_CLASS =
+  "pointer-events-none inline-flex min-h-9 min-w-0 shrink-0 items-center justify-center gap-1 rounded-full bg-neutral-secondary px-3 py-2"
+
+type PickerKind = "guests" | "time"
 
 export interface ClaimOfferModalProps {
   isOpen: boolean
@@ -74,8 +90,15 @@ function toOfferTimeConfig(o: ClaimOfferModalOffer): OfferTimeConfig {
   }
 }
 
+function sequentialGapMs(): number {
+  return Math.round(
+    (motionReduced() ? MOTION_REDUCED_S : MOTION_SHEET_SEQUENTIAL_GAP_S) * 1000,
+  )
+}
+
 /**
- * Claim form (Figma `16144:19972`). Recalculates slot lists when the time picker opens.
+ * Claim form (Figma `16142:22260`). Recalculates slot lists when the time picker opens.
+ * Guest/time pickers use iOS-style sequential sheets (claim dismisses first).
  */
 export function ClaimOfferModal({
   isOpen,
@@ -101,10 +124,37 @@ export function ClaimOfferModal({
     getTimePickerConfig(timeCfgBase, new Date(), schedulePickerOpts).initialValue,
   )
   const [guestCount, setGuestCount] = useState(2)
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("dineout")
-  const [guestSheetOpen, setGuestSheetOpen] = useState(false)
-  const [timeSheetOpen, setTimeSheetOpen] = useState(false)
   const [slotList, setSlotList] = useState<string[]>([])
+
+  const [claimSurfaceOpen, setClaimSurfaceOpen] = useState(false)
+  const [pickerKind, setPickerKind] = useState<PickerKind | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const pendingPickerRef = useRef<PickerKind | null>(null)
+  const reopenClaimAfterPickerRef = useRef(false)
+  const pickerExitHandledRef = useRef(false)
+  const sequentialTimerRef = useRef<number | null>(null)
+
+  const clearSequentialTimer = useCallback(() => {
+    if (sequentialTimerRef.current != null) {
+      window.clearTimeout(sequentialTimerRef.current)
+      sequentialTimerRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isOpen) {
+      setClaimSurfaceOpen(true)
+      return
+    }
+    clearSequentialTimer()
+    setClaimSurfaceOpen(false)
+    setPickerOpen(false)
+    setPickerKind(null)
+    pendingPickerRef.current = null
+    reopenClaimAfterPickerRef.current = false
+  }, [isOpen, clearSequentialTimer])
+
+  useEffect(() => () => clearSequentialTimer(), [clearSequentialTimer])
 
   const modalTitle = useMemo(
     () => formatOfferDiscountTitle(offer.discountPercent, offer.isAllDay),
@@ -116,20 +166,65 @@ export function ClaimOfferModal({
   const handleDrawerOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
+        // Programmatic hide for sequential pickers — keep parent claim flow open.
+        if (pendingPickerRef.current || pickerKind != null) return
         onOpenChange(false)
         onClose()
       }
     },
-    [onClose, onOpenChange],
+    [onClose, onOpenChange, pickerKind],
   )
 
-  const handleContentAnimationEnd = useCallback(
+  const requestPicker = useCallback((kind: PickerKind) => {
+    pendingPickerRef.current = kind
+    setClaimSurfaceOpen(false)
+  }, [])
+
+  const handleClaimContentAnimationEnd = useCallback(
     (e: AnimationEvent<HTMLDivElement>) => {
       if (e.target !== e.currentTarget) return
+      if (claimSurfaceOpen) return
+
+      const pending = pendingPickerRef.current
+      if (pending) {
+        pendingPickerRef.current = null
+        setPickerKind(pending)
+        pickerExitHandledRef.current = false
+        clearSequentialTimer()
+        sequentialTimerRef.current = window.setTimeout(() => {
+          sequentialTimerRef.current = null
+          setPickerOpen(true)
+        }, sequentialGapMs())
+        return
+      }
+
       if (!isOpen) onExitComplete?.()
     },
-    [isOpen, onExitComplete],
+    [claimSurfaceOpen, clearSequentialTimer, isOpen, onExitComplete],
   )
+
+  const handlePickerOpenChange = useCallback((open: boolean) => {
+    if (open) {
+      setPickerOpen(true)
+      return
+    }
+    setPickerOpen(false)
+    reopenClaimAfterPickerRef.current = true
+  }, [])
+
+  const handlePickerExitComplete = useCallback(() => {
+    if (pickerExitHandledRef.current) return
+    pickerExitHandledRef.current = true
+    setPickerKind(null)
+    if (reopenClaimAfterPickerRef.current && isOpen) {
+      reopenClaimAfterPickerRef.current = false
+      clearSequentialTimer()
+      sequentialTimerRef.current = window.setTimeout(() => {
+        sequentialTimerRef.current = null
+        setClaimSurfaceOpen(true)
+      }, sequentialGapMs())
+    }
+  }, [clearSequentialTimer, isOpen])
 
   const handleArrivalRowPress = useCallback(() => {
     const cfg = getTimePickerConfig(timeCfgBase, new Date(), schedulePickerOpts)
@@ -144,7 +239,7 @@ export function ClaimOfferModal({
           arrivalTime
         : (cfg.slots[0] ?? cfg.initialValue)
       setArrivalTime(next)
-      setTimeSheetOpen(true)
+      requestPicker("time")
       return
     }
     const el = timeInputRef.current
@@ -154,7 +249,7 @@ export function ClaimOfferModal({
     } catch {
       el.click()
     }
-  }, [arrivalTime, timeCfgBase, schedulePickerOpts, onClose])
+  }, [arrivalTime, timeCfgBase, schedulePickerOpts, onClose, requestPicker])
 
   const handleClaim = useCallback(() => {
     const cfg = getTimePickerConfig(timeCfgBase, new Date(), schedulePickerOpts)
@@ -168,7 +263,7 @@ export function ClaimOfferModal({
     const claimData: ClaimData = {
       arrivalTime,
       guestCount,
-      paymentMethod,
+      paymentMethod: CLAIM_PAYMENT_METHOD,
     }
     const blocking = findOverlappingActiveClaim({
       restaurantSlug,
@@ -185,7 +280,6 @@ export function ClaimOfferModal({
   }, [
     arrivalTime,
     guestCount,
-    paymentMethod,
     onClaimed,
     onConflict,
     offer,
@@ -205,21 +299,19 @@ export function ClaimOfferModal({
   return (
     <>
       <ClaimPromoSheetShell
-        open={isOpen}
+        open={claimSurfaceOpen}
         onOpenChange={handleDrawerOpenChange}
-        onContentAnimationEnd={handleContentAnimationEnd}
+        onContentAnimationEnd={handleClaimContentAnimationEnd}
         container={container}
         zOverlay={Z_CLAIM_MODAL_OVERLAY}
         zContent={Z_CLAIM_MODAL_CONTENT}
         title={modalTitle}
         description={`${modalTitle} at ${offer.restaurantName}.`}
         hero="none"
-        sheetHeight="fill"
+        sheetHeight="fit"
         surfaceClass="bg-layer-floor-2"
         footerClassName="bg-layer-floor-2 pt-4 pb-[max(2rem,var(--safe-area-bottom))]"
-        footer={
-          <ClaimOfferFooterActions onClick={handleClaim} />
-        }
+        footer={<ClaimOfferFooterActions onClick={handleClaim} />}
       >
         <div className="px-6 pb-3 pt-10">
           <h2 className={CLAIM_MODAL_TITLE_CLASS}>{modalTitle}</h2>
@@ -239,109 +331,90 @@ export function ClaimOfferModal({
         />
 
         <div className="flex flex-col">
-          <div>
-            <button
-              type="button"
-              className={PICKER_ROW_CLASS}
-              onClick={handleArrivalRowPress}
+          <button
+            type="button"
+            className={PICKER_ROW_CLASS}
+            onClick={handleArrivalRowPress}
+          >
+            <Typography
+              as="span"
+              variant="body-m-accent"
+              color="primary"
+              inlineStyle={BODY_M_COMPACT}
             >
+              When will you arrive?
+            </Typography>
+            <span className={PICKER_VALUE_PILL_CLASS}>
               <Typography
                 as="span"
-                variant="body-m-accent"
+                variant="body-s-accent"
                 color="primary"
                 inlineStyle={SEMIBOLD}
+                noWrap
               >
-                When will you arrive?
+                {arrivalTime}
               </Typography>
-              <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-[8px] bg-neutral-secondary px-3 py-2">
-                <Typography
-                  as="span"
-                  variant="body-m-accent"
-                  color="primary"
-                  inlineStyle={SEMIBOLD}
-                  noWrap
-                >
-                  {arrivalTime}
-                </Typography>
-                <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
-              </span>
-            </button>
-            <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
-          </div>
+              <ChevronDown size="sm" className="shrink-0 text-primary" aria-hidden />
+            </span>
+          </button>
 
-          <div>
-            <button
-              type="button"
-              className={PICKER_ROW_CLASS}
-              onClick={() => setGuestSheetOpen(true)}
+          <button
+            type="button"
+            className={PICKER_ROW_CLASS}
+            onClick={() => requestPicker("guests")}
+          >
+            <Typography
+              as="span"
+              variant="body-m-accent"
+              color="primary"
+              inlineStyle={BODY_M_COMPACT}
             >
+              How many people?
+            </Typography>
+            <span className={PICKER_VALUE_PILL_CLASS}>
               <Typography
                 as="span"
-                variant="body-m-accent"
+                variant="body-s-accent"
                 color="primary"
                 inlineStyle={SEMIBOLD}
+                noWrap
               >
-                How many people?
+                {peopleChipLabel}
               </Typography>
-              <span className="pointer-events-none flex min-w-0 shrink-0 items-center gap-1 rounded-[8px] bg-neutral-secondary px-3 py-2">
-                <Typography
-                  as="span"
-                  variant="body-m-accent"
-                  color="primary"
-                  inlineStyle={SEMIBOLD}
-                  noWrap
-                >
-                  {peopleChipLabel}
-                </Typography>
-                <ChevronDown size="sm" className="shrink-0 text-tertiary" aria-hidden />
-              </span>
-            </button>
-            <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
-          </div>
+              <ChevronDown size="sm" className="shrink-0 text-primary" aria-hidden />
+            </span>
+          </button>
         </div>
 
-        {/*
-          Figma `16144:19972` — Card divider groove before Offer details (same as
-          restaurant feed / Pay bill summary blocks).
-        */}
-        <div className={`flex flex-col ${CARD_DIVIDER_GROOVE_BG_CLASS}`}>
-          <div className={CARD_DIVIDER_SECTION_ABOVE_CLASS}>
-            {/* Figma `16142:22260` — no divider between payment radios (unlike picker rows above). */}
-            <PaymentSelector
-              value={paymentMethod}
-              onChange={setPaymentMethod}
-              showSectionSeparator={false}
-              sectionTitle={CLAIM_PAYMENT_SECTION_TITLE}
-              sectionIntro={CLAIM_PAYMENT_SECTION_INTRO}
-              optionLabels={{
-                dineout: PAYMENT_METHOD_DINEOUT_OPTION_LABEL,
-                cardOrCash: CLAIM_PAYMENT_VENUE_OPTION_LABEL,
-              }}
-            />
-          </div>
-
-          <ClaimModalOfferDetails offer={offer} />
-          <div className={CARD_DIVIDER_SECTION_SURFACE_CLASS}>
-            <ClaimModalDisclaimer />
-          </div>
+        {/* Figma `16142:22260` — cashback banner only. */}
+        <div className="w-full shrink-0 px-6 py-6">
+          <DineOutCashbackBanner />
         </div>
+
+        <ClaimModalDisclaimer date={offer.date} timeWindow={offer.timeWindow} />
       </ClaimPromoSheetShell>
 
-      <TimeSlotSheet
-        isOpen={timeSheetOpen}
-        onOpenChange={setTimeSheetOpen}
-        slots={slotList}
-        value={arrivalTime}
-        onChange={setArrivalTime}
-        container={container}
-      />
-      <GuestPickerSheet
-        isOpen={guestSheetOpen}
-        onOpenChange={setGuestSheetOpen}
-        value={guestCount}
-        onChange={setGuestCount}
-        container={container}
-      />
+      {pickerKind === "time" ?
+        <TimeSlotSheet
+          isOpen={pickerOpen}
+          onOpenChange={handlePickerOpenChange}
+          onExitComplete={handlePickerExitComplete}
+          slots={slotList}
+          value={arrivalTime}
+          onChange={setArrivalTime}
+          container={container}
+        />
+      : null}
+      {pickerKind === "guests" ?
+        <GuestPickerSheet
+          isOpen={pickerOpen}
+          onOpenChange={handlePickerOpenChange}
+          onExitComplete={handlePickerExitComplete}
+          value={guestCount}
+          onChange={setGuestCount}
+          container={container}
+        />
+      : null}
     </>
   )
 }

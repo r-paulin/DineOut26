@@ -1,11 +1,11 @@
 import type { SnackbarContent } from "@/shared/snackbar/snackbar.types"
-import {
-  CLAIMED_OFFER_CHECK_IN_SNACKBAR_DESCRIPTION,
-  CLAIMED_OFFER_CHECK_IN_SNACKBAR_TITLE,
-} from "@/features/offers/constants/claimedOfferCopy"
+import { CLAIMED_OFFER_CHECK_IN_SNACKBAR_DESCRIPTION } from "@/features/offers/constants/claimedOfferCopy"
+import { formatWelcomeAtRestaurant } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
 
-/** Figma `17504:35915` — auto-dismiss snackbar after venue check-in. */
-export function createClaimedOfferCheckInSnackbar(): Pick<
+/** Figma `19867:38064` — auto-dismiss snackbar after venue check-in. */
+export function createClaimedOfferCheckInSnackbar(
+  restaurantName: string,
+): Pick<
   SnackbarContent,
   | "title"
   | "description"
@@ -15,7 +15,7 @@ export function createClaimedOfferCheckInSnackbar(): Pick<
   | "timeout"
 > {
   return {
-    title: CLAIMED_OFFER_CHECK_IN_SNACKBAR_TITLE,
+    title: formatWelcomeAtRestaurant(restaurantName),
     description: CLAIMED_OFFER_CHECK_IN_SNACKBAR_DESCRIPTION,
     descriptionColor: "secondary-inverted",
     showCloseButton: false,

@@ -9,22 +9,16 @@ import {
   useState,
 } from "react"
 import { ClaimedOfferCancelRow } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferCancelRow"
-import { ClaimedOfferCheckInFooter } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferCheckInFooter"
 import { ClaimedOfferDetailsSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDetailsSection"
 import { ClaimedOfferDisclaimer } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferDisclaimer"
 import { ClaimedOfferHeroSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferHeroSection"
-import { ClaimedOfferActionFooter } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferActionFooter"
-import { ClaimedOfferHowItWorksSheet } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferHowItWorksSheet"
-import { ClaimedOfferPaymentMethodSheet } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferPaymentMethodSheet"
-import { VenuePaymentConfirmDialog } from "@/features/offers/components/ClaimedOfferPage/VenuePaymentConfirmDialog"
-import { ClaimedOfferPinBanner } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferPinBanner"
+import { ClaimedOfferHowToUseSection } from "@/features/offers/components/ClaimedOfferPage/ClaimedOfferHowToUseSection"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import {
   formatClaimedOfferFoodLabel,
   isClaimCheckedIn,
 } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
-import { DineOutCashbackBannerSlot } from "@/features/offers/components/paymentMethod/DineOutCashbackBannerSlot"
-import type { ClaimedOffer, PaymentMethod } from "@/features/offers/offers.types"
+import type { ClaimedOffer } from "@/features/offers/offers.types"
 import gsap from "gsap"
 import { createClaimedOfferCheckInSnackbar } from "@/features/offers/constants/claimedOfferCheckInSnackbar"
 import { cancelOffer } from "@/features/offers/utils/claimOffer"
@@ -33,7 +27,7 @@ import {
   resolveClaimedOfferDateLabel,
 } from "@/features/offers/utils/formatClaimedArrivalDate"
 import { Z_CLAIMED_OFFER_PAGE } from "@/features/restaurant/constants/screenLayers"
-import { AnimatedCollapse } from "@/shared/components/AnimatedCollapse"
+import { CardDivider } from "@/shared/components/CardDivider"
 import { useSlideInPanel } from "@/shared/hooks/useSlideInPanel"
 import { scheduleSnackbarAdd, useSnackbar } from "@/shared/snackbar"
 import {
@@ -42,11 +36,13 @@ import {
   MOTION_MICRO_S,
 } from "@/shared/motion"
 import { motionReduced } from "@/shared/motion/motionHelpers"
+import { googleMapsSearchUrl } from "@/shared/utils/googleMapsSearchUrl"
 import { useOfferExpired } from "./useOfferCountdown"
 
 export interface ClaimedOfferPageProps {
   restaurant: {
     name: string
+    address: string
   }
   claim: ClaimedOffer
   onClose: () => void
@@ -60,7 +56,8 @@ export interface ClaimedOfferPageProps {
   onConfirmBill?: () => void
   /** After claimed-offer exit animation when confirming bill. */
   onConfirmBillComplete?: () => void
-  onPaymentMethodChange?: (paymentMethod: PaymentMethod) => void
+  /** When true (e.g. success sheet open on top), block interaction and a11y tree. */
+  interactionLocked?: boolean
 }
 
 export interface ClaimedOfferPageHandle {
@@ -69,7 +66,7 @@ export interface ClaimedOfferPageHandle {
 }
 
 /**
- * Post-claim full-screen panel (GSAP slide-in, same motion family as restaurant detail).
+ * Post-claim full-screen panel (GSAP slide-in). Figma `19867:37819`.
  */
 export const ClaimedOfferPage = forwardRef<
   ClaimedOfferPageHandle,
@@ -85,7 +82,7 @@ export const ClaimedOfferPage = forwardRef<
     onPayWithBoltDineOutComplete,
     onConfirmBill,
     onConfirmBillComplete,
-    onPaymentMethodChange,
+    interactionLocked = false,
   },
   ref,
 ) {
@@ -96,12 +93,7 @@ export const ClaimedOfferPage = forwardRef<
   const onPayWithBoltDineOutCompleteRef = useRef(onPayWithBoltDineOutComplete)
   const onConfirmBillRef = useRef(onConfirmBill)
   const onConfirmBillCompleteRef = useRef(onConfirmBillComplete)
-  const onPaymentMethodChangeRef = useRef(onPaymentMethodChange)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
-  const [venuePaymentDialogOpen, setVenuePaymentDialogOpen] = useState(false)
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false)
-  const [paymentMethodSheetOpen, setPaymentMethodSheetOpen] = useState(false)
-  const [sheetPortal, setSheetPortal] = useState<HTMLElement | null>(null)
   const [cancelPending, setCancelPending] = useState(false)
   const [cancelDialogPortal, setCancelDialogPortal] = useState<HTMLElement | null>(
     null,
@@ -109,9 +101,9 @@ export const ClaimedOfferPage = forwardRef<
   const checkedIn = isClaimCheckedIn(claim)
   const claimIsForToday = isClaimedOfferForToday(claim)
   const expired = useOfferExpired(claim.offerWindowCloses)
-  const showCardCashUpsell = claim.paymentMethod === "card_or_cash"
   const offerTitle =
     claim.offerDetailLabel ?? formatClaimedOfferFoodLabel(claim.discountPercent)
+  const mapsHref = googleMapsSearchUrl(restaurant.address)
 
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
     { axis: "y", scrimOpacity: MOTION_DETAIL_SCRIM },
@@ -122,7 +114,6 @@ export const ClaimedOfferPage = forwardRef<
   const snackbar = useSnackbar()
   const snackbarAnchorRef = useRef<HTMLDivElement>(null)
 
-  /** Close chrome fades before the panel slides away (Figma exit read). */
   const runDismiss = useCallback(
     (after?: () => void) => {
       const closeBtn = closeRef.current
@@ -154,7 +145,6 @@ export const ClaimedOfferPage = forwardRef<
     onPayWithBoltDineOutCompleteRef.current = onPayWithBoltDineOutComplete
     onConfirmBillRef.current = onConfirmBill
     onConfirmBillCompleteRef.current = onConfirmBillComplete
-    onPaymentMethodChangeRef.current = onPaymentMethodChange
   }, [
     onClose,
     onCancelOffer,
@@ -163,7 +153,6 @@ export const ClaimedOfferPage = forwardRef<
     onPayWithBoltDineOutComplete,
     onConfirmBill,
     onConfirmBillComplete,
-    onPaymentMethodChange,
   ])
 
   useImperativeHandle(
@@ -178,7 +167,6 @@ export const ClaimedOfferPage = forwardRef<
 
   useLayoutEffect(() => {
     setCancelDialogPortal(rootRef.current)
-    setSheetPortal(rootRef.current)
   }, [rootRef])
 
   const handleAnimatedClose = useCallback(() => {
@@ -210,10 +198,13 @@ export const ClaimedOfferPage = forwardRef<
   }, [cancelPending, claim.offerId, runDismiss, snackbar])
 
   const handleCheckIn = useCallback(() => {
-    if (expired || checkedIn) return
+    if (expired || checkedIn || !claimIsForToday) return
     onCheckInRef.current?.(claim.offerId)
-    scheduleSnackbarAdd(snackbar.add, createClaimedOfferCheckInSnackbar())
-  }, [checkedIn, claim.offerId, expired, snackbar])
+    scheduleSnackbarAdd(
+      snackbar.add,
+      createClaimedOfferCheckInSnackbar(restaurant.name),
+    )
+  }, [checkedIn, claim.offerId, claimIsForToday, expired, restaurant.name, snackbar])
 
   const handlePay = useCallback(() => {
     if (!checkedIn || !onPayWithBoltDineOutRef.current) return
@@ -232,28 +223,6 @@ export const ClaimedOfferPage = forwardRef<
     })
   }, [checkedIn, runDismiss])
 
-  const handlePaymentMethodChange = useCallback((next: PaymentMethod) => {
-    onPaymentMethodChangeRef.current?.(next)
-  }, [])
-
-  const handleVenuePaymentConfirmRequest = useCallback(() => {
-    setVenuePaymentDialogOpen(true)
-  }, [])
-
-  const handleConfirmVenuePayment = useCallback(() => {
-    setVenuePaymentDialogOpen(false)
-    handlePaymentMethodChange("card_or_cash")
-  }, [handlePaymentMethodChange])
-
-  const handleConfirmBoltFoodPayment = useCallback(() => {
-    setVenuePaymentDialogOpen(false)
-    handlePaymentMethodChange("dineout")
-  }, [handlePaymentMethodChange])
-
-  const handleHowItWorksPress = useCallback(() => {
-    setHowItWorksOpen(true)
-  }, [])
-
   return (
     <div
       ref={rootRef}
@@ -261,6 +230,7 @@ export const ClaimedOfferPage = forwardRef<
       style={{ zIndex: Z_CLAIMED_OFFER_PAGE, minHeight: "var(--app-h)" }}
       role="region"
       aria-label={`Claimed offer at ${restaurant.name}`}
+      {...(interactionLocked ? { inert: true as const } : {})}
     >
       <div
         ref={scrimRef}
@@ -285,43 +255,34 @@ export const ClaimedOfferPage = forwardRef<
         <div className={claimedOfferLayout.pageScroll}>
           <ClaimedOfferHeroSection
             restaurantName={restaurant.name}
-            checkedIn={checkedIn}
-            onHowItWorksPress={handleHowItWorksPress}
+            mapsHref={mapsHref}
           />
 
           <div className={claimedOfferLayout.shelfFloor}>
-            <div
-              data-mode="light"
-              className={`${claimedOfferLayout.lightBody} ${claimedOfferLayout.lightBodyPadWithFooter}`}
-            >
-              <div className={claimedOfferLayout.offerTitleBlock}>
-                <Typography variant="heading-s-accent" color="primary" as="h2">
-                  {offerTitle}
-                </Typography>
-              </div>
+            <div data-mode="light" className={claimedOfferLayout.howToUseCard}>
+              <ClaimedOfferHowToUseSection
+                discountPercent={claim.discountPercent}
+                pin={claim.pin}
+                checkedIn={checkedIn}
+                expired={expired}
+                claimIsForToday={claimIsForToday}
+                paymentMethod={claim.paymentMethod}
+                cashbackPercent={claim.discountAddPercent}
+                onCheckIn={handleCheckIn}
+                onPay={handlePay}
+                onConfirmBill={handleConfirmBill}
+              />
+            </div>
 
-              <AnimatedCollapse visible={checkedIn}>
-                <ClaimedOfferPinBanner pin={claim.pin} />
-              </AnimatedCollapse>
+            <CardDivider />
 
+            <div data-mode="light" className={claimedOfferLayout.detailsCard}>
               <ClaimedOfferDetailsSection
+                discountLabel={offerTitle}
                 arrivalDate={resolveClaimedOfferDateLabel(claim)}
                 arrivalTime={claim.arrivalTime}
                 guestCount={claim.guestCount}
-                paymentMethod={claim.paymentMethod}
-                onPaymentMethodPress={
-                  onPaymentMethodChange ?
-                    () => setPaymentMethodSheetOpen(true)
-                  : undefined
-                }
               />
-
-              {showCardCashUpsell ?
-                <DineOutCashbackBannerSlot
-                  visible
-                  className={claimedOfferLayout.cashbackUpsellWrap}
-                />
-              : null}
 
               <ClaimedOfferCancelRow
                 checkedIn={checkedIn}
@@ -343,46 +304,13 @@ export const ClaimedOfferPage = forwardRef<
           </div>
         </div>
 
-        {checkedIn ?
-          <ClaimedOfferActionFooter
-            anchorRef={snackbarAnchorRef}
-            paymentMethod={claim.paymentMethod}
-            expired={expired}
-            onPay={handlePay}
-            onConfirmBill={handleConfirmBill}
-          />
-        : claimIsForToday ?
-          <ClaimedOfferCheckInFooter
-            anchorRef={snackbarAnchorRef}
-            expired={expired}
-            onCheckIn={handleCheckIn}
-          />
-        : null}
+        <div
+          ref={snackbarAnchorRef}
+          data-snackbar-anchor=""
+          className="pointer-events-none absolute bottom-0 left-0 right-0 z-[3] h-0"
+          aria-hidden
+        />
       </div>
-
-      <ClaimedOfferHowItWorksSheet
-        open={howItWorksOpen}
-        onOpenChange={setHowItWorksOpen}
-        paymentMethod={claim.paymentMethod}
-        container={sheetPortal}
-      />
-
-      <ClaimedOfferPaymentMethodSheet
-        open={paymentMethodSheetOpen}
-        onOpenChange={setPaymentMethodSheetOpen}
-        value={claim.paymentMethod}
-        onChange={handlePaymentMethodChange}
-        onVenuePaymentConfirmRequest={handleVenuePaymentConfirmRequest}
-        container={sheetPortal}
-      />
-
-      <VenuePaymentConfirmDialog
-        isOpen={venuePaymentDialogOpen}
-        onRequestClose={() => setVenuePaymentDialogOpen(false)}
-        portalContainer={cancelDialogPortal ?? undefined}
-        onConfirmVenue={handleConfirmVenuePayment}
-        onConfirmBoltFood={handleConfirmBoltFoodPayment}
-      />
 
       <Dialog
         isOpen={cancelDialogOpen}

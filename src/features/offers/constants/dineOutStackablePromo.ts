@@ -2,9 +2,9 @@ import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constant
 import { formatDiscountPercent } from "@/features/payBill/utils/formatDiscountPercent"
 
 /**
- * Bolt DineOut payment benefit (first two in-app bill payments), same as the
- * Restaurant detail “I'm at the venue” footer promo. Shown when the user selects
- * “Pay via Bolt Food app” in the claim flow and on the claimed-offer payment row.
+ * Bolt DineOut payment benefit (first two in-app bill payments). Shown when the
+ * user selects “Pay via Bolt Food app” in the claim flow and on the claimed-offer
+ * payment row.
  */
 export function formatDineOutStackablePaymentPromoText(
   percent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
@@ -34,7 +34,7 @@ export function formatDineOutClaimCashbackBannerAccent(
 
 /** Figma `_Cashback Banner (DineOut)` `17421:31531` — headline regular segment. */
 export const DINEOUT_CASHBACK_BANNER_HEADLINE_SUFFIX =
-  "on your total bill when you pay in the app" as const
+  "on your total bill when you pay in the app (up to 100€)" as const
 
 /** Full headline (inline claim-modal detail and aria). */
 export function formatDineOutClaimCashbackBannerHeadline(

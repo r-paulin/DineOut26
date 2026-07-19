@@ -1,11 +1,13 @@
 import { Typography } from "@bolteu/kalep-react"
 import BinOutlined from "@bolteu/kalep-react-icons/dist/BinOutlined"
+import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 
 export interface ClaimedOfferCancelRowProps {
   checkedIn: boolean
   onCancel: () => void
 }
 
+/** Figma `19867:37851` — cancel row + bottom divider before disclaimer. */
 export function ClaimedOfferCancelRow({
   checkedIn,
   onCancel,
@@ -15,28 +17,33 @@ export function ClaimedOfferCancelRow({
     muted ? "shrink-0 text-secondary" : "shrink-0 text-danger-primary"
 
   return (
-    <button
-      type="button"
-      disabled={checkedIn}
-      aria-label={
-        checkedIn ? "Cancel offer unavailable after check-in" : "Cancel offer"
-      }
-      className={[
-        "flex w-full flex-row items-center gap-3 border-none bg-transparent px-6 pb-[15px] pt-4 text-left outline-none disabled:opacity-100",
-        checkedIn ?
-          "cursor-default"
-        : "cursor-pointer focus-visible:ring-2 focus-visible:ring-action-primary",
-      ].join(" ")}
-      onClick={onCancel}
-    >
-      <BinOutlined size="md" className={iconClass} aria-hidden />
-      <Typography
-        variant="body-m-regular"
-        color={muted ? "secondary" : "danger-primary"}
-        as="span"
+    <div className="flex w-full flex-col items-start">
+      <button
+        type="button"
+        disabled={checkedIn}
+        aria-label={
+          checkedIn ? "Cancel offer unavailable after check-in" : "Cancel offer"
+        }
+        className={[
+          "flex w-full flex-row items-center gap-3 border-none bg-transparent px-6 pb-[15px] pt-4 text-left outline-none disabled:opacity-100",
+          checkedIn ?
+            "cursor-default"
+          : "cursor-pointer focus-visible:ring-2 focus-visible:ring-action-primary",
+        ].join(" ")}
+        onClick={onCancel}
       >
-        Cancel offer
-      </Typography>
-    </button>
+        <BinOutlined size="md" className={iconClass} aria-hidden />
+        <Typography
+          variant="body-m-regular"
+          color={muted ? "secondary" : "danger-primary"}
+          as="span"
+        >
+          Cancel offer
+        </Typography>
+      </button>
+      <div className={claimedOfferLayout.detailRowSeparator} aria-hidden>
+        <div className={claimedOfferLayout.detailRowSeparatorLine} />
+      </div>
+    </div>
   )
 }

@@ -1,16 +1,12 @@
 export {
-  AtVenueNoClaimedOffersSheet,
   RestaurantAbout,
   RestaurantAddressSheet,
   RestaurantDetailScreen,
   RestaurantOfferClaimInfoSheet,
-  VenueClosedSheet,
 } from "./components"
 export type {
-  AtVenueNoClaimedOffersSheetProps,
   RestaurantAddressSheetProps,
   RestaurantOfferClaimInfoSheetProps,
-  VenueClosedSheetProps,
 } from "./components"
 export { getRestaurantDetailDemo } from "./data/restaurantDetailDemo"
 export {

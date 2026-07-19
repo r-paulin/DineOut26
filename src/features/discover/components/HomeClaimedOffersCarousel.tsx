@@ -96,7 +96,7 @@ export function HomeClaimedOffersCarousel({
             data-card-index={i}
             role="button"
             tabIndex={0}
-            aria-label={`Open ${offer.restaurantName ?? "restaurant"} restaurant`}
+            aria-label={`Open claimed offer at ${offer.restaurantName ?? "restaurant"}`}
             className="min-w-[345px] max-w-[345px] shrink-0 snap-start cursor-pointer rounded-[12px] outline-none focus-visible:ring-2 focus-visible:ring-action-primary focus-visible:ring-offset-2 [&_button]:pointer-events-none"
             onClick={() => onOfferPress?.(claim)}
             onKeyDown={(e) => {

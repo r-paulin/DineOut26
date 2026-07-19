@@ -23,7 +23,8 @@
  * Sonner’s default `<li>` motion is disabled so entry/exit can be driven by GSAP.
  */
 .dineout-snackbar-toaster[data-sonner-toaster] {
-  z-index: 130 !important;
+  /* Keep in sync with Z_SNACKBAR_TOASTER (SnackbarProvider sets inline z-index). */
+  z-index: var(--z-snackbar-toaster, 1800) !important;
   /* Sonner lifts the stack on hover (`data-expanded`); we use a flat stack + GSAP. */
   transition: none !important;
   --width: 100% !important;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   formatClaimedArrivalDate,
+  formatClaimOfferSuccessArrivalSubtitle,
   isClaimedOfferForToday,
   resolveClaimedOfferDateLabel,
 } from "./formatClaimedArrivalDate"
@@ -16,6 +17,30 @@ describe("formatClaimedArrivalDate", () => {
     const d = new Date(2026, 5, 11, 13, 30, 0, 0)
     const now = new Date(2026, 5, 11, 9, 0, 0, 0)
     expect(formatClaimedArrivalDate(d, now)).toBe("Today")
+  })
+})
+
+describe("formatClaimOfferSuccessArrivalSubtitle", () => {
+  it("formats weekday date and arrival time for success screen", () => {
+    const claimedAt = new Date(2026, 4, 17, 12, 0, 0, 0).getTime()
+    expect(
+      formatClaimOfferSuccessArrivalSubtitle({
+        arrivalTime: "19:00",
+        offerScheduleYmd: "2026-05-17",
+        claimedAt,
+      }),
+    ).toBe("Sunday, 17 May at 19:00")
+  })
+
+  it("uses weekday format even when the offer day is today", () => {
+    const claimedAt = new Date(2026, 5, 11, 12, 0, 0, 0).getTime()
+    expect(
+      formatClaimOfferSuccessArrivalSubtitle({
+        arrivalTime: "13:00",
+        offerScheduleYmd: "2026-06-11",
+        claimedAt,
+      }),
+    ).toBe("Thursday, 11 June at 13:00")
   })
 })
 

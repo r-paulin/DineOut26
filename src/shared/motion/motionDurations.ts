@@ -7,7 +7,7 @@ export const MOTION_SHEET_S = 0.32
 /** Bottom sheet dismiss (~UISheetPresentationController, emphasized exit). */
 export const MOTION_SHEET_DISMISS_S = 0.38
 
-/** In-page tab panel slide, venue bar, staggered blocks. */
+/** In-page tab panel slide, staggered blocks. */
 export const MOTION_IN_PAGE_S = 0.35
 
 /** Micro reveals, tab underline. */
@@ -32,18 +32,16 @@ export const MOTION_DETAIL_SCRIM = 0.15
 /** Instant settle when reduced motion is on. */
 export const MOTION_REDUCED_S = 0.12
 
-/** Delay before at-venue bar entrance after panel push starts. */
-export const MOTION_VENUE_BAR_DELAY_S = MOTION_PUSH_S * 0.25
-
 /**
  * Breathing room after one sheet finishes dismissing before the next presents.
  * Matches iOS sequential modal presentation (HIG: avoid stacking transitions).
  */
 export const MOTION_SHEET_SEQUENTIAL_GAP_S = 0.12
 
-/** Claim modal dismiss + gap before post-claim success sheet enters. */
-export const MOTION_POST_CLAIM_SUCCESS_DELAY_S =
-  MOTION_SHEET_DISMISS_S + MOTION_SHEET_SEQUENTIAL_GAP_S
+/**
+ * After check-in PIN card dismisses, wait before enabling the Pay bill section.
+ */
+export const MOTION_CHECK_IN_TO_PAY_DELAY_S = 0.4
 
 /** Drag dismiss thresholds (bottom sheets). */
 export const MOTION_SHEET_DISMISS_DRAG_PX = 80

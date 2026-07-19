@@ -40,7 +40,7 @@ describe("findActiveClaimForRestaurant", () => {
     ).toBe("offer-today")
   })
 
-  it("ignores future-day claims so the at-venue bar stays hidden", () => {
+  it("ignores future-day claims (not active for today)", () => {
     const claimed = {
       "offer-tomorrow": claim({
         offerId: "offer-tomorrow",

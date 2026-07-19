@@ -1,7 +1,8 @@
-import { createContext, useContext, useMemo } from "react"
+import { createContext, useContext, useMemo, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
 import { Toaster, toast } from "sonner"
 import { DeviceShellContext } from "@/shared/context/deviceShellContext"
+import { Z_SNACKBAR_TOASTER } from "@/features/restaurant/constants/screenLayers"
 import { SnackbarInsetController } from "@/shared/snackbar/SnackbarInsetContext"
 import {
   SNACKBAR_SCREEN_MARGIN_BOTTOM_PX,
@@ -63,6 +64,12 @@ export function SnackbarProvider({
   const toaster = (
     <Toaster
       className="dineout-snackbar-toaster"
+      style={
+        {
+          zIndex: Z_SNACKBAR_TOASTER,
+          ["--z-snackbar-toaster"]: String(Z_SNACKBAR_TOASTER),
+        } as CSSProperties
+      }
       visibleToasts={maxVisibleSnackbars}
       position={placement}
       expand={expand}

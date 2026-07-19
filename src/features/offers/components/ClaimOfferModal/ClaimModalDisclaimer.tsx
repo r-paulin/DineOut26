@@ -1,21 +1,32 @@
 import { Typography } from "@bolteu/kalep-react"
+import { formatClaimModalDisclaimerValidityLine } from "@/features/offers/utils/formatClaimModalOfferDetailRows"
 import { useSnackbar } from "@/shared/snackbar"
 
-export function ClaimModalDisclaimer() {
+export interface ClaimModalDisclaimerProps {
+  date: string
+  timeWindow: string
+}
+
+/** Figma `16142:22260` — Offer / Disclaimer. */
+export function ClaimModalDisclaimer({
+  date,
+  timeWindow,
+}: ClaimModalDisclaimerProps) {
   const snackbar = useSnackbar()
+  const validityLine = formatClaimModalDisclaimerValidityLine(date, timeWindow)
 
   return (
-    <div className="flex flex-col px-6 pb-6 pt-0">
-      <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
-      <div className="flex flex-col gap-3 pt-3">
+    <div className="flex w-full flex-col gap-3 px-6 pb-3 pt-0">
       <Typography variant="body-s-regular" color="secondary" as="p">
-        Offers are valid only for the selected number of guests and arrival time.
-        Late arrivals or additional guests may invalidate the offer. During busy
-        periods, you may need to wait for a table.
+        {validityLine}
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
-        Only one restaurant discount may be applied per bill. DineOut cashback or
-        payment rewards may be combined with restaurant discount where eligible.
+        Offers are valid only for the selected number of guests and arrival time.
+        During busy periods, you may need to wait for a table.
+      </Typography>
+      <Typography variant="body-s-regular" color="secondary" as="p">
+        Only one discount can be used per bill. But cashback and other payment
+        rewards can be combined where eligible.
       </Typography>
       <Typography variant="body-s-regular" color="secondary" as="p">
         Venues may add a service charge and other{" "}
@@ -36,7 +47,6 @@ export function ClaimModalDisclaimer() {
         </button>{" "}
         may apply.
       </Typography>
-      </div>
     </div>
   )
 }

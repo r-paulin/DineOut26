@@ -19,6 +19,15 @@ export function formatClaimModalOfferAvailability(
   return `${date} · ${time}`
 }
 
+/** Figma `16142:22260` disclaimer lead — `Valid on 17 May from 15:00–16:00`. */
+export function formatClaimModalDisclaimerValidityLine(
+  date: string,
+  timeWindow: string,
+): string {
+  const time = formatOfferBannerValidityTime(timeWindow)
+  return `Offer applies to the total bill. Valid on ${date} from ${time}.`
+}
+
 /** Detail rows for claim modal (Figma `16142:22260`). */
 export function formatClaimModalOfferDetailRows(
   offer: ClaimOfferModalOffer,

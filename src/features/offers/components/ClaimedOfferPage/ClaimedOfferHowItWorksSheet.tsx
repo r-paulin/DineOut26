@@ -5,10 +5,10 @@ import {
   getClaimOfferInstructionsStepIcons,
 } from "@/features/offers/components/claimFlow/ClaimOfferInstructionsStepList"
 import {
+  CLAIMED_OFFER_HOW_IT_WORKS_SHEET_CTA,
   CLAIMED_OFFER_HOW_IT_WORKS_SHEET_SUBTITLE,
   CLAIMED_OFFER_HOW_IT_WORKS_SHEET_TITLE,
 } from "@/features/offers/constants/claimedOfferCopy"
-import { CLAIM_OFFER_SUCCESS_CTA } from "@/features/offers/constants/claimOfferSuccessCopy"
 import { getClaimOfferSuccessSteps } from "@/features/offers/constants/claimOfferSuccessSteps"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 import {
@@ -62,7 +62,7 @@ export function ClaimedOfferHowItWorksSheet({
           fullWidth
           onClick={() => onOpenChange(false)}
         >
-          {CLAIM_OFFER_SUCCESS_CTA}
+          {CLAIMED_OFFER_HOW_IT_WORKS_SHEET_CTA}
         </Button>
       }
     >

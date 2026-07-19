@@ -1,13 +1,9 @@
 import { Typography } from "@bolteu/kalep-react"
-import HelpCircle from "@bolteu/kalep-react-icons/dist/HelpCircle"
+import ArrowCircleRightUp from "@bolteu/kalep-react-icons/dist/ArrowCircleRightUp"
 import { BoltDineOutLogo } from "@/features/offers/components/ClaimedOfferPage/BoltDineOutLogo"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
-import { HERO_SUBTITLE_STYLE, SEMIBOLD } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
-import {
-  CLAIMED_OFFER_HERO_SUBTITLE_CHECKED_IN,
-  CLAIMED_OFFER_HERO_SUBTITLE_NOT_CHECKED_IN,
-  CLAIMED_OFFER_HOW_IT_WORKS_LABEL,
-} from "@/features/offers/constants/claimedOfferCopy"
+import { SEMIBOLD } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
+import { CLAIMED_OFFER_GET_DIRECTIONS_LABEL } from "@/features/offers/constants/claimedOfferCopy"
 
 const HERO_TITLE_STYLE = {
   ...SEMIBOLD,
@@ -15,29 +11,23 @@ const HERO_TITLE_STYLE = {
   fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
 } as const
 
-const HOW_IT_WORKS_STYLE = {
+const DIRECTIONS_STYLE = {
   color: "var(--color-content-active-action-primary-inverted)",
   fontFeatureSettings: "'cv03' 1, 'cv04' 1",
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
+  lineHeight: "var(--body-s-compact-line-height, 18px)",
 } as const
 
 export interface ClaimedOfferHeroSectionProps {
   restaurantName: string
-  checkedIn: boolean
-  onHowItWorksPress?: () => void
+  mapsHref: string
 }
 
-/** Figma `17459:*` — logo, restaurant name, check-in-dependent subtitle, help link. */
+/** Figma `19867:37819` — logo, venue, Get directions (discount lives in Offer details). */
 export function ClaimedOfferHeroSection({
   restaurantName,
-  checkedIn,
-  onHowItWorksPress,
+  mapsHref,
 }: ClaimedOfferHeroSectionProps) {
-  const subtitle =
-    checkedIn ?
-      CLAIMED_OFFER_HERO_SUBTITLE_CHECKED_IN
-    : CLAIMED_OFFER_HERO_SUBTITLE_NOT_CHECKED_IN
-
   return (
     <section data-mode="dark" className={claimedOfferLayout.hero}>
       <BoltDineOutLogo />
@@ -51,34 +41,28 @@ export function ClaimedOfferHeroSection({
         >
           {restaurantName}
         </Typography>
-        <Typography
-          variant="body-s-regular"
-          as="p"
-          align="center"
-          inlineStyle={HERO_SUBTITLE_STYLE}
-        >
-          {subtitle}
-        </Typography>
       </div>
 
-      <button
-        type="button"
-        className={claimedOfferLayout.howItWorksRow}
-        onClick={onHowItWorksPress}
+      <a
+        href={mapsHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={claimedOfferLayout.getDirectionsRow}
+        aria-label={`${CLAIMED_OFFER_GET_DIRECTIONS_LABEL} (opens Google Maps)`}
       >
         <Typography
           variant="body-s-accent"
           as="span"
-          inlineStyle={HOW_IT_WORKS_STYLE}
+          inlineStyle={DIRECTIONS_STYLE}
         >
-          {CLAIMED_OFFER_HOW_IT_WORKS_LABEL}
+          {CLAIMED_OFFER_GET_DIRECTIONS_LABEL}
         </Typography>
-        <HelpCircle
+        <ArrowCircleRightUp
           size="sm"
           className="shrink-0 text-active-action-primary-inverted"
           aria-hidden
         />
-      </button>
+      </a>
     </section>
   )
 }
