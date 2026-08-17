@@ -60,12 +60,12 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       "Open kitchen · tasting menu · Latvian chefs — chef-driven contemporary format",
     timedOffers: [
       {
-        discountPercent: 25,
+        discountPercent: 35,
         window: { kind: "range", start: "18:00", end: "22:00" },
         remainingSpots: 1,
       },
       {
-        discountPercent: 15,
+        discountPercent: 25,
         window: { kind: "range", start: "12:00", end: "15:00" },
         remainingSpots: 7,
       },
@@ -117,12 +117,12 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       "Michelin Listed · wine pairing · seasonal menu — credibility markers that drive bookings",
     timedOffers: [
       {
-        discountPercent: 20,
+        discountPercent: 30,
         window: { kind: "range", start: "19:00", end: "23:00" },
         remainingSpots: 2,
       },
       {
-        discountPercent: 15,
+        discountPercent: 25,
         window: { kind: "range", start: "12:00", end: "17:00" },
         remainingSpots: 5,
       },
@@ -174,7 +174,7 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       "Modern Latvian · farm to table — local sourcing with a contemporary twist",
     timedOffers: [
       {
-        discountPercent: 30,
+        discountPercent: 40,
         window: { kind: "range", start: "12:00", end: "14:00" },
         remainingSpots: 1,
       },
@@ -230,12 +230,12 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       "Park terrace · city views · fine dining — the setting is its biggest differentiator",
     timedOffers: [
       {
-        discountPercent: 20,
+        discountPercent: 30,
         window: { kind: "range", start: "12:00", end: "14:00" },
         remainingSpots: 1,
       },
       {
-        discountPercent: 10,
+        discountPercent: 20,
         window: { kind: "range", start: "17:00", end: "20:00" },
         remainingSpots: 8,
       },
@@ -287,7 +287,7 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       "Set menu only · chef's table · industrial space — unique format and location",
     timedOffers: [
       {
-        discountPercent: 30,
+        discountPercent: 40,
         window: { kind: "range", start: "18:00", end: "21:00" },
         remainingSpots: 1,
       },
@@ -339,7 +339,7 @@ const CATALOG: readonly RestaurantCatalogEntry[] = [
       "Medieval vault · historic · traditional — the 1293 vault is the whole experience",
     timedOffers: [
       {
-        discountPercent: 10,
+        discountPercent: 20,
         window: { kind: "range", start: "17:00", end: "20:00" },
         remainingSpots: 1,
       },

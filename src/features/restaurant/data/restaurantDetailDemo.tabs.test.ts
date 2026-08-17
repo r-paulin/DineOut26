@@ -31,9 +31,9 @@ describe("getRestaurantDetailDemo offer date tabs", () => {
   it("assigns per-date discount labels from that day's highest offer", () => {
     const model = getRestaurantDetailDemo("neiburgs")
     const offerTabs = model.offerDateTabs.filter((t) => t.state !== "no-offer")
-    expect(offerTabs[0]?.discountLabel).toBe("-20%")
-    expect(offerTabs[1]?.discountLabel).toBe("-20%")
-    expect(offerTabs[2]?.discountLabel).toBe("-20%")
+    expect(offerTabs[0]?.discountLabel).toBe("-30%")
+    expect(offerTabs[1]?.discountLabel).toBe("-30%")
+    expect(offerTabs[2]?.discountLabel).toBe("-30%")
   })
 
   it("each offer tab lists only cards derived from getRestaurantOffers (no synthetic extras)", () => {

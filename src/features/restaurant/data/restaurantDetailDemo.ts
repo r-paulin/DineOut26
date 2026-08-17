@@ -60,7 +60,7 @@ function restaurantSlugInDiscoverOfferLists(slug: RestaurantSlug): boolean {
  * or the merged discover offer lists in `offers.data.ts`. Listed for audit / handoff.
  */
 export const EXCLUDED_FROM_RESTAURANT_DETAIL_OFFERS = [
-  "Synthetic expired banner (15%, 08:00–09:00, fake expiresAt) — UI demo only, not in catalog timed offers.",
+  "Synthetic expired banner (25%, 08:00–09:00, fake expiresAt) — UI demo only, not in catalog timed offers.",
 ] as const
 
 function findRow(slug: string) {
@@ -316,7 +316,7 @@ function offersForDateTab(
       timeWindow,
       closingLine: `Offer window closes ${o.window.kind === "all-day" ? (wh.workingHoursEnd ?? "23:59") : o.window.end}`,
       remainingCount: clampRemainingSpotsForDisplay(o.remainingSpots),
-      minOrderEur: pct >= 30 ? 10 : 5,
+      minOrderEur: pct >= 40 ? 10 : 5,
       maxSavingEur: Math.ceil((pct * 10) / 3),
       restaurantImage: restaurantImageForOfferIndex(base, i),
       ...wh,

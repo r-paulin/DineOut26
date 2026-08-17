@@ -12,27 +12,27 @@ describe("formatOfferBillDiscountTitle", () => {
 })
 
 describe("formatOfferDiscountTitle", () => {
-  it("uses bill copy for 10% all-day", () => {
-    expect(formatOfferDiscountTitle(10, true)).toBe("10% off your bill")
+  it("uses bill copy for 20% all-day", () => {
+    expect(formatOfferDiscountTitle(20, true)).toBe("20% off your bill")
   })
 
-  it("uses bill copy for 10% timed window", () => {
-    expect(formatOfferDiscountTitle(10, false)).toBe("10% off your bill")
+  it("uses bill copy for 20% timed window", () => {
+    expect(formatOfferDiscountTitle(20, false)).toBe("20% off your bill")
   })
 
   it("uses bill copy for other all-day discounts", () => {
-    expect(formatOfferDiscountTitle(20, true)).toBe("20% off your bill")
+    expect(formatOfferDiscountTitle(30, true)).toBe("30% off your bill")
   })
 })
 
 describe("formatOfferClaimCardTitle", () => {
-  it("matches discount title for 10% all-day without Claim prefix", () => {
-    expect(formatOfferClaimCardTitle(10, true)).toBe("10% off your bill")
+  it("matches discount title for 20% all-day without Claim prefix", () => {
+    expect(formatOfferClaimCardTitle(20, true)).toBe("20% off your bill")
   })
 
   it("uses Claim prefix for standard offers", () => {
-    expect(formatOfferClaimCardTitle(20, false)).toBe(
-      "Claim 20% off your bill",
+    expect(formatOfferClaimCardTitle(30, false)).toBe(
+      "Claim 30% off your bill",
     )
   })
 })

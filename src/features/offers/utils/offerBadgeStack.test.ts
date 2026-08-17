@@ -26,7 +26,7 @@ function offer(
 
 describe("isTimedOfferExpiredToday", () => {
   it("is true when now is at or past range end", () => {
-    const o = offer(10, { kind: "range", start: "09:00", end: "10:00" })
+    const o = offer(20, { kind: "range", start: "09:00", end: "10:00" })
     expect(isTimedOfferExpiredToday(o, SAT_1150)).toBe(true)
     expect(isTimedOfferExpiredToday(o, new Date(2024, 5, 15, 9, 30, 0, 0))).toBe(
       false,
@@ -35,7 +35,7 @@ describe("isTimedOfferExpiredToday", () => {
 
   it("all-day is never expired for badges", () => {
     expect(
-      isTimedOfferExpiredToday(offer(10, { kind: "all-day" }), SAT_1150),
+      isTimedOfferExpiredToday(offer(20, { kind: "all-day" }), SAT_1150),
     ).toBe(false)
   })
 })
@@ -52,19 +52,19 @@ describe("isVenueOpenNow", () => {
 
 describe("formatBadgeTimeLabel", () => {
   it("uses Until end when the offer window is live", () => {
-    const o = offer(20, { kind: "range", start: "11:00", end: "14:00" })
+    const o = offer(30, { kind: "range", start: "11:00", end: "14:00" })
     expect(formatBadgeTimeLabel(o, SAT_1230)).toBe("Until 14:00")
   })
 
   it("uses Until end when live even if prototype venue hours are closed", () => {
-    const o = offer(20, { kind: "range", start: "19:00", end: "23:00" })
+    const o = offer(30, { kind: "range", start: "19:00", end: "23:00" })
     const sat2111 = new Date(2024, 5, 15, 21, 11, 0, 0)
     expect(isVenueOpenNow(sat2111)).toBe(false)
     expect(formatBadgeTimeLabel(o, sat2111)).toBe("Until 23:00")
   })
 
   it("uses range when the window has not started yet", () => {
-    const o = offer(20, { kind: "range", start: "09:00", end: "17:00" })
+    const o = offer(30, { kind: "range", start: "09:00", end: "17:00" })
     const beforeOpen = new Date(2024, 5, 15, 8, 0, 0, 0)
     expect(formatBadgeTimeLabel(o, beforeOpen)).toBe("09:00–17:00")
   })
@@ -90,19 +90,19 @@ describe("sortOffersForBadgeDisplay", () => {
   it("puts live offer first ahead of higher discount", () => {
     const sorted = sortOffersForBadgeDisplay(
       [
-        offer(25, { kind: "range", start: "18:00", end: "22:00" }),
-        offer(15, { kind: "range", start: "11:00", end: "14:00" }),
+        offer(35, { kind: "range", start: "18:00", end: "22:00" }),
+        offer(25, { kind: "range", start: "11:00", end: "14:00" }),
       ],
       SAT_1230,
     )
-    expect(sorted[0]?.discountPercent).toBe(15)
+    expect(sorted[0]?.discountPercent).toBe(25)
   })
 
   it("breaks equal discount by earlier start", () => {
     const sorted = sortOffersForBadgeDisplay(
       [
-        offer(20, { kind: "range", start: "14:00", end: "16:00" }),
-        offer(20, { kind: "range", start: "12:00", end: "13:00" }),
+        offer(30, { kind: "range", start: "14:00", end: "16:00" }),
+        offer(30, { kind: "range", start: "12:00", end: "13:00" }),
       ],
       SAT_1150,
     )
@@ -120,13 +120,13 @@ describe("buildTimedOfferBadgeModels", () => {
 
   it("maps a single non-expired offer", () => {
     const rows = buildTimedOfferBadgeModels(
-      [offer(20, { kind: "range", start: "12:00", end: "15:00" })],
+      [offer(30, { kind: "range", start: "12:00", end: "15:00" })],
       SAT_1230,
     )
     expect(rows).toEqual([
       {
         kind: "offer",
-        discountLabel: "-20%",
+        discountLabel: "-30%",
         timeWindow: "Until 15:00",
         iconActive: true,
       },
@@ -136,29 +136,29 @@ describe("buildTimedOfferBadgeModels", () => {
   it("shows two badges for two eligible offers", () => {
     const rows = buildTimedOfferBadgeModels(
       [
-        offer(20, { kind: "range", start: "11:00", end: "14:00" }),
-        offer(15, { kind: "range", start: "18:00", end: "22:00" }),
+        offer(30, { kind: "range", start: "11:00", end: "14:00" }),
+        offer(25, { kind: "range", start: "18:00", end: "22:00" }),
       ],
       SAT_1230,
     )
     expect(rows).toHaveLength(2)
     expect(rows.every((r) => r.kind === "offer")).toBe(true)
-    expect(rows[0]).toMatchObject({ discountLabel: "-20%", timeWindow: "Until 14:00" })
+    expect(rows[0]).toMatchObject({ discountLabel: "-30%", timeWindow: "Until 14:00" })
   })
 
   it("shows one badge and +2 offers for three eligible offers", () => {
     const rows = buildTimedOfferBadgeModels(
       [
-        offer(10, { kind: "range", start: "14:00", end: "16:00" }),
-        offer(20, { kind: "range", start: "11:00", end: "14:00" }),
-        offer(15, { kind: "range", start: "18:00", end: "22:00" }),
+        offer(20, { kind: "range", start: "14:00", end: "16:00" }),
+        offer(30, { kind: "range", start: "11:00", end: "14:00" }),
+        offer(25, { kind: "range", start: "18:00", end: "22:00" }),
       ],
       SAT_1230,
     )
     expect(rows).toHaveLength(2)
     expect(rows[0]).toMatchObject({
       kind: "offer",
-      discountLabel: "-20%",
+      discountLabel: "-30%",
       timeWindow: "Until 14:00",
     })
     expect(rows[1]).toEqual({
@@ -171,26 +171,26 @@ describe("buildTimedOfferBadgeModels", () => {
   it("shows one badge and +4 offers for five eligible offers", () => {
     const rows = buildTimedOfferBadgeModels(
       [
-        offer(5, { kind: "range", start: "14:00", end: "15:00" }),
-        offer(10, { kind: "range", start: "12:00", end: "13:00" }),
-        offer(25, { kind: "range", start: "11:00", end: "14:00" }),
-        offer(20, { kind: "range", start: "18:00", end: "22:00" }),
-        offer(15, { kind: "range", start: "12:05", end: "13:30" }),
+        offer(15, { kind: "range", start: "14:00", end: "15:00" }),
+        offer(20, { kind: "range", start: "12:00", end: "13:00" }),
+        offer(35, { kind: "range", start: "11:00", end: "14:00" }),
+        offer(30, { kind: "range", start: "18:00", end: "22:00" }),
+        offer(25, { kind: "range", start: "12:05", end: "13:30" }),
       ],
       SAT_1230,
     )
     expect(rows).toHaveLength(2)
-    expect(rows[0]).toMatchObject({ kind: "offer", discountLabel: "-25%" })
+    expect(rows[0]).toMatchObject({ kind: "offer", discountLabel: "-35%" })
     expect(rows[1]).toEqual({ kind: "overflow", count: 4, iconActive: true })
   })
 
   it("shows one badge and +3 offers for four eligible offers", () => {
     const rows = buildTimedOfferBadgeModels(
       [
-        offer(10, { kind: "range", start: "14:00", end: "16:00" }),
-        offer(25, { kind: "range", start: "11:00", end: "14:00" }),
-        offer(20, { kind: "range", start: "18:00", end: "22:00" }),
-        offer(15, { kind: "range", start: "12:00", end: "13:00" }),
+        offer(20, { kind: "range", start: "14:00", end: "16:00" }),
+        offer(35, { kind: "range", start: "11:00", end: "14:00" }),
+        offer(30, { kind: "range", start: "18:00", end: "22:00" }),
+        offer(25, { kind: "range", start: "12:00", end: "13:00" }),
       ],
       SAT_1230,
     )
@@ -199,29 +199,29 @@ describe("buildTimedOfferBadgeModels", () => {
   })
 
   it("omits expired offers and returns empty when all expired", () => {
-    const expired = offer(10, { kind: "range", start: "09:00", end: "10:00" })
+    const expired = offer(20, { kind: "range", start: "09:00", end: "10:00" })
     expect(buildTimedOfferBadgeModels([expired], SAT_1150)).toEqual([])
     const rows = buildTimedOfferBadgeModels(
       [
         expired,
-        offer(20, { kind: "range", start: "11:00", end: "14:00" }),
+        offer(30, { kind: "range", start: "11:00", end: "14:00" }),
       ],
       SAT_1150,
     )
     expect(rows).toHaveLength(1)
-    expect(rows[0]).toMatchObject({ discountLabel: "-20%" })
+    expect(rows[0]).toMatchObject({ discountLabel: "-30%" })
   })
 
   it("live offer is slot 1 with Until copy when a higher claimable offer exists", () => {
     const rows = buildTimedOfferBadgeModels(
       [
-        offer(25, { kind: "range", start: "18:00", end: "22:00" }),
-        offer(15, { kind: "range", start: "11:00", end: "14:00" }),
+        offer(35, { kind: "range", start: "18:00", end: "22:00" }),
+        offer(25, { kind: "range", start: "11:00", end: "14:00" }),
       ],
       SAT_1230,
     )
     expect(rows[0]).toMatchObject({
-      discountLabel: "-15%",
+      discountLabel: "-25%",
       timeWindow: "Until 14:00",
     })
   })
@@ -229,9 +229,9 @@ describe("buildTimedOfferBadgeModels", () => {
   it("liveNow mode shows only the live badge", () => {
     const rows = buildTimedOfferBadgeModels(
       [
-        offer(10, { kind: "range", start: "09:00", end: "10:00" }),
-        offer(25, { kind: "range", start: "11:00", end: "14:00" }),
-        offer(20, { kind: "range", start: "18:00", end: "22:00" }),
+        offer(20, { kind: "range", start: "09:00", end: "10:00" }),
+        offer(35, { kind: "range", start: "11:00", end: "14:00" }),
+        offer(30, { kind: "range", start: "18:00", end: "22:00" }),
       ],
       SAT_1230,
       "liveNow",
@@ -239,7 +239,7 @@ describe("buildTimedOfferBadgeModels", () => {
     expect(rows).toHaveLength(1)
     expect(rows[0]).toMatchObject({
       kind: "offer",
-      discountLabel: "-25%",
+      discountLabel: "-35%",
       timeWindow: "Until 14:00",
     })
   })
@@ -247,7 +247,7 @@ describe("buildTimedOfferBadgeModels", () => {
   it("liveNow mode returns empty when nothing is live for badge", () => {
     expect(
       buildTimedOfferBadgeModels(
-        [offer(20, { kind: "range", start: "18:00", end: "22:00" })],
+        [offer(30, { kind: "range", start: "18:00", end: "22:00" })],
         SAT_1000,
         "liveNow",
       ),
@@ -257,15 +257,15 @@ describe("buildTimedOfferBadgeModels", () => {
   it("prebook mode prioritizes best discount over currently-live offer", () => {
     const rows = buildTimedOfferBadgeModels(
       [
-        offer(15, { kind: "range", start: "11:00", end: "14:00" }), // live now
-        offer(25, { kind: "range", start: "18:00", end: "22:00" }), // higher %
+        offer(25, { kind: "range", start: "11:00", end: "14:00" }), // live now
+        offer(35, { kind: "range", start: "18:00", end: "22:00" }), // higher %
       ],
       SAT_1230,
       "prebook",
     )
     expect(rows[0]).toMatchObject({
       kind: "offer",
-      discountLabel: "-25%",
+      discountLabel: "-35%",
       timeWindow: "18:00–22:00",
     })
   })

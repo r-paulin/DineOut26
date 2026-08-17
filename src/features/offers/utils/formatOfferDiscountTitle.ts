@@ -18,8 +18,8 @@ export function formatOfferClaimCardTitle(
   discountPercent: number,
   isAllDay: boolean,
 ): string {
-  if (isAllDay && discountPercent === 10) {
-    return formatOfferDiscountTitle(10, true)
+  if (isAllDay && discountPercent === 20) {
+    return formatOfferDiscountTitle(20, true)
   }
   return `Claim ${formatOfferBillDiscountTitle(discountPercent)}`
 }

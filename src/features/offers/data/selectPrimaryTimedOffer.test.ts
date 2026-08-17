@@ -9,24 +9,24 @@ import type { RestaurantTimedOffer } from "@/features/offers/data/restaurantOffe
 describe("selectPrimaryTimedOffer", () => {
   it("ignores all-day and picks highest discount when no scarcity band", () => {
     const offers: RestaurantTimedOffer[] = [
-      { discountPercent: 10, window: { kind: "all-day" } },
+      { discountPercent: 20, window: { kind: "all-day" } },
       {
-        discountPercent: 25,
+        discountPercent: 35,
         window: { kind: "range", start: "18:00", end: "22:00" },
       },
     ]
-    expect(selectPrimaryTimedOffer(offers)?.discountPercent).toBe(25)
+    expect(selectPrimaryTimedOffer(offers)?.discountPercent).toBe(35)
   })
 
   it("prefers lowest remaining spots between 1 and 5", () => {
     const offers: RestaurantTimedOffer[] = [
       {
-        discountPercent: 30,
+        discountPercent: 40,
         window: { kind: "range", start: "10:00", end: "13:00" },
         remainingSpots: 7,
       },
       {
-        discountPercent: 20,
+        discountPercent: 30,
         window: { kind: "range", start: "19:00", end: "23:00" },
         remainingSpots: 3,
       },
