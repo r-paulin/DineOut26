@@ -46,6 +46,7 @@ import {
 import {
   VAUL_SHEET_OVERLAY_CLASS,
   vaulSheetContentClassName,
+  vaulSheetMotionStyle,
 } from "@/shared/utils/vaulAppSheetShell"
 import {
   SHEET_CLOSE_ICON_ON_SURFACE_CLASS,
@@ -447,11 +448,11 @@ export function PayScreen({
         <Drawer.Portal>
           <Drawer.Overlay
             className={VAUL_SHEET_OVERLAY_CLASS}
-            style={{ zIndex: Z_PAY_SHEET_OVERLAY }}
+            style={vaulSheetMotionStyle({ zIndex: Z_PAY_SHEET_OVERLAY })}
           />
           <Drawer.Content
             className={vaulSheetContentClassName()}
-            style={{ zIndex: Z_PAY_SHEET_CONTENT }}
+            style={vaulSheetMotionStyle({ zIndex: Z_PAY_SHEET_CONTENT })}
           >
             <Drawer.Title className="sr-only">Cards</Drawer.Title>
             <Drawer.Description className="sr-only">

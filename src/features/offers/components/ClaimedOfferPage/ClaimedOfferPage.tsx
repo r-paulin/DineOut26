@@ -106,7 +106,11 @@ export const ClaimedOfferPage = forwardRef<
   const mapsHref = googleMapsSearchUrl(restaurant.address)
 
   const { rootRef, scrimRef, panelRef, runExit } = useSlideInPanel(
-    { axis: "y", scrimOpacity: MOTION_DETAIL_SCRIM },
+    {
+      axis: "y",
+      scrimOpacity: MOTION_DETAIL_SCRIM,
+      skipEnter: interactionLocked,
+    },
     onCloseRef,
   )
   const closeRef = useRef<HTMLButtonElement>(null)
@@ -227,7 +231,14 @@ export const ClaimedOfferPage = forwardRef<
     <div
       ref={rootRef}
       className="fixed inset-0 mx-auto box-border flex w-full max-w-[var(--shell-width)] flex-col"
-      style={{ zIndex: Z_CLAIMED_OFFER_PAGE, minHeight: "var(--app-h)" }}
+      style={{
+        zIndex: Z_CLAIMED_OFFER_PAGE,
+        minHeight: "var(--app-h)",
+        // Vaul/Radix may leave `pointer-events: none` on <body> after the claim
+        // drawer. Close has `pointer-events-auto`; Check in does not — without
+        // this, check-in is untappable while the X still works.
+        pointerEvents: interactionLocked ? "none" : "auto",
+      }}
       role="region"
       aria-label={`Claimed offer at ${restaurant.name}`}
       {...(interactionLocked ? { inert: true as const } : {})}

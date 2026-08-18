@@ -27,6 +27,8 @@ export interface UseSlideInPanelOptions {
   easeExit?: SlidePanelEase
   /** Target scrim opacity when open (0 = no visible dim). */
   scrimOpacity?: number
+  /** Skip the enter tween (panel already at rest — e.g. staged under success). */
+  skipEnter?: boolean
   staggerPanelAfterScrimS?: number
   staggerScrimAfterPanelExitS?: number
 }
@@ -46,6 +48,7 @@ export function useSlideInPanel(
     easeEnter = EASE_EMPHASIZED_ENTER,
     easeExit = EASE_EMPHASIZED_EXIT,
     scrimOpacity = 0,
+    skipEnter = false,
     staggerPanelAfterScrimS = 0,
     staggerScrimAfterPanelExitS = 0,
   } = options
@@ -54,6 +57,8 @@ export function useSlideInPanel(
   const scrimRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const exitingRef = useRef(false)
+  /** Only the first paint matters — unlocking a staged panel must not replay enter. */
+  const skipEnterOnMountRef = useRef(skipEnter)
 
   useLayoutEffect(() => {
     const root = rootRef.current
@@ -67,7 +72,7 @@ export function useSlideInPanel(
         slideOffScreenYPx(panel, root)
       : slideOffScreenXPx(panel, root)
 
-    if (motionReduced()) {
+    if (skipEnterOnMountRef.current || motionReduced()) {
       gsap.set(scrim, { opacity: scrimOpacity })
       gsap.set(panel, { [offProp]: 0, clearProps: "transform" })
       return

@@ -102,7 +102,7 @@ export function BottomSheet({
   const isPeek = snap === "peek"
   const transitionClass = dragging
     ? "transition-none"
-    : "transition-[height] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)]"
+    : "transition-[height] duration-[var(--motion-sheet-enter-s)] ease-[cubic-bezier(0.32,0.72,0,1)]"
 
   const sheetShadow =
     "shadow-[0_-0.125rem_0.5rem_rgba(0,45,30,0.06),0_-0.5rem_1.5rem_rgba(0,0,0,0.08)]"

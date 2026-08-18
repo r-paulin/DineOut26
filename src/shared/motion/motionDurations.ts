@@ -1,11 +1,11 @@
 /** Full-screen push (detail, search, pay stack, claimed offer). ~Apple page transition. */
-export const MOTION_PUSH_S = 0.42
+export const MOTION_PUSH_S = 0.5
 
-/** Bottom sheet present. */
-export const MOTION_SHEET_S = 0.32
+/** Bottom sheet present (~UISheetPresentationController, ~500ms). */
+export const MOTION_SHEET_S = 0.5
 
-/** Bottom sheet dismiss (~UISheetPresentationController, emphasized exit). */
-export const MOTION_SHEET_DISMISS_S = 0.38
+/** Bottom sheet dismiss — slightly quicker than present, still iOS-paced. */
+export const MOTION_SHEET_DISMISS_S = 0.45
 
 /** In-page tab panel slide, staggered blocks. */
 export const MOTION_IN_PAGE_S = 0.35
@@ -36,7 +36,7 @@ export const MOTION_REDUCED_S = 0.12
  * Breathing room after one sheet finishes dismissing before the next presents.
  * Matches iOS sequential modal presentation (HIG: avoid stacking transitions).
  */
-export const MOTION_SHEET_SEQUENTIAL_GAP_S = 0.12
+export const MOTION_SHEET_SEQUENTIAL_GAP_S = 0.16
 
 /**
  * After check-in PIN card dismisses, wait before enabling the Pay bill section.

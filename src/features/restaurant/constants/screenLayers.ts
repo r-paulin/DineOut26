@@ -16,6 +16,10 @@ export const Z_CLAIM_MODAL_CONTENT = 1601
 /** Nested pickers opened from claim modal (above claim modal chrome). */
 export const Z_CLAIM_NESTED_SHEET_OVERLAY = 1700
 export const Z_CLAIM_NESTED_SHEET_CONTENT = 1701
+/**
+ * Post-claim success — above the claim sheet so it is not hidden during dismiss.
+ */
+export const Z_CLAIM_SUCCESS = 1750
 
 /**
  * App snackbar toaster (`.dineout-snackbar-toaster` in `index.css`).

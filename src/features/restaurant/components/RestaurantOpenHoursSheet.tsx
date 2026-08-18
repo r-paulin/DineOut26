@@ -16,6 +16,7 @@ import { SHEET_CLOSE_ICON_ON_SURFACE_CLASS } from "@/shared/utils/sheetCloseButt
 import {
   VAUL_SHEET_OVERLAY_CLASS,
   vaulSheetContentClassName,
+  vaulSheetMotionStyle,
 } from "@/shared/utils/vaulAppSheetShell"
 
 export interface RestaurantOpenHoursSheetProps {
@@ -59,11 +60,11 @@ export function RestaurantOpenHoursSheet({
       <Drawer.Portal>
         <Drawer.Overlay
           className={VAUL_SHEET_OVERLAY_CLASS}
-          style={{ zIndex: Z_RESTAURANT_SHEET_OVERLAY }}
+          style={vaulSheetMotionStyle({ zIndex: Z_RESTAURANT_SHEET_OVERLAY })}
         />
         <Drawer.Content
           className={vaulSheetContentClassName()}
-          style={{ zIndex: Z_RESTAURANT_SHEET_CONTENT }}
+          style={vaulSheetMotionStyle({ zIndex: Z_RESTAURANT_SHEET_CONTENT })}
         >
           <Drawer.Title className="sr-only">
             Opening hours: {hoursUi.openHoursSheetHeading}.{" "}

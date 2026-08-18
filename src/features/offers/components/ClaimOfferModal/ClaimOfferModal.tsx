@@ -32,6 +32,7 @@ import {
 } from "@/features/restaurant/constants/screenLayers"
 import {
   MOTION_REDUCED_S,
+  MOTION_SHEET_DISMISS_S,
   MOTION_SHEET_SEQUENTIAL_GAP_S,
   motionReduced,
 } from "@/shared/motion"
@@ -96,6 +97,12 @@ function sequentialGapMs(): number {
   )
 }
 
+function sheetDismissMs(): number {
+  return Math.round(
+    (motionReduced() ? MOTION_REDUCED_S : MOTION_SHEET_DISMISS_S) * 1000,
+  )
+}
+
 /**
  * Claim form (Figma `16142:22260`). Recalculates slot lists when the time picker opens.
  * Guest/time pickers use iOS-style sequential sheets (claim dismisses first).
@@ -133,6 +140,7 @@ export function ClaimOfferModal({
   const reopenClaimAfterPickerRef = useRef(false)
   const pickerExitHandledRef = useRef(false)
   const sequentialTimerRef = useRef<number | null>(null)
+  const exitFallbackTimerRef = useRef<number | null>(null)
 
   const clearSequentialTimer = useCallback(() => {
     if (sequentialTimerRef.current != null) {
@@ -141,9 +149,17 @@ export function ClaimOfferModal({
     }
   }, [])
 
+  const clearExitFallbackTimer = useCallback(() => {
+    if (exitFallbackTimerRef.current != null) {
+      window.clearTimeout(exitFallbackTimerRef.current)
+      exitFallbackTimerRef.current = null
+    }
+  }, [])
+
   useEffect(() => {
     if (isOpen) {
       setClaimSurfaceOpen(true)
+      clearExitFallbackTimer()
       return
     }
     clearSequentialTimer()
@@ -152,9 +168,25 @@ export function ClaimOfferModal({
     setPickerKind(null)
     pendingPickerRef.current = null
     reopenClaimAfterPickerRef.current = false
-  }, [isOpen, clearSequentialTimer])
+    clearExitFallbackTimer()
+    // Hide-visually + a still-open FilterSheet can skip Vaul's body restore.
+    document.body.style.pointerEvents = "auto"
+    // Safari / in-app WKWebView can skip `animationend`; still unmount after dismiss.
+    exitFallbackTimerRef.current = window.setTimeout(() => {
+      exitFallbackTimerRef.current = null
+      onExitComplete?.()
+    }, sheetDismissMs() + 50)
+    return () => clearExitFallbackTimer()
+  }, [isOpen, clearExitFallbackTimer, clearSequentialTimer, onExitComplete])
 
-  useEffect(() => () => clearSequentialTimer(), [clearSequentialTimer])
+  useEffect(
+    () => () => {
+      clearSequentialTimer()
+      clearExitFallbackTimer()
+      document.body.style.pointerEvents = "auto"
+    },
+    [clearExitFallbackTimer, clearSequentialTimer],
+  )
 
   const modalTitle = useMemo(
     () => formatOfferDiscountTitle(offer.discountPercent, offer.isAllDay),
@@ -302,6 +334,7 @@ export function ClaimOfferModal({
         open={claimSurfaceOpen}
         onOpenChange={handleDrawerOpenChange}
         onContentAnimationEnd={handleClaimContentAnimationEnd}
+        hideVisually={!isOpen}
         container={container}
         zOverlay={Z_CLAIM_MODAL_OVERLAY}
         zContent={Z_CLAIM_MODAL_CONTENT}

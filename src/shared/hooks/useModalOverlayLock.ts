@@ -5,7 +5,16 @@ const FOCUSABLE =
 
 function getFocusableElements(root: HTMLElement): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-    (el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true",
+    (el) => {
+      if (el.hasAttribute("disabled") || el.getAttribute("aria-hidden") === "true") {
+        return false
+      }
+      if (el.inert) return false
+      const style = getComputedStyle(el)
+      if (style.visibility === "hidden" || style.display === "none") return false
+      if (Number(style.opacity) === 0) return false
+      return true
+    },
   )
 }
 
@@ -13,6 +22,8 @@ export interface UseModalOverlayLockOptions {
   active: boolean
   containerRef: RefObject<HTMLElement | null>
   onEscape?: () => void
+  /** When false, trap Tab but do not move focus into the container yet. Default true. */
+  autoFocus?: boolean
 }
 
 /**
@@ -22,6 +33,7 @@ export function useModalOverlayLock({
   active,
   containerRef,
   onEscape,
+  autoFocus = true,
 }: UseModalOverlayLockOptions): void {
   useEffect(() => {
     if (!active) return
@@ -46,8 +58,10 @@ export function useModalOverlayLock({
     const root = containerRef.current
     if (!root) return
 
-    const focusables = getFocusableElements(root)
-    focusables[0]?.focus({ preventScroll: true })
+    if (autoFocus) {
+      const focusables = getFocusableElements(root)
+      focusables[0]?.focus({ preventScroll: true })
+    }
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Tab") return
@@ -66,5 +80,5 @@ export function useModalOverlayLock({
 
     root.addEventListener("keydown", onKeyDown)
     return () => root.removeEventListener("keydown", onKeyDown)
-  }, [active, containerRef])
+  }, [active, autoFocus, containerRef])
 }

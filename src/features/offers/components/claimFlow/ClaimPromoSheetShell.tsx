@@ -6,7 +6,6 @@ import {
   useEffect,
   useState,
   type AnimationEvent,
-  type CSSProperties,
   type ReactNode,
 } from "react"
 import { Drawer } from "vaul"
@@ -21,16 +20,11 @@ import {
   SHEET_CLOSE_OVER_MEDIA_CLASS,
 } from "@/shared/utils/sheetCloseButtonClass"
 import {
-  MOTION_REDUCED_S,
-  MOTION_SHEET_DISMISS_S,
-  MOTION_SHEET_S,
-  motionReduced,
-} from "@/shared/motion"
-import {
   VAUL_SHEET_FOOTER_CLASS,
   VAUL_SHEET_OVERLAY_CLASS,
   VAUL_SHEET_SCROLL_BODY_CLASS,
   vaulSheetContentClassName,
+  vaulSheetMotionStyle,
 } from "@/shared/utils/vaulAppSheetShell"
 
 export type ClaimPromoSheetHeroVariant = "offer-image" | "success-badge" | "none"
@@ -61,6 +55,12 @@ export interface ClaimPromoSheetShellProps {
   footerBordered?: boolean
   /** Extra classes on the pinned footer wrapper (e.g. Figma pt/pb on payment sheet). */
   footerClassName?: string
+  /**
+   * Hide overlay + content immediately while Vaul still runs its close.
+   * Used when the parent flow is done (post-claim success) so the sheet cannot
+   * stack above ClaimedOfferPage (sheet z 1601 vs page z 1500).
+   */
+  hideVisually?: boolean
   onContentAnimationEnd?: (e: AnimationEvent<HTMLDivElement>) => void
   children: ReactNode
 }
@@ -122,6 +122,7 @@ export function ClaimPromoSheetShell({
   footer,
   footerBordered = true,
   footerClassName,
+  hideVisually = false,
   onContentAnimationEnd,
   children,
 }: ClaimPromoSheetShellProps) {
@@ -134,13 +135,6 @@ export function ClaimPromoSheetShell({
       SHEET_CLOSE_ICON_OVER_MEDIA_CLASS
     : SHEET_CLOSE_ICON_ON_SURFACE_CLASS
   const [motionActive, setMotionActive] = useState(open)
-  const reducedMotion = motionReduced()
-  const sheetEnterS = reducedMotion ? MOTION_REDUCED_S : MOTION_SHEET_S
-  const sheetDismissS = reducedMotion ? MOTION_REDUCED_S : MOTION_SHEET_DISMISS_S
-  const sheetMotionStyle = {
-    "--motion-sheet-enter-s": `${sheetEnterS}s`,
-    "--motion-sheet-dismiss-s": `${sheetDismissS}s`,
-  } as CSSProperties
 
   const handleOpenChange = useCallback(
     (next: boolean) => {
@@ -179,7 +173,12 @@ export function ClaimPromoSheetShell({
         <Drawer.Overlay
           data-app-sheet-overlay=""
           className={VAUL_SHEET_OVERLAY_CLASS}
-          style={{ zIndex: zOverlay, ...sheetMotionStyle }}
+          style={vaulSheetMotionStyle({
+            zIndex: zOverlay,
+            ...(hideVisually ?
+              { visibility: "hidden", pointerEvents: "none" }
+            : null),
+          })}
         />
         <Drawer.Content
           data-app-sheet=""
@@ -191,7 +190,12 @@ export function ClaimPromoSheetShell({
           ]
             .filter(Boolean)
             .join(" ")}
-          style={{ zIndex: zContent, ...sheetMotionStyle }}
+          style={vaulSheetMotionStyle({
+            zIndex: zContent,
+            ...(hideVisually ?
+              { visibility: "hidden", pointerEvents: "none" }
+            : null),
+          })}
           aria-labelledby={visibleTitleId}
           aria-describedby={visibleDescriptionId}
           onAnimationEnd={handleContentAnimationEnd}

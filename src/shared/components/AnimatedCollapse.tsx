@@ -10,12 +10,11 @@ import {
   MOTION_REDUCED_S,
   MOTION_SHEET_DISMISS_S,
 } from "@/shared/motion/motionDurations"
+import {
+  EASE_IOS_SHEET_CSS,
+  EASE_IOS_SHEET_DISMISS_CSS,
+} from "@/shared/motion/motionEasings"
 import { prefersReducedMotion } from "@/shared/utils/prefersReducedMotion"
-
-/** Apple HIG emphasized deceleration (enter). */
-const EASE_EMPHASIZED_ENTER_CSS = "cubic-bezier(0.32, 0.72, 0, 1)"
-/** Apple HIG emphasized acceleration (exit). */
-const EASE_EMPHASIZED_EXIT_CSS = "cubic-bezier(0.58, 0, 0.92, 0.36)"
 
 const ENTER_MS = Math.round(MOTION_IN_PAGE_S * 1000)
 const EXIT_MS = Math.round(MOTION_SHEET_DISMISS_S * 1000)
@@ -89,8 +88,8 @@ export function AnimatedCollapse({
   const easing = reducedMotion
     ? "ease-out"
     : open
-      ? EASE_EMPHASIZED_ENTER_CSS
-      : EASE_EMPHASIZED_EXIT_CSS
+      ? EASE_IOS_SHEET_CSS
+      : EASE_IOS_SHEET_DISMISS_CSS
 
   const transitionStyle = {
     transitionDuration: `${durationMs}ms`,

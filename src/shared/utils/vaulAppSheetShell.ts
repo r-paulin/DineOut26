@@ -3,7 +3,32 @@
  * {@link RestaurantOpenHoursSheet}): scrim token, 16px top radius, shadow, max-height.
  */
 
+import type { CSSProperties } from "react"
+import {
+  EASE_IOS_SHEET_CSS,
+  MOTION_REDUCED_S,
+  MOTION_SHEET_DISMISS_S,
+  MOTION_SHEET_S,
+} from "@/shared/motion"
+import { motionReduced } from "@/shared/motion/motionHelpers"
+
 export const VAUL_SHEET_OVERLAY_CLASS = "fixed inset-0 bg-special-scrim"
+
+/**
+ * CSS custom properties for Vaul enter/dismiss. Spread onto Overlay + Content.
+ * Matches iOS sheet presentation (~500ms / 450ms, decelerating curve).
+ */
+export function vaulSheetMotionStyle(extra?: CSSProperties): CSSProperties {
+  const reduced = motionReduced()
+  const enterS = reduced ? MOTION_REDUCED_S : MOTION_SHEET_S
+  const dismissS = reduced ? MOTION_REDUCED_S : MOTION_SHEET_DISMISS_S
+  return {
+    "--motion-sheet-enter-s": `${enterS}s`,
+    "--motion-sheet-dismiss-s": `${dismissS}s`,
+    "--motion-sheet-ease": EASE_IOS_SHEET_CSS,
+    ...extra,
+  } as CSSProperties
+}
 
 export type VaulSheetMaxHeightVariant = "default" | "nested"
 

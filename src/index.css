@@ -321,25 +321,42 @@ img.iconChip {
 }
 
 /**
- * Vaul sheet motion aligned with app tokens (iOS-style emphasized enter / exit).
- * Default Vaul CSS is 0.5s flat; ClaimPromoSheetShell sets --motion-sheet-* on content.
+ * Vaul sheet motion — iOS page-sheet (~500ms present, ~450ms dismiss,
+ * cubic-bezier(0.32, 0.72, 0, 1)). Applies to every drawer, not only claim sheets.
  */
-@media (prefers-reduced-motion: no-preference) {
-  [data-app-sheet][data-vaul-drawer][data-state="open"] {
-    animation-duration: var(--motion-sheet-enter-s, 0.32s);
-    transition-duration: var(--motion-sheet-enter-s, 0.32s);
-  }
+:root {
+  --motion-sheet-enter-s: 0.5s;
+  --motion-sheet-dismiss-s: 0.45s;
+  --motion-sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
 
-  [data-app-sheet][data-vaul-drawer][data-state="closed"] {
-    animation-duration: var(--motion-sheet-dismiss-s, 0.38s);
-    transition-duration: var(--motion-sheet-dismiss-s, 0.38s);
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-sheet-enter-s: 0.12s;
+    --motion-sheet-dismiss-s: 0.12s;
   }
+}
 
-  [data-app-sheet-overlay][data-vaul-overlay][data-state="open"] {
-    animation-duration: var(--motion-sheet-enter-s, 0.32s);
-  }
+[data-vaul-drawer][data-state="open"] {
+  animation-duration: var(--motion-sheet-enter-s);
+  transition-duration: var(--motion-sheet-enter-s);
+  animation-timing-function: var(--motion-sheet-ease);
+  transition-timing-function: var(--motion-sheet-ease);
+}
 
-  [data-app-sheet-overlay][data-vaul-overlay][data-state="closed"] {
-    animation-duration: var(--motion-sheet-dismiss-s, 0.38s);
-  }
+[data-vaul-drawer][data-state="closed"] {
+  animation-duration: var(--motion-sheet-dismiss-s);
+  transition-duration: var(--motion-sheet-dismiss-s);
+  animation-timing-function: var(--motion-sheet-ease);
+  transition-timing-function: var(--motion-sheet-ease);
+}
+
+[data-vaul-overlay][data-state="open"] {
+  animation-duration: var(--motion-sheet-enter-s);
+  animation-timing-function: var(--motion-sheet-ease);
+}
+
+[data-vaul-overlay][data-state="closed"] {
+  animation-duration: var(--motion-sheet-dismiss-s);
+  animation-timing-function: var(--motion-sheet-ease);
 }

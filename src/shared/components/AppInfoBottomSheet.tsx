@@ -9,6 +9,7 @@ import {
 import {
   VAUL_SHEET_OVERLAY_CLASS,
   vaulSheetContentClassName,
+  vaulSheetMotionStyle,
   type VaulSheetMaxHeightVariant,
 } from "@/shared/utils/vaulAppSheetShell"
 
@@ -56,11 +57,11 @@ export function AppInfoBottomSheet({
       <Drawer.Portal>
         <Drawer.Overlay
           className={VAUL_SHEET_OVERLAY_CLASS}
-          style={{ zIndex: zOverlay }}
+          style={vaulSheetMotionStyle({ zIndex: zOverlay })}
         />
         <Drawer.Content
           className={vaulSheetContentClassName(maxHeight)}
-          style={{ zIndex: zContent }}
+          style={vaulSheetMotionStyle({ zIndex: zContent })}
         >
           <Drawer.Title className="sr-only">{title}</Drawer.Title>
           <Drawer.Close asChild>

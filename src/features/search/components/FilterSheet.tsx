@@ -16,7 +16,10 @@ import type {
 } from "@/features/search/filters.types"
 import type { DateOptionRow } from "@/features/search/utils/dateOptions"
 import { useDeviceShell } from "@/shared/context/useDeviceShell"
-import { VAUL_SHEET_OVERLAY_CLASS } from "@/shared/utils/vaulAppSheetShell"
+import {
+  VAUL_SHEET_OVERLAY_CLASS,
+  vaulSheetMotionStyle,
+} from "@/shared/utils/vaulAppSheetShell"
 import { DateTimeFilterPanel } from "./DateTimeFilterPanel"
 import { RadioFilterList } from "./RadioFilterList"
 
@@ -226,7 +229,7 @@ export function FilterSheet({
       <Drawer.Portal>
         <Drawer.Overlay
           className={VAUL_SHEET_OVERLAY_CLASS}
-          style={{ zIndex: Z_FILTER_SHEET_OVERLAY }}
+          style={vaulSheetMotionStyle({ zIndex: Z_FILTER_SHEET_OVERLAY })}
         />
         <Drawer.Content
           className={[
@@ -234,7 +237,7 @@ export function FilterSheet({
             "max-h-[97vh] overflow-hidden rounded-t-[32px] bg-layer-floor-1",
             "shadow-[0_0.375rem_0.75rem_rgba(0,0,0,0.24)]",
           ].join(" ")}
-          style={{ zIndex: Z_FILTER_SHEET_CONTENT }}
+          style={vaulSheetMotionStyle({ zIndex: Z_FILTER_SHEET_CONTENT })}
         >
           {activeKey ? (
             <>

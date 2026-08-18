@@ -10,12 +10,11 @@ import {
 } from "@/features/offers/constants/claimOfferSuccessCopy"
 import type { ClaimedOffer } from "@/features/offers/offers.types"
 import { formatClaimOfferSuccessArrivalSubtitle } from "@/features/offers/utils/formatClaimedArrivalDate"
-import { Z_CLAIM_MODAL_CONTENT } from "@/features/restaurant/constants/screenLayers"
+import { Z_CLAIM_SUCCESS } from "@/features/restaurant/constants/screenLayers"
 import { useModalOverlayLock } from "@/shared/hooks/useModalOverlayLock"
 import {
-  EASE_EMPHASIZED_ENTER,
   EASE_EMPHASIZED_EXIT,
-  MOTION_MICRO_S,
+  EASE_STANDARD_OUT,
   MOTION_REDUCED_S,
   MOTION_SHEET_DISMISS_S,
   MOTION_SHEET_S,
@@ -37,10 +36,6 @@ const SUBTITLE_STYLE = {
 const EASE_SPRING_ENTER = "back.out(1.25)" as const
 
 const CHECKMARK_ENTER_S = 0.55
-const COPY_ENTER_S = 0.4
-const CTA_ENTER_S = 0.38
-/** Stagger between hero → copy → CTA (iOS success pattern ~80–120ms). */
-const STAGGER_S = 0.1
 
 export interface ClaimOfferSuccessSheetProps {
   isOpen: boolean
@@ -54,8 +49,9 @@ export interface ClaimOfferSuccessSheetProps {
 
 /**
  * Fullscreen post-claim success (Figma `17421:31561`).
- * Enter: staggered fade + scale (spring on checkmark). Got it → claimed offer;
- * X → restaurant (parent wires).
+ * Opaque brand fill from the first frame (never see-through). Copy/close/CTA
+ * fade in softly; checkmark springs in after that fade. The whole screen fades
+ * on dismiss. Got it → claimed offer; X → restaurant (parent wires).
  */
 export function ClaimOfferSuccessSheet({
   isOpen,
@@ -74,6 +70,7 @@ export function ClaimOfferSuccessSheet({
   const ctaRef = useRef<HTMLDivElement>(null)
   const onExitCompleteRef = useRef(onExitComplete)
   const [mounted, setMounted] = useState(isOpen)
+  const [controlsReady, setControlsReady] = useState(false)
   const arrivalSubtitle = formatClaimOfferSuccessArrivalSubtitle(claim)
 
   const handleClose = useCallback(() => {
@@ -84,6 +81,7 @@ export function ClaimOfferSuccessSheet({
     active: isOpen && mounted,
     containerRef: rootRef,
     onEscape: handleClose,
+    autoFocus: controlsReady,
   })
 
   useEffect(() => {
@@ -128,80 +126,47 @@ export function ClaimOfferSuccessSheet({
     }
 
     if (reduced) {
-      gsap.set([root, ...content], {
-        autoAlpha: 1,
+      gsap.set(root, { autoAlpha: 1 })
+      gsap.set([close, copy, cta], { opacity: 1, visibility: "visible" })
+      gsap.set(checkmark, {
+        opacity: 1,
+        visibility: "visible",
         scale: 1,
         clearProps: "transform",
       })
+      setControlsReady(true)
       return
     }
 
-    gsap.set(root, { autoAlpha: 0 })
-    gsap.set(close, { autoAlpha: 0 })
+    gsap.set(root, { autoAlpha: 1, visibility: "visible" })
+    gsap.set([close, copy, cta], { opacity: 0, visibility: "visible" })
     gsap.set(checkmark, {
-      autoAlpha: 0,
+      opacity: 0,
+      visibility: "visible",
       scale: 0.72,
-      transformOrigin: "50% 50%",
-    })
-    gsap.set(copy, {
-      autoAlpha: 0,
-      scale: 0.94,
-      transformOrigin: "50% 50%",
-    })
-    gsap.set(cta, {
-      autoAlpha: 0,
-      scale: 0.96,
       transformOrigin: "50% 50%",
     })
 
     const tl = gsap.timeline({
       onComplete: () => {
-        gsap.set([checkmark, copy, cta], { clearProps: "transform" })
+        gsap.set(checkmark, { clearProps: "transform" })
       },
     })
-    tl.to(
-      root,
-      { autoAlpha: 1, duration: enterS, ease: EASE_EMPHASIZED_ENTER },
-      0,
-    )
-    tl.to(
-      close,
-      {
-        autoAlpha: 1,
-        duration: MOTION_MICRO_S,
-        ease: EASE_EMPHASIZED_ENTER,
-      },
-      MOTION_MICRO_S * 0.4,
-    )
+    tl.to([close, copy, cta], {
+      opacity: 1,
+      duration: enterS,
+      ease: EASE_STANDARD_OUT,
+      onComplete: () => setControlsReady(true),
+    }, 0)
     tl.to(
       checkmark,
       {
-        autoAlpha: 1,
+        opacity: 1,
         scale: 1,
         duration: CHECKMARK_ENTER_S,
         ease: EASE_SPRING_ENTER,
       },
-      0.06,
-    )
-    tl.to(
-      copy,
-      {
-        autoAlpha: 1,
-        scale: 1,
-        duration: COPY_ENTER_S,
-        ease: EASE_EMPHASIZED_ENTER,
-      },
-      0.06 + STAGGER_S,
-    )
-    tl.to(
-      cta,
-      {
-        autoAlpha: 1,
-        scale: 1,
-        duration: CTA_ENTER_S,
-        ease: EASE_EMPHASIZED_ENTER,
-      },
-      0.06 + STAGGER_S * 2,
+      enterS,
     )
 
     return () => {
@@ -219,10 +184,13 @@ export function ClaimOfferSuccessSheet({
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={subtitleId}
-      className="fixed inset-0 mx-auto flex w-full max-w-[var(--shell-width)] flex-col bg-special-brand-alt opacity-0"
+      className="fixed inset-0 mx-auto flex w-full max-w-[var(--shell-width)] flex-col bg-special-brand-alt"
       style={{
-        zIndex: Z_CLAIM_MODAL_CONTENT,
+        zIndex: Z_CLAIM_SUCCESS,
         minHeight: "var(--app-h)",
+        // While open, sit above Vaul's body `pointer-events: none`. On dismiss,
+        // release so Check in on the claimed page underneath is tappable.
+        pointerEvents: isOpen ? "auto" : "none",
       }}
     >
       <button
@@ -230,7 +198,8 @@ export function ClaimOfferSuccessSheet({
         type="button"
         aria-label="Close and return to restaurant"
         onClick={handleClose}
-        className="absolute left-4 top-[max(1.5rem,var(--safe-area-top))] z-30 flex size-10 shrink-0 items-center justify-center rounded-full border-none bg-static-key-light p-0 text-static-key-dark shadow-[0px_2px_3px_rgba(0,0,0,0.16)] outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
+        {...(controlsReady ? {} : { inert: true as const })}
+        className="absolute left-4 top-[max(1.5rem,var(--safe-area-top))] z-30 flex size-10 shrink-0 items-center justify-center rounded-full border-none bg-static-key-light p-0 text-static-key-dark shadow-[0px_2px_3px_rgba(0,0,0,0.16)] outline-none focus-visible:ring-2 focus-visible:ring-action-primary opacity-0"
       >
         <Cross size="md" className="text-static-key-dark" aria-hidden />
       </button>
@@ -244,11 +213,11 @@ export function ClaimOfferSuccessSheet({
           height={180}
           decoding="async"
           draggable={false}
-          className="size-[180px] shrink-0 object-cover"
+          className="size-[180px] shrink-0 object-cover opacity-0"
         />
         <div
           ref={copyRef}
-          className="flex w-full flex-col items-center gap-1 text-center"
+          className="flex w-full flex-col items-center gap-1 text-center opacity-0"
         >
           <h1 id={titleId} className="m-0 p-0">
             <Typography
@@ -275,7 +244,8 @@ export function ClaimOfferSuccessSheet({
 
       <div
         ref={ctaRef}
-        className="flex shrink-0 flex-col px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-4"
+        className="flex shrink-0 flex-col px-6 pb-[max(2rem,var(--safe-area-bottom))] pt-4 opacity-0"
+        {...(controlsReady ? {} : { inert: true as const })}
       >
         <Button
           type="button"

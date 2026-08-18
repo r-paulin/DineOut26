@@ -91,11 +91,6 @@ import type {
 } from "@/features/offers/offers.types"
 import type { UserClaim } from "@/features/restaurant/utils/offerState"
 import { useModalOverlayLock } from "@/shared/hooks/useModalOverlayLock"
-import {
-  MOTION_REDUCED_S,
-  MOTION_SHEET_SEQUENTIAL_GAP_S,
-  motionReduced,
-} from "@/shared/motion"
 
 const MapLayer = lazy(() =>
   import("@/features/map/components/MapLayer").then((m) => ({
@@ -403,7 +398,6 @@ export function HomeScreen() {
   const [pendingClaimOffer, setPendingClaimOffer] =
     useState<ClaimOfferModalOffer | null>(null)
   const [claimModalOpen, setClaimModalOpen] = useState(false)
-  const pendingPostClaimSuccessRef = useRef<ClaimedOffer | null>(null)
   const claimModalExitHandledRef = useRef(false)
   const [activeOfferConflict, setActiveOfferConflict] = useState<{
     blocking: ClaimedOffer
@@ -414,71 +408,37 @@ export function HomeScreen() {
     null,
   )
   const [postClaimSuccessOpen, setPostClaimSuccessOpen] = useState(false)
-  const postClaimSuccessTimerRef = useRef<number | null>(null)
-  const clearScheduledPostClaimSuccess = useCallback(() => {
-    if (postClaimSuccessTimerRef.current != null) {
-      window.clearTimeout(postClaimSuccessTimerRef.current)
-      postClaimSuccessTimerRef.current = null
-    }
-  }, [])
 
   const dismissPostClaimSuccess = useCallback(() => {
-    clearScheduledPostClaimSuccess()
     setPostClaimSuccessOpen(false)
-  }, [clearScheduledPostClaimSuccess])
+  }, [])
 
-  /** iOS-style sequential sheets: animate claim modal out, then present success. */
-  const schedulePostClaimSuccess = useCallback(
-    (claimed: ClaimedOffer) => {
-      clearScheduledPostClaimSuccess()
-      pendingPostClaimSuccessRef.current = claimed
-      setClaimModalOpen(false)
-    },
-    [clearScheduledPostClaimSuccess],
-  )
+  /**
+   * Stage claimed + success, then close the claim drawer. Keep the modal mounted
+   * until `onExitComplete` so Vaul can restore body lock; the shell hides the
+   * sheet immediately (`hideVisually`) so it cannot stack above claimed (z 1601 vs 1500).
+   */
+  const showPostClaimSuccess = useCallback((claimed: ClaimedOffer) => {
+    setClaimedView(claimed)
+    setPostClaimSuccess(claimed)
+    setPostClaimSuccessOpen(true)
+    setClaimModalOpen(false)
+  }, [])
 
   const dismissClaimModalImmediate = useCallback(() => {
-    pendingPostClaimSuccessRef.current = null
-    clearScheduledPostClaimSuccess()
     setClaimModalOpen(false)
     setPendingClaimOffer(null)
-  }, [clearScheduledPostClaimSuccess])
+  }, [])
 
   const handleClaimModalExitComplete = useCallback(() => {
     if (claimModalExitHandledRef.current) return
     claimModalExitHandledRef.current = true
-
-    const claimed = pendingPostClaimSuccessRef.current
-    if (claimed) {
-      pendingPostClaimSuccessRef.current = null
-      setPendingClaimOffer(null)
-      // Cover restaurant immediately so the gap before success never flashes detail.
-      setClaimedView(claimed)
-      const delayMs = Math.round(
-        (motionReduced() ? MOTION_REDUCED_S : MOTION_SHEET_SEQUENTIAL_GAP_S) *
-          1000,
-      )
-      postClaimSuccessTimerRef.current = window.setTimeout(() => {
-        postClaimSuccessTimerRef.current = null
-        setPostClaimSuccess(claimed)
-        setPostClaimSuccessOpen(true)
-      }, delayMs)
-      return
-    }
-
     setPendingClaimOffer(null)
   }, [])
 
   useEffect(() => {
     if (claimModalOpen) claimModalExitHandledRef.current = false
   }, [claimModalOpen])
-
-  useEffect(
-    () => () => {
-      clearScheduledPostClaimSuccess()
-    },
-    [clearScheduledPostClaimSuccess],
-  )
 
   const [claimedByOfferId, setClaimedByOfferId] = useState<
     Record<string, ClaimedOffer>
@@ -662,12 +622,10 @@ export function HomeScreen() {
         })
         return
       }
-      clearScheduledPostClaimSuccess()
-      pendingPostClaimSuccessRef.current = null
       setPendingClaimOffer(mapOfferCardToClaimModalOffer(card))
       setClaimModalOpen(true)
     },
-    [baseRestaurantDetail, clearScheduledPostClaimSuccess, restaurantDetailSlug, snackbar],
+    [baseRestaurantDetail, restaurantDetailSlug, snackbar],
   )
 
   const completeClaim = useCallback(
@@ -697,9 +655,9 @@ export function HomeScreen() {
           : undefined,
       })
       setClaimedByOfferId((prev) => ({ ...prev, [card.id]: claimed }))
-      schedulePostClaimSuccess(claimed)
+      showPostClaimSuccess(claimed)
     },
-    [restaurantDetailSlug, schedulePostClaimSuccess],
+    [restaurantDetailSlug, showPostClaimSuccess],
   )
 
   const handleOfferAvailablePress = useCallback(
@@ -787,6 +745,8 @@ export function HomeScreen() {
 
   const handlePostClaimSuccessExitComplete = useCallback(() => {
     setPostClaimSuccess(null)
+    // Vaul should already have closed; drop the modal if animationend was skipped.
+    setPendingClaimOffer(null)
   }, [])
 
   const handleClaimedOfferClose = useCallback(() => {

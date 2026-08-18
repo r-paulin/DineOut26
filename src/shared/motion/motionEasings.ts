@@ -1,22 +1,28 @@
 import "./registerMotion"
 import { CustomEase } from "gsap/CustomEase"
 
+/** iOS sheet / UIView spring-out (Vaul + UISheetPresentationController). */
+export const EASE_IOS_SHEET_CSS = "cubic-bezier(0.32, 0.72, 0, 1)" as const
+
+/** Gentler ease-in than the old emphasized-exit punch. */
+export const EASE_IOS_SHEET_DISMISS_CSS = "cubic-bezier(0.32, 0, 0.67, 0)" as const
+
 /** Apple-style emphasized deceleration (enter / snap open). */
 export const EASE_EMPHASIZED_ENTER = CustomEase.create(
   "motionEmphasizedEnter",
   "M0,0,C0.32,0.72,0,1,1,1",
 )
 
-/** Emphasized acceleration (exit / dismiss). */
+/** Page/modal exit — ease-in without a hard snap. */
 export const EASE_EMPHASIZED_EXIT = CustomEase.create(
   "motionEmphasizedExit",
-  "M0,0,C0.58,0,0.92,0.36,1,1",
+  "M0,0,C0.32,0,0.67,0,1,1",
 )
 
-/** Sheet dismiss variant (matches legacy promo out). */
+/** Sheet dismiss — same iOS sheet curve as present (Vaul default). */
 export const EASE_SHEET_DISMISS = CustomEase.create(
   "motionSheetDismiss",
-  "M0,0,C0.4,0,1,1,1,1",
+  "M0,0,C0.32,0.72,0,1,1,1",
 )
 
 export const EASE_STANDARD_OUT = "power2.out" as const
