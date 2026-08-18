@@ -1,5 +1,6 @@
 import { Button, Typography } from "@bolteu/kalep-react"
 import CheckCircle from "@bolteu/kalep-react-icons/dist/CheckCircle"
+import Dashboard from "@bolteu/kalep-react-icons/dist/Dashboard"
 import { useCallback, useRef, useState } from "react"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import { parseClaimPinForDisplay } from "@/features/offers/components/ClaimedOfferPage/parseClaimPinForDisplay"
@@ -9,16 +10,16 @@ import {
   CLAIMED_OFFER_ARRIVED_PIN_HINT,
   CLAIMED_OFFER_ARRIVED_TITLE,
   CLAIMED_OFFER_CHECK_IN_CTA,
+  CLAIMED_OFFER_CHECK_IN_STEP_TITLE,
   CLAIMED_OFFER_CHECKED_IN_STEP_SUBTITLE,
   CLAIMED_OFFER_CHECKED_IN_STEP_TITLE,
   CLAIMED_OFFER_HOW_TO_USE_TITLE,
   CLAIMED_OFFER_IVE_PAID_LABEL,
   CLAIMED_OFFER_PAY_BILL_CTA,
-  CLAIMED_OFFER_PAY_CARD_HINT,
   CLAIMED_OFFER_PAY_CARD_TITLE,
+  CLAIMED_OFFER_PAY_STEP_TITLE,
   CLAIMED_OFFER_PAY_THE_BILL_CTA,
-  formatClaimedOfferCheckInStepTitle,
-  formatClaimedOfferPayStepTitle,
+  formatClaimedOfferPayCardHint,
 } from "@/features/offers/constants/claimedOfferCopy"
 import type { PaymentMethod } from "@/features/offers/offers.types"
 import { DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT } from "@/features/payBill/constants"
@@ -29,7 +30,6 @@ const PIN_CODE_STYLE = {
 } as const
 
 export interface ClaimedOfferHowToUseSectionProps {
-  discountPercent: number
   pin: string
   checkedIn: boolean
   expired: boolean
@@ -62,8 +62,30 @@ function CheckedInBadge() {
   return (
     <span className={claimedOfferLayout.howToUseCheckedInBadge} aria-hidden>
       {/* Kalep: md=20, lg=24 — Figma start icon is 24×24. */}
-      <CheckCircle size="lg" className="text-action-primary" />
+      {/* Figma fills this with `bg/action-primary`; `text-action-primary` is the
+          darker `content/action-primary` link green. */}
+      <CheckCircle
+        size="lg"
+        className="text-[var(--color-bg-action-primary)]"
+      />
     </span>
+  )
+}
+
+function CheckedInPinBadge({ digits }: { digits: string }) {
+  return (
+    <div className={claimedOfferLayout.howToUseCheckedInPinSlot}>
+      <span
+        className={claimedOfferLayout.howToUsePinBadge}
+        role="group"
+        aria-label={`PIN ${digits}`}
+      >
+        <Dashboard size="xs" className="shrink-0" aria-hidden />
+        <Typography variant="body-xs-compact-accent" color="primary" as="span">
+          {digits}
+        </Typography>
+      </span>
+    </div>
   )
 }
 
@@ -72,7 +94,6 @@ function CheckedInBadge() {
  * Check-in collapses the PIN card with an iOS-style height/fade transition.
  */
 export function ClaimedOfferHowToUseSection({
-  discountPercent,
   pin,
   checkedIn,
   expired,
@@ -159,7 +180,7 @@ export function ClaimedOfferHowToUseSection({
         >
           <StepBadge n={1} />
           <Typography variant="body-m-regular" color="primary" as="p">
-            {formatClaimedOfferCheckInStepTitle(discountPercent)}
+            {CLAIMED_OFFER_CHECK_IN_STEP_TITLE}
           </Typography>
         </div>
 
@@ -177,6 +198,9 @@ export function ClaimedOfferHowToUseSection({
             <Typography variant="body-s-regular" color="secondary" as="p">
               {CLAIMED_OFFER_CHECKED_IN_STEP_SUBTITLE}
             </Typography>
+            {pinResult.ok ?
+              <CheckedInPinBadge digits={pinResult.digits.join("")} />
+            : null}
           </div>
         </div>
       </div>
@@ -196,7 +220,7 @@ export function ClaimedOfferHowToUseSection({
               <Typography variant="body-m-accent" color="primary" as="p">
                 {CLAIMED_OFFER_ARRIVED_TITLE}
               </Typography>
-              <Typography variant="body-xs-regular" color="secondary" as="p">
+              <Typography variant="body-s-regular" color="secondary" as="p">
                 {CLAIMED_OFFER_ARRIVED_PIN_HINT}
               </Typography>
             </div>
@@ -243,7 +267,7 @@ export function ClaimedOfferHowToUseSection({
       <div className={claimedOfferLayout.howToUseStepRow}>
         <StepBadge n={2} />
         <Typography variant="body-m-regular" color="primary" as="p">
-          {formatClaimedOfferPayStepTitle(cashbackPercent)}
+          {CLAIMED_OFFER_PAY_STEP_TITLE}
         </Typography>
       </div>
 
@@ -256,7 +280,7 @@ export function ClaimedOfferHowToUseSection({
             : claimedOfferLayout.howToUsePayCardDisabled
           }
         >
-          <div className="flex w-full flex-col items-start gap-1 py-4">
+          <div className="flex w-full flex-col items-start py-3">
             <Typography
               variant="body-m-accent"
               color={payEnabled ? "primary" : "tertiary"}
@@ -280,7 +304,7 @@ export function ClaimedOfferHowToUseSection({
                 : { color: "var(--color-content-tertiary)" }
               }
             >
-              {CLAIMED_OFFER_PAY_CARD_HINT}
+              {formatClaimedOfferPayCardHint(cashbackPercent)}
             </Typography>
           </div>
           <Button

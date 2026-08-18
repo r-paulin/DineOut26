@@ -2,7 +2,7 @@ import { Typography } from "@bolteu/kalep-react"
 import type { TypographyProps } from "@bolteu/kalep-react"
 import { payBillNumericOpentype } from "@/features/payBill/utils/payBillNumericDisplay"
 
-const bodyLSemiboldTypographyStyle = {
+const totalRowSemiboldTypographyStyle = {
   fontVariationSettings: "'wght' var(--font-weight-semibold)",
   fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
 } as const
@@ -34,15 +34,11 @@ export function ReceiptItem({
 }: ReceiptItemProps) {
   const isTotal = variant === "total"
   const amountTypographyVariant =
-    isTotal ? "body-l-accent"
-    : variant === "bold" ? "body-m-accent"
-    : "body-m-regular"
+    isTotal || variant === "bold" ? "body-m-accent" : "body-m-regular"
   const labelTypographyVariant =
     labelTypographyVariantProp ??
-    (isTotal ? "body-l-accent"
-    : variant === "bold" ? "body-m-accent"
-    : "body-m-regular")
-  const semiboldStyle = isTotal ? bodyLSemiboldTypographyStyle : undefined
+    (isTotal || variant === "bold" ? "body-m-accent" : "body-m-regular")
+  const semiboldStyle = isTotal ? totalRowSemiboldTypographyStyle : undefined
   const amountTone =
     amountColor === "negative" ? "danger-primary" : "primary"
   return (

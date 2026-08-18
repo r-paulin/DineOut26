@@ -129,12 +129,12 @@ function PayPaymentMethodPickerShell({
 function checkoutFooterPaymentIcon(optionId: string) {
   const id = narrowCheckoutPaymentOptionId(optionId)
   if (id === "google_pay") {
-    return <PaymentGooglePay size="md" className="shrink-0" />
+    return <PaymentGooglePay size="lg" className="shrink-0" />
   }
   if (id === "cash") {
-    return <PaymentCash size="md" className="shrink-0 text-action-primary" />
+    return <PaymentCash size="lg" className="shrink-0 text-action-primary" />
   }
-  return <PaymentMasterCard size="md" className="shrink-0" />
+  return <PaymentMasterCard size="lg" className="shrink-0" />
 }
 
 export interface PayScreenProps {
@@ -318,7 +318,7 @@ export function PayScreen({
             className={`flex shrink-0 flex-col shadow-[var(--elevation-1)] ${CARD_DIVIDER_SECTION_BELOW_CLASS}`}
           >
             <div className="flex flex-col gap-2 px-6 pt-6">
-              <Typography variant="heading-s-accent" color="primary" as="h2">
+              <Typography variant="heading-xs-accent" color="primary" as="h2">
                 {PAY_SCREEN_SUMMARY_TITLE}
               </Typography>
               <div className="flex flex-col gap-2">
@@ -339,7 +339,10 @@ export function PayScreen({
                   />
                 : null}
               </div>
-              <div className="h-px w-full shrink-0 bg-separator" aria-hidden />
+              <div
+                className="h-px w-full shrink-0 bg-[var(--color-border-separator)]"
+                aria-hidden
+              />
               <div className="pt-2">
                 <ReceiptItem
                   label={PAY_SCREEN_TOTAL_LABEL}
@@ -349,16 +352,9 @@ export function PayScreen({
               </div>
             </div>
 
-            <div
-              className={[
-                "flex w-full items-center gap-3 px-6 py-3",
-                hideCardRow ? "pb-8" : undefined,
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            >
+            <div className="flex w-full items-center gap-3 px-6 py-3">
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <PaymentWallet size="md" className="shrink-0 text-action-primary" />
+                <PaymentWallet size="lg" className="shrink-0 text-action-primary" />
                 <div className="flex min-w-0 items-center gap-1">
                   <Typography variant="body-m-regular" color="primary" as="span">
                     Bolt Balance
@@ -381,7 +377,7 @@ export function PayScreen({
             </div>
 
             {!hideCardRow ?
-              <div className="flex w-full items-center gap-3 px-6 pt-1.5 pb-8">
+              <div className="flex w-full items-center gap-3 px-6 pt-1.5 pb-3">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="flex shrink-0 items-center">
                     {checkoutFooterPaymentIcon(checkoutPaymentOptionId)}
@@ -415,7 +411,7 @@ export function PayScreen({
         <div className="flex shrink-0 flex-col bg-layer-floor-1">
           <footer
             data-snackbar-anchor=""
-            className="shrink-0 border-t border-solid border-separator px-6 pt-3 pb-[max(1rem,var(--safe-area-bottom))]"
+            className="shrink-0 px-6 pt-3 pb-[max(1.5rem,var(--safe-area-bottom))]"
           >
             <SlidingButton
               label="Pay bill"

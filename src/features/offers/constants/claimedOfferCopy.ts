@@ -11,30 +11,26 @@ export const CLAIMED_OFFER_GET_DIRECTIONS_LABEL = "Get directions" as const
 /** Figma `19867:37819` — How to use section title. */
 export const CLAIMED_OFFER_HOW_TO_USE_TITLE = "How to use your offer" as const
 
-/** Figma `19867:37819` — step 1 list title. */
-export function formatClaimedOfferCheckInStepTitle(
-  discountPercent: number,
-): string {
-  return `Check in to use your ${formatDiscountPercent(discountPercent)}% discount`
-}
+/** Figma `20886:109714` — step 1 list title. */
+export const CLAIMED_OFFER_CHECK_IN_STEP_TITLE = "Check in at the venue" as const
 
-/** Figma `19867:37819` — Arrived? PIN card. */
+/** Figma `20886:109714` — Arrived? PIN card. */
 export const CLAIMED_OFFER_ARRIVED_TITLE = "Arrived?" as const
 
 export const CLAIMED_OFFER_ARRIVED_PIN_HINT =
-  "When you arrive, show this PIN to your waiter" as const
+  "Confirm you've arrived, then show your PIN to the staff." as const
 
-/** Figma `19867:37819` — step 2 list title. */
-export function formatClaimedOfferPayStepTitle(
-  cashbackPercent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
-): string {
-  return `Pay your bill and get ${formatDiscountPercent(cashbackPercent)}% cash back`
-}
+/** Figma `20886:109714` — step 2 list title. */
+export const CLAIMED_OFFER_PAY_STEP_TITLE = "Pay in the Bolt Food app" as const
 
-/** Figma `19867:37819` — pay card (disabled until check-in). */
+/** Figma `20886:109714` — pay card (disabled until check-in). */
 export const CLAIMED_OFFER_PAY_CARD_TITLE = "Got your bill?" as const
 
-export const CLAIMED_OFFER_PAY_CARD_HINT = "Pay and claim your cashback" as const
+export function formatClaimedOfferPayCardHint(
+  cashbackPercent: number = DEFAULT_DINEOUT_PAY_BENEFIT_PERCENT,
+): string {
+  return `Pay in the app to earn ${formatDiscountPercent(cashbackPercent)}% cashback`
+}
 
 /** Figma `19867:37819` — disabled pay CTA before check-in. */
 export const CLAIMED_OFFER_PAY_THE_BILL_CTA = "Pay the bill" as const
@@ -70,14 +66,14 @@ export const CLAIMED_OFFER_CHECK_IN_FOOTER_PROMO_LEAD = "At the venue?" as const
 export const CLAIMED_OFFER_CHECK_IN_FOOTER_PROMO_TAIL =
   "Check in to reveal your offer PIN" as const
 
-/** Figma `17459:183419` / `19867:37819` — check-in CTA. */
-export const CLAIMED_OFFER_CHECK_IN_CTA = "Check in" as const
+/** Figma `20886:109714` — check-in CTA. */
+export const CLAIMED_OFFER_CHECK_IN_CTA = "I'm at the venue" as const
 
-/** Figma `19867:38043` — step 1 after venue check-in. */
-export const CLAIMED_OFFER_CHECKED_IN_STEP_TITLE = "You're checked in" as const
+/** Figma `20886:110188` — step 1 after venue check-in. */
+export const CLAIMED_OFFER_CHECKED_IN_STEP_TITLE = "Checked in" as const
 
 export const CLAIMED_OFFER_CHECKED_IN_STEP_SUBTITLE =
-  "Order and enjoy your meal as usual." as const
+  "Show your PIN to the staff. Order and enjoy your meal as usual." as const
 
 /**
  * Figma `19867:38064` — snackbar after venue check-in.
@@ -126,10 +122,11 @@ export const VENUE_PAYMENT_CONFIRM_PRIMARY_CTA = CLAIM_PAYMENT_VENUE_OPTION_LABE
 export const VENUE_PAYMENT_CONFIRM_SECONDARY_CTA =
   PAYMENT_METHOD_DINEOUT_OPTION_LABEL
 
-/** Figma `17459:183448` / `19867:37819` — disclaimer lines. */
+/** @deprecated Dropped from the disclaimer on Figma `20886:109714`. */
 export const CLAIMED_OFFER_DISCLAIMER_EXCLUDES =
   "Excludes alcohol and tobacco" as const
 
+/** Figma `20886:109714` — disclaimer lines. */
 export const CLAIMED_OFFER_DISCLAIMER_VALIDITY =
   "Claiming an offer doesn’t ensure a table booking and during busy periods, you may need to wait for a table." as const
 

@@ -4,9 +4,10 @@ import {
   readNavLayoutOffsetPx,
 } from "@/features/offers/utils/bottomSheetLayout"
 
-/** Matches `--snackbar-screen-margin-bottom` in `tokens.css`. */
-export const SNACKBAR_SCREEN_MARGIN_X_PX = 24
-export const SNACKBAR_SCREEN_MARGIN_BOTTOM_PX = 32
+/** Matches `--snackbar-screen-margin-x` / `--snackbar-screen-margin-bottom` in `tokens.css`. */
+export const SNACKBAR_SCREEN_MARGIN_X_PX = 16
+/** Gap from the screen bottom or the top of a visible fixed footer. */
+export const SNACKBAR_SCREEN_MARGIN_BOTTOM_PX = 24
 
 export const SNACKBAR_ANCHOR_SELECTOR = "[data-snackbar-anchor]"
 
@@ -74,12 +75,39 @@ export function resolveSnackbarLayoutBaseline(
   return readSafeAreaBottomPx()
 }
 
+/**
+ * Anchors that are not on screen must not lift the toaster (e.g. a Vaul footer
+ * still in the DOM with `visibility: hidden` after claim success).
+ */
+export function isSnackbarAnchorMeasurable(el: HTMLElement): boolean {
+  const rect = el.getBoundingClientRect()
+  if (rect.width === 0 || rect.height === 0) return false
+  if (typeof el.checkVisibility === "function") {
+    return el.checkVisibility({
+      checkOpacity: true,
+      checkVisibilityCSS: true,
+    })
+  }
+  let node: HTMLElement | null = el
+  while (node) {
+    const style = getComputedStyle(node)
+    if (
+      style.display === "none" ||
+      style.visibility === "hidden" ||
+      style.opacity === "0"
+    ) {
+      return false
+    }
+    node = node.parentElement
+  }
+  return true
+}
+
 export function measureMaxSnackbarAnchorInset(scope: ParentNode): number {
   const anchors = scope.querySelectorAll<HTMLElement>(SNACKBAR_ANCHOR_SELECTOR)
   let max = 0
   anchors.forEach((el) => {
-    const rect = el.getBoundingClientRect()
-    if (rect.width === 0 && rect.height === 0) return
+    if (!isSnackbarAnchorMeasurable(el)) return
     max = Math.max(max, measureSnackbarInsetFromElement(el))
   })
   return max

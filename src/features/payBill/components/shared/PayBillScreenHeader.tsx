@@ -23,7 +23,16 @@ export function PayBillScreenHeader({
   backDisabled = false,
 }: PayBillScreenHeaderProps) {
   return (
-    <header className="flex shrink-0 flex-col gap-[15px] bg-layer-floor-1 pt-[max(2.5rem,var(--safe-area-top))]">
+    <header
+      className={[
+        "flex shrink-0 flex-col gap-[15px] bg-layer-floor-1 pt-[max(2.5rem,var(--safe-area-top))]",
+        // Figma reserves 15px + a 1px separator below the title row on every
+        // pay screen; without the separator the gap collapses, so pad instead.
+        showDivider ? undefined : "pb-4",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="flex min-h-6 items-center gap-4 px-6">
         <button
           type="button"

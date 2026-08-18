@@ -34,27 +34,35 @@ export const claimedOfferLayout = {
   howToUseHeading: "px-6 pb-3 pt-6",
   /** Relative stack — height owned by GSAP during check-in crossfade. */
   howToUseStep1Stack: "relative w-full shrink-0",
-  /** Figma list item — 16px badge↔label gap, 12px vertical padding. */
-  howToUseStepRow: "flex w-full items-center gap-4 px-6 py-3",
-  howToUseStepRowCheckedIn: "flex w-full items-start gap-4 px-6 py-3",
+  /**
+   * Figma list item — 16px badge↔label gap, 12px vertical padding around a
+   * 32px-min content box (so a single-line row is 56px, not 48px).
+   */
+  howToUseStepRow: "flex min-h-14 w-full items-center gap-4 px-6 py-3",
+  howToUseStepRowCheckedIn: "flex min-h-14 w-full items-start gap-4 px-6 py-3",
   howToUseStepBadge:
     "flex size-6 shrink-0 items-center justify-center rounded-full bg-neutral-primary text-static-key-light",
   howToUseCheckedInBadge: "flex size-6 shrink-0 items-center justify-center",
+  /** Figma label-stack bottom slot — 6px above the PIN badge. */
+  howToUseCheckedInPinSlot: "flex w-full flex-wrap items-start gap-1 pt-1.5",
+  /** Figma `Ⓒ Badge` — 24px min, px 6, py 4, 4px radius, neutral-secondary fill. */
+  howToUsePinBadge:
+    "inline-flex min-h-6 items-center justify-center gap-1 rounded-[4px] bg-neutral-secondary px-1.5 py-1 text-primary",
   /** pb-3 is tweened to 0 with height so no ghost gap during collapse. */
   howToUseCheckInCardSlot: "box-border w-full shrink-0 overflow-hidden pb-3",
-  /** Figma `19867:37835` — 16px radius (Kalep has no `rounded-2xl`). */
+  /** Figma `20886:109497` — 12px radius, px 16, pb 20. */
   howToUseCheckInCard:
-    "mx-6 flex flex-col items-start gap-0 rounded-[16px] bg-action-secondary px-4 pb-6",
+    "mx-6 flex flex-col items-start gap-0 rounded-[12px] bg-action-secondary px-4 pb-5",
   /** Figma pay card wrap — px 24, pb 24. */
   howToUsePayCardWrap: "flex shrink-0 flex-col items-start px-6 pb-6",
   howToUsePayCardEnabled:
-    "flex w-full flex-col items-start rounded-[16px] bg-action-secondary px-4 pb-6 transition-[background-color] duration-[350ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
+    "flex w-full flex-col items-start rounded-[12px] bg-action-secondary px-4 pb-5 transition-[background-color] duration-[350ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
   howToUsePayCardDisabled:
-    "flex w-full flex-col items-start rounded-[16px] bg-layer-floor-0-grouped px-4 pb-6 transition-[background-color] duration-[350ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
+    "flex w-full flex-col items-start rounded-[12px] bg-layer-floor-0-grouped px-4 pb-5 transition-[background-color] duration-[350ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
   howToUsePinRow: "flex w-full items-start justify-center gap-3 py-4",
-  /** Figma PIN chip — border only (same fill as check-in card), 4px radius. */
+  /** Figma PIN chip — `bg/neutral-secondary` fill on `border/separator`, 4px radius. */
   howToUsePinCode:
-    "flex shrink-0 items-center justify-center rounded border border-solid border-action-secondary bg-transparent px-3 py-0.5",
+    "flex shrink-0 items-center justify-center rounded border border-solid border-separator bg-neutral-secondary px-3 py-0.5",
   /**
    * Grey feed under hero — Figma `19867:37828` (`layer/floor-0-grouped`).
    * `flex-1` fills leftover viewport; default `min-height: auto` so content

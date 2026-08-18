@@ -9,6 +9,7 @@ export { useSnackbarLayoutBaseline } from "@/shared/snackbar/useSnackbarLayoutBa
 export {
   measureSnackbarInsetFromElement,
   measureMaxSnackbarAnchorInset,
+  isSnackbarAnchorMeasurable,
   resolveSnackbarLayoutBaseline,
   readSafeAreaBottomPx,
   shouldUpdateSnackbarInsetPx,

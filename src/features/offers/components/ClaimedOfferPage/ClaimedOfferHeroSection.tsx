@@ -1,5 +1,5 @@
 import { Typography } from "@bolteu/kalep-react"
-import ArrowCircleRightUp from "@bolteu/kalep-react-icons/dist/ArrowCircleRightUp"
+import Directions from "@bolteu/kalep-react-icons/dist/Directions"
 import { BoltDineOutLogo } from "@/features/offers/components/ClaimedOfferPage/BoltDineOutLogo"
 import { claimedOfferLayout } from "@/features/offers/components/ClaimedOfferPage/claimedOfferLayout"
 import { SEMIBOLD } from "@/features/offers/components/ClaimedOfferPage/claimedOfferShared"
@@ -8,6 +8,12 @@ import { CLAIMED_OFFER_GET_DIRECTIONS_LABEL } from "@/features/offers/constants/
 const HERO_TITLE_STYLE = {
   ...SEMIBOLD,
   color: "var(--color-static-content-key-light)",
+  fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
+} as const
+
+/** Figma Body L/L Regular on `static/content/primary-light`. */
+const HERO_DISCOUNT_STYLE = {
+  color: "var(--color-static-content-primary-light)",
   fontFeatureSettings: "'cv03' 1, 'cv04' 1, 'lnum' 1, 'pnum' 1",
 } as const
 
@@ -20,12 +26,15 @@ const DIRECTIONS_STYLE = {
 
 export interface ClaimedOfferHeroSectionProps {
   restaurantName: string
+  /** Discount line under the venue name, e.g. "30% off your bill". */
+  discountLabel: string
   mapsHref: string
 }
 
-/** Figma `19867:37819` — logo, venue, Get directions (discount lives in Offer details). */
+/** Figma `20886:109714` — logo, venue, discount, Get directions. */
 export function ClaimedOfferHeroSection({
   restaurantName,
+  discountLabel,
   mapsHref,
 }: ClaimedOfferHeroSectionProps) {
   return (
@@ -40,6 +49,14 @@ export function ClaimedOfferHeroSection({
           inlineStyle={HERO_TITLE_STYLE}
         >
           {restaurantName}
+        </Typography>
+        <Typography
+          variant="body-l-regular"
+          as="p"
+          align="center"
+          inlineStyle={HERO_DISCOUNT_STYLE}
+        >
+          {discountLabel}
         </Typography>
       </div>
 
@@ -57,7 +74,7 @@ export function ClaimedOfferHeroSection({
         >
           {CLAIMED_OFFER_GET_DIRECTIONS_LABEL}
         </Typography>
-        <ArrowCircleRightUp
+        <Directions
           size="sm"
           className="shrink-0 text-active-action-primary-inverted"
           aria-hidden

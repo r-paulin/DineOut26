@@ -242,7 +242,7 @@ export function ClaimPromoSheetShell({
 
           {footer ?
             <div
-              data-snackbar-anchor=""
+              data-snackbar-anchor={hideVisually ? undefined : ""}
               className={[
                 VAUL_SHEET_FOOTER_CLASS,
                 footerBordered ? "" : "border-t-0 pt-4",

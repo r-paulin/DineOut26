@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import {
+  isSnackbarAnchorMeasurable,
+  measureMaxSnackbarAnchorInset,
   measureSnackbarInsetFromElement,
   resolveSnackbarLayoutBaseline,
   shouldUpdateSnackbarInsetPx,
@@ -63,6 +65,51 @@ describe("measureSnackbarInsetFromElement", () => {
     } as unknown as HTMLElement
 
     expect(measureSnackbarInsetFromElement(anchor)).toBe(40)
+  })
+})
+
+describe("isSnackbarAnchorMeasurable", () => {
+  it("skips zero-size nodes", () => {
+    const el = {
+      getBoundingClientRect: () => rect({ width: 384, height: 0 }),
+    } as HTMLElement
+    expect(isSnackbarAnchorMeasurable(el)).toBe(false)
+  })
+
+  it("skips visibility:hidden nodes", () => {
+    const el = {
+      getBoundingClientRect: () => rect({ width: 384, height: 105 }),
+      checkVisibility: () => false,
+    } as unknown as HTMLElement
+    expect(isSnackbarAnchorMeasurable(el)).toBe(false)
+  })
+
+  it("keeps visible footers", () => {
+    const el = {
+      getBoundingClientRect: () => rect({ width: 384, height: 105 }),
+      checkVisibility: () => true,
+    } as unknown as HTMLElement
+    expect(isSnackbarAnchorMeasurable(el)).toBe(true)
+  })
+})
+
+describe("measureMaxSnackbarAnchorInset", () => {
+  it("ignores hidden leftover footers", () => {
+    const hidden = {
+      getBoundingClientRect: () => rect({ width: 384, height: 105, top: 758 }),
+      checkVisibility: () => false,
+      closest: () => null,
+    } as unknown as HTMLElement
+    const dummy = {
+      getBoundingClientRect: () => rect({ width: 384, height: 0, top: 863 }),
+      checkVisibility: () => true,
+      closest: () => null,
+    } as unknown as HTMLElement
+    const scope = {
+      querySelectorAll: () => [hidden, dummy],
+    } as unknown as ParentNode
+
+    expect(measureMaxSnackbarAnchorInset(scope)).toBe(0)
   })
 })
 

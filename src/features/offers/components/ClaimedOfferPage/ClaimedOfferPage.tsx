@@ -266,13 +266,13 @@ export const ClaimedOfferPage = forwardRef<
         <div className={claimedOfferLayout.pageScroll}>
           <ClaimedOfferHeroSection
             restaurantName={restaurant.name}
+            discountLabel={offerTitle}
             mapsHref={mapsHref}
           />
 
           <div className={claimedOfferLayout.shelfFloor}>
             <div data-mode="light" className={claimedOfferLayout.howToUseCard}>
               <ClaimedOfferHowToUseSection
-                discountPercent={claim.discountPercent}
                 pin={claim.pin}
                 checkedIn={checkedIn}
                 expired={expired}
@@ -301,7 +301,6 @@ export const ClaimedOfferPage = forwardRef<
               />
 
               <ClaimedOfferDisclaimer
-                minOrderEur={claim.minOrderEur}
                 onTermsPress={() => {
                   snackbar.add({
                     description:

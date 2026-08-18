@@ -19,7 +19,7 @@
 
 /**
  * DineOut snackbar toaster (Sonner v2 renders `<ol data-sonner-toaster>`).
- * Screen margins: 24px horizontal, 32px above bottom chrome + `--snackbar-bottom-inset`.
+ * Screen margins: 16px horizontal, 24px above bottom chrome + `--snackbar-bottom-inset`.
  * Sonner’s default `<li>` motion is disabled so entry/exit can be driven by GSAP.
  */
 .dineout-snackbar-toaster[data-sonner-toaster] {

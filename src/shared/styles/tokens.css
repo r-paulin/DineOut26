@@ -82,9 +82,9 @@
    */
   --snackbar-bottom-inset: var(--nav-layout-offset);
   /** Inset from the left/right edges of the device shell. */
-  --snackbar-screen-margin-x: 24px;
-  /** Inset from the bottom edge of the device shell (above tab bar / sticky chrome). */
-  --snackbar-screen-margin-bottom: 32px;
+  --snackbar-screen-margin-x: 16px;
+  /** Gap above the screen bottom or a visible fixed footer / tab bar. */
+  --snackbar-screen-margin-bottom: 24px;
   --search-stack-height: 8rem; /* HomeScreen measures SearchPanel and overrides with px */
   --layer-search-expanded: #eef0ef;
   --sheet-radius: 1rem;
